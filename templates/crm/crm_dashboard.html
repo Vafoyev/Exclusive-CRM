@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load role_tags %}
+
+{% block title %}CRM - Sotuv & Lidlar{% endblock %}
+
+{% block content %}
+<!-- SortableJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+<div class="space-y-6">
+
+    <!-- HEADER -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-funnel text-[#64748B]"></i>
+                Sotuv & CRM
+            </h1>
+            <p class="text-slate-500 mt-1">Lidlar, voronka va manbalarni boshqaring</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            {% has_permission 'crm' 'create' as can_create_lead %}
+            {% if can_create_lead %}
+            <a href="{% url 'crm:lead_create' %}"
+                class="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition shadow-sm">
+                <i class="ph ph-plus"></i> Yangi Lid
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- STATISTIKA KARTOCHKALARI -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Jami Lidlar -->
+        <div class="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-[#4F46E5]/10 flex items-center justify-center">
+                    <i class="ph ph-users text-xl text-[#64748B]"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-slate-800">{{ total_leads }}</p>
+                    <p class="text-sm text-slate-500">Jami Lidlar</p>
+                </div>
+            </div>
+        </div>
+        <!-- Bugungi -->
+        <div class="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                    <i class="ph ph-calendar-check text-xl text-green-600"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-slate-800">{{ today_leads }}</p>
+                    <p class="text-sm text-slate-500">Bugungi</p>
+                </div>
+            </div>
+        </div>
+        <!-- Bosqichlar -->
+        <div class="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                    <i class="ph ph-kanban text-xl text-purple-600"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-slate-800">{{ stages|length }}</p>
+                    <p class="text-sm text-slate-500">Bosqichlar</p>
+                </div>
+            </div>
+        </div>
+        <!-- Manbalar -->
+        <div class="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <i class="ph ph-megaphone text-xl text-orange-600"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-slate-800">{{ sources|length }}</p>
+                    <p class="text-sm text-slate-500">Manbalar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABS - Pipeline / Sozlamalar -->
+    <div x-data="{ activeTab: 'pipeline' }" class="space-y-4">
+        <!-- Tab Buttons -->
+        <div class="flex gap-2 border-b border-slate-200 pb-0">
+            <button @click="activeTab = 'pipeline'"
+                :class="activeTab === 'pipeline' ? 'border-[#4F46E5] text-[#64748B] bg-[#4F46E5]/5' : 'border-transparent text-slate-500 hover:text-slate-700'"
+                class="px-4 py-2 border-b-2 font-medium transition-all flex items-center gap-2 rounded-t-lg">
+                <i class="ph ph-funnel"></i> Voronka
+            </button>
+            <button @click="activeTab = 'stages'"
+                :class="activeTab === 'stages' ? 'border-[#4F46E5] text-[#64748B] bg-[#4F46E5]/5' : 'border-transparent text-slate-500 hover:text-slate-700'"
+                class="px-4 py-2 border-b-2 font-medium transition-all flex items-center gap-2 rounded-t-lg">
+                <i class="ph ph-kanban"></i> Bosqichlar
+            </button>
+            <button @click="activeTab = 'sources'"
+                :class="activeTab === 'sources' ? 'border-[#4F46E5] text-[#64748B] bg-[#4F46E5]/5' : 'border-transparent text-slate-500 hover:text-slate-700'"
+                class="px-4 py-2 border-b-2 font-medium transition-all flex items-center gap-2 rounded-t-lg">
+                <i class="ph ph-megaphone"></i> Manbalar
+            </button>
+        </div>
+
+        <!-- TAB 1: PIPELINE (VORONKA) -->
+        <div x-show="activeTab === 'pipeline'" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+
+            <div class="flex gap-4 overflow-x-auto pb-4 items-start" style="min-height: 500px;">
+                {% for stage in stages %}
+                <div class="flex-shrink-0 w-72 flex flex-col bg-white/60 backdrop-blur-md rounded-2xl border border-white/20 shadow-sm">
+
+                    <!-- STAGE HEADER -->
+                    <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-8 rounded-full" style="background-color: {{ stage.color }};"></span>
+                            <h3 class="font-semibold text-slate-800 text-sm">{{ stage.name }}</h3>
+                        </div>
+                        <span class="bg-white text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold border border-slate-200">
+                            {{ stage.leads.count }}
+                        </span>
+                    </div>
+
+                    <!-- LEADS -->
+                    <div class="p-2 flex-1 overflow-y-auto space-y-2 sortable-list max-h-96" data-stage-id="{{ stage.id }}">
+                        {% for lead in stage.leads.all %}
+                        <div class="bg-white rounded-lg shadow-sm border border-slate-100 hover:shadow-md hover:border-[#4F46E5]/20 transition-all cursor-grab active:cursor-grabbing group p-3"
+                            data-lead-id="{{ lead.id }}">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-slate-800 text-sm truncate">{{ lead.full_name }}</h4>
+                                    <p class="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                                        <i class="ph ph-phone text-xs"></i>
+                                        {{ lead.phone }}
+                                    </p>
+                                </div>
+                                <a href="{% url 'crm:lead_detail' lead.id %}"
+                                   class="w-6 h-6 rounded-md bg-slate-50 text-slate-400 hover:bg-[#4338CA] hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                                    <i class="ph ph-arrow-right text-xs"></i>
+                                </a>
+                            </div>
+                            {% if lead.interested_course %}
+                            <span class="inline-flex items-center gap-1 text-xs font-medium text-[#64748B] bg-[#4F46E5]/5 px-2 py-0.5 rounded mt-2">
+                                <i class="ph ph-book-open text-xs"></i>
+                                {{ lead.interested_course.name|truncatewords:2 }}
+                            </span>
+                            {% endif %}
+                            <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
+                                <span class="text-xs text-slate-400 flex items-center gap-1">
+                                    <i class="ph ph-flow-arrow text-xs"></i>
+                                    {{ lead.source.name|default:"-"|truncatewords:1 }}
+                                </span>
+                                <span class="text-xs text-slate-400">{{ lead.created_at|date:"d.m" }}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="py-6 text-center">
+                            <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-1">
+                                <i class="ph ph-user-plus text-slate-400 text-sm"></i>
+                            </div>
+                            <p class="text-xs text-slate-400">Lidlar yo'q</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="flex items-center justify-center w-full h-48 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-300">
+                    <div class="text-center">
+                        <i class="ph ph-kanban text-3xl mb-2 opacity-50"></i>
+                        <p class="text-sm">Hozircha bosqichlar yo'q</p>
+                        <button @click="activeTab = 'stages'" class="text-[#64748B] hover:underline text-sm mt-2">Bosqich qo'shish +</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- TAB 2: BOSQICHLAR -->
+        <div x-show="activeTab === 'stages'" x-cloak x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <!-- Header -->
+                <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <h3 class="font-semibold text-slate-800 flex items-center gap-2">
+                        <i class="ph ph-kanban"></i> Voronka Bosqichlari
+                    </h3>
+                    <a href="{% url 'crm:stage_create' %}"
+                        class="px-3 py-1.5 bg-[#4F46E5] text-white text-sm rounded-lg hover:bg-[#4338CA] flex items-center gap-1 transition">
+                        <i class="ph ph-plus"></i> Yangi
+                    </a>
+                </div>
+
+                <div class="divide-y divide-slate-100">
+                    {% for stage in stages %}
+                    <div class="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <span class="text-slate-400 font-bold text-sm w-6">{{ stage.order }}</span>
+                            <span class="w-4 h-4 rounded-full shadow-sm" style="background-color: {{ stage.color }};"></span>
+                            <div>
+                                <span class="font-semibold text-slate-800">{{ stage.name }}</span>
+                                {% if stage.is_won %}
+                                <span class="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded-full font-medium">
+                                    <i class="ph ph-trophy"></i> Yutuq
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                                {{ stage.lead_count }} lid
+                            </span>
+                            <div class="flex items-center gap-1">
+                                <a href="{% url 'crm:stage_edit' stage.id %}"
+                                    class="p-2 text-slate-500 hover:text-[#64748B] hover:bg-[#4338CA]/5 rounded-lg transition">
+                                    <i class="ph ph-pencil-simple"></i>
+                                </a>
+                                <a href="{% url 'crm:stage_delete' stage.id %}"
+                                    class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                                    <i class="ph ph-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-8 text-center text-slate-500">
+                        <i class="ph ph-kanban text-3xl mb-2 opacity-50"></i>
+                        <p>Hozircha bosqichlar yo'q</p>
+                        <a href="{% url 'crm:stage_create' %}" class="text-[#64748B] hover:underline mt-2 inline-block">+ Yangi bosqich</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: MANBALAR -->
+        <div x-show="activeTab === 'sources'" x-cloak x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <!-- Header -->
+                <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <h3 class="font-semibold text-slate-800 flex items-center gap-2">
+                        <i class="ph ph-megaphone"></i> Lid Manbalari
+                    </h3>
+                    <a href="{% url 'crm:source_create' %}"
+                        class="px-3 py-1.5 bg-[#4F46E5] text-white text-sm rounded-lg hover:bg-[#4338CA] flex items-center gap-1 transition">
+                        <i class="ph ph-plus"></i> Yangi
+                    </a>
+                </div>
+
+                <div class="p-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {% for source in sources %}
+                        <div class="bg-slate-50 rounded-xl p-4 hover:bg-slate-100 transition group">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#4F46E5] to-[#818CF8] flex items-center justify-center text-white">
+                                        <i class="ph ph-megaphone"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-slate-800 text-sm">{{ source.name }}</h4>
+                                        <p class="text-xs text-slate-500">{{ source.lead_count }} lid</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                                    <a href="{% url 'crm:source_edit' source.id %}"
+                                        class="p-1.5 text-slate-500 hover:text-[#64748B] hover:bg-white rounded-lg transition">
+                                        <i class="ph ph-pencil-simple text-sm"></i>
+                                    </a>
+                                    <a href="{% url 'crm:source_delete' source.id %}"
+                                        class="p-1.5 text-slate-500 hover:text-red-600 hover:bg-white rounded-lg transition">
+                                        <i class="ph ph-trash text-sm"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-span-full text-center py-8 text-slate-500">
+                            <i class="ph ph-megaphone text-3xl mb-2 opacity-50"></i>
+                            <p>Hozircha manbalar yo'q</p>
+                            <a href="{% url 'crm:source_create' %}" class="text-[#64748B] hover:underline mt-2 inline-block">+ Yangi manba</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- DRAG & DROP JAVASCRIPT -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const lists = document.querySelectorAll('.sortable-list');
+
+        lists.forEach(list => {
+            new Sortable(list, {
+                group: 'shared',
+                animation: 150,
+                ghostClass: 'bg-[#4F46E5]/5',
+
+                onEnd: function (evt) {
+                    const itemEl = evt.item;
+                    const newStageEl = evt.to;
+
+                    const leadId = itemEl.getAttribute('data-lead-id');
+                    const newStageId = newStageEl.getAttribute('data-stage-id');
+
+                    if (evt.from === evt.to) return;
+
+                    fetch(`/crm/api/leads/${leadId}/move/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ stage_id: newStageId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Update count badges
+                            const fromCount = evt.from.closest('.flex-shrink-0').querySelector('span[class*="rounded-full"]');
+                            const toCount = evt.to.closest('.flex-shrink-0').querySelector('span[class*="rounded-full"]');
+                            if (fromCount && toCount) {
+                                fromCount.textContent = parseInt(fromCount.textContent) - 1;
+                                toCount.textContent = parseInt(toCount.textContent) + 1;
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

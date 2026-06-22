@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Material Tafsilotlari: {{ supply.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Sarlavha & Qaytish -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-cube text-[#4F46E5]"></i>
+                {{ supply.name }}
+            </h1>
+            <p class="text-slate-500 text-sm mt-1">
+                Kategoriya: <span class="font-medium text-slate-700">{{ supply.category.name|default:"Tanlanmagan"
+                    }}</span>
+            </p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'finance:supply_list' %}"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100/80 text-slate-600 rounded-xl font-medium hover:bg-slate-200 transition">
+                <i class="ph ph-arrow-left"></i>
+                Omborxonaga qaytish
+            </a>
+            {% if request.user.role == 'super_admin' or request.user.role == 'owner' %}
+            <a href="{% url 'finance:supply_edit' supply.pk %}"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-[#4F46E5]/10 text-[#4F46E5] rounded-xl font-medium hover:bg-[#4F46E5]/20 transition">
+                <i class="ph ph-pencil"></i>
+                Tahrirlash
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Hozirgi Holat Kartalari -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Qoldiq -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-[#4F46E5]/5 rounded-bl-full -mr-4 -mt-4"></div>
+            <p class="text-sm font-medium text-slate-500 mb-1">Joriy qoldiq</p>
+            <div class="flex items-end gap-2">
+                <h3
+                    class="text-3xl font-bold {% if supply.is_low_stock %}text-red-600{% else %}text-slate-800{% endif %}">
+                    {{ supply.quantity }}
+                </h3>
+                <span class="text-slate-500 mb-1">{{ supply.unit }}</span>
+            </div>
+            {% if supply.is_low_stock %}
+            <p class="text-xs font-medium text-red-500 mt-2 flex items-center gap-1">
+                <i class="ph ph-warning-circle"></i> Tugayapti (Min: {{ supply.min_quantity }})
+            </p>
+            {% else %}
+            <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
+                <i class="ph ph-check-circle text-green-500"></i> Me'yorda
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Narx -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full -mr-4 -mt-4"></div>
+            <p class="text-sm font-medium text-slate-500 mb-1">Dona narxi</p>
+            <h3 class="text-2xl font-bold text-slate-800">
+                {{ supply.unit_price|intcomma }} <span class="text-sm text-slate-500 font-normal">so'm</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-2">Sotish / Chiqim narxi</p>
+        </div>
+
+        <!-- Jami Qiymat -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-amber-500/5 rounded-bl-full -mr-4 -mt-4"></div>
+            <p class="text-sm font-medium text-slate-500 mb-1">Skladdagi umumiy qiymat</p>
+            <h3 class="text-2xl font-bold text-amber-600">
+                {{ total_worth|intcomma }} <span class="text-sm text-slate-500 font-normal">so'm</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-2">Hozirgi zaxira asosida</p>
+        </div>
+    </div>
+
+    <!-- Tarix Jadvali -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-clock-counter-clockwise text-slate-400"></i>
+                Harakatlar tarixi
+            </h3>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50/80">
+                    <tr>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Sana</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Turi</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Miqdor</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Bajaruvchi /
+                            O'quvchi</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Izoh</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for tx in transactions %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {{ tx.created_at|date:"d.m.Y H:i" }}
+                        </td>
+                        <td class="px-5 py-4 whitespace-nowrap">
+                            {% if tx.transaction_type == 'in' %}
+                            <span
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                <i class="ph ph-arrow-down-left"></i> Kirim
+                            </span>
+                            {% else %}
+                            <span
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-50 text-rose-700 border border-rose-100">
+                                <i class="ph ph-arrow-up-right"></i> Chiqim
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-4 whitespace-nowrap">
+                            <span
+                                class="font-bold {% if tx.transaction_type == 'in' %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                                {% if tx.transaction_type == 'in' %}+{% else %}-{% endif %}{{ tx.quantity }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-slate-700">
+                                    {{ tx.performed_by.get_full_name|default:tx.performed_by.username }}
+                                </span>
+                                {% if tx.student %}
+                                <span class="text-xs text-[#4F46E5] flex items-center gap-1 mt-0.5">
+                                    <i class="ph ph-student"></i> O'quvchi: {{ tx.student.get_full_name }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 text-sm text-slate-600 max-w-xs truncate"
+                            title="{{ tx.notes|default:'' }}">
+                            {{ tx.notes|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-5 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                                    <i class="ph ph-list-dashes text-2xl text-slate-400"></i>
+                                </div>
+                                <p class="text-slate-500">Bu material bo'yicha harakatlar qayd etilmagan</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

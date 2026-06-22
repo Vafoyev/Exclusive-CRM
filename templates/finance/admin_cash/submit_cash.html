@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Kassa Topshirish{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+        <a href="{% url 'finance:admin_cash_dashboard' %}"
+            class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+            <i class="ph ph-arrow-left text-xl"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Kassa Topshirish 📤</h1>
+            <p class="text-slate-400">Kassani asosiy kassaga topshirish</p>
+        </div>
+    </div>
+
+    <!-- Kassa Balansi -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Naqd -->
+        <div class="rounded-2xl p-5 bg-emerald-50 border border-emerald-100 relative overflow-hidden group">
+            <div class="absolute -right-4 -top-4 w-16 h-16 bg-emerald-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+            <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1 flex items-center gap-1.5"><i class="ph-fill ph-money"></i> Naqd pul</p>
+            <p class="text-2xl font-black text-emerald-900">{{ balance_cash|floatformat:0 }} UZS</p>
+        </div>
+        <!-- Plastik -->
+        <div class="rounded-2xl p-5 bg-blue-50 border border-blue-100 relative overflow-hidden group">
+            <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+            <p class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1 flex items-center gap-1.5"><i class="ph-fill ph-credit-card"></i> Plastik karta</p>
+            <p class="text-2xl font-black text-blue-900">{{ balance_card|floatformat:0 }} UZS</p>
+        </div>
+        <!-- Terminal -->
+        <div class="rounded-2xl p-5 bg-purple-50 border border-purple-100 relative overflow-hidden group">
+            <div class="absolute -right-4 -top-4 w-16 h-16 bg-purple-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+            <p class="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1 flex items-center gap-1.5"><i class="ph-fill ph-device-mobile"></i> Terminal</p>
+            <p class="text-2xl font-black text-purple-900">{{ balance_terminal|floatformat:0 }} UZS</p>
+        </div>
+    </div>
+    
+    <div class="rounded-2xl p-4 bg-slate-50 border border-slate-200 mt-4 flex items-center justify-between">
+        <p class="text-sm font-semibold text-slate-600">Jami Topshirilmagan Balans:</p>
+        <p class="text-xl font-black text-slate-800">{{ balance|floatformat:0 }} UZS</p>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-6">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Bugungi sana</label>
+            <div class="px-4 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-medium">
+                {{ now|date:"d.m.Y" }}
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Faqat bugungi kundagi tranzaksiyalar topshiriladi</p>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Asosiy Kassa *</label>
+            <select name="main_account"
+                class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white">
+                {% for acc in main_accounts %}
+                <option value="{{ acc.pk }}">{{ acc.name }}</option>
+                {% empty %}
+                <option value="" disabled>Asosiy kassa topilmadi</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-3">Topshiriladigan To'lov Usullari *</label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label class="relative flex items-center p-3 rounded-xl border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/50">
+                    <div class="flex items-center h-5">
+                        <input type="checkbox" name="payment_methods" value="cash" {% if balance_cash > 0 %}checked{% endif %} class="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500">
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <span class="font-medium text-slate-900 flex items-center gap-1.5"><i class="ph-fill ph-money text-emerald-500"></i> Naqd pul</span>
+                    </div>
+                </label>
+                
+                <label class="relative flex items-center p-3 rounded-xl border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/50">
+                    <div class="flex items-center h-5">
+                        <input type="checkbox" name="payment_methods" value="card" {% if balance_card > 0 %}checked{% endif %} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <span class="font-medium text-slate-900 flex items-center gap-1.5"><i class="ph-fill ph-credit-card text-blue-500"></i> Plastik karta</span>
+                    </div>
+                </label>
+                
+                <label class="relative flex items-center p-3 rounded-xl border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50/50">
+                    <div class="flex items-center h-5">
+                        <input type="checkbox" name="payment_methods" value="terminal" {% if balance_terminal > 0 %}checked{% endif %} class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500">
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <span class="font-medium text-slate-900 flex items-center gap-1.5"><i class="ph-fill ph-device-mobile text-purple-500"></i> Terminal</span>
+                    </div>
+                </label>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Faqat belgilangan usullar bo'yicha yig'ilgan summalar asosiy kassaga o'tkaziladi.</p>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Izoh</label>
+            <textarea name="notes" rows="3"
+                class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white"
+                placeholder="Qo'shimcha izoh..."></textarea>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div class="flex items-start gap-3">
+                <i class="ph-fill ph-warning text-amber-500 text-xl mt-0.5"></i>
+                <div>
+                    <p class="text-sm font-medium text-amber-800">Diqqat!</p>
+                    <p class="text-sm text-amber-700 mt-1">
+                        Kassa topshirish so'rovi super adminga yuboriladi.
+                        Tasdiqlangandan so'ng, sof summa asosiy kassaga o'tkaziladi.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4 border-t">
+            <a href="{% url 'finance:admin_cash_dashboard' %}"
+                class="px-6 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition">
+                Bekor qilish
+            </a>
+            <button type="submit"
+                class="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition flex items-center gap-2">
+                <i class="ph ph-paper-plane-tilt"></i> Topshirish
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

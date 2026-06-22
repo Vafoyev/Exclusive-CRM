@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}O'qituvchilar Reytingi{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">O'qituvchilar Reytingi 🏆</h1>
+            <p class="text-slate-400">O'qituvchilar faoliyati va natijalari</p>
+        </div>
+        <a href="{% url 'operations:student_ratings' %}"
+            class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition flex items-center gap-2">
+            <i class="ph ph-student"></i> O'quvchilar reytingi
+        </a>
+    </div>
+
+    <!-- Teachers Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for data in teachers_data %}
+        <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden hover:border-primary-300 transition">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-[#818CF8] to-purple-600 p-6 text-slate-800">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
+                        {{ data.teacher.first_name|first }}
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">{{ data.teacher.first_name }} {{ data.teacher.last_name }}</h3>
+                        <p class="text-[#64748B]">{{ data.teacher.phone }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-4 p-4">
+                <div class="text-center p-3 bg-slate-50 rounded-xl">
+                    <p class="text-2xl font-bold text-[#64748B]">{{ data.group_count }}</p>
+                    <p class="text-xs text-slate-500">Guruh</p>
+                </div>
+                <div class="text-center p-3 bg-slate-50 rounded-xl">
+                    <p class="text-2xl font-bold text-emerald-600">{{ data.student_count }}</p>
+                    <p class="text-xs text-slate-500">O'quvchi</p>
+                </div>
+                <div class="text-center p-3 bg-slate-50 rounded-xl">
+                    <p class="text-2xl font-bold text-purple-400">{{ data.lesson_count }}</p>
+                    <p class="text-xs text-slate-500">Dars</p>
+                </div>
+                <div class="text-center p-3 bg-slate-50 rounded-xl">
+                    <p class="text-2xl font-bold text-orange-400">{{ data.avg_grade }}</p>
+                    <p class="text-xs text-slate-500">O'rt. Baho</p>
+                </div>
+            </div>
+
+            <!-- Attendance Bar -->
+            <div class="px-4 pb-4">
+                <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-slate-400">Davomat</span>
+                    <span class="font-bold text-slate-800">{{ data.attendance_rate }}%</span>
+                </div>
+                <div class="h-2 bg-slate-50 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-500"
+                        style="width: {{ data.attendance_rate }}%;"></div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 rounded-2xl border border-slate-200 bg-white p-12 text-center">
+            <i class="ph ph-chalkboard-teacher text-5xl text-slate-600 mb-4"></i>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">O'qituvchilar topilmadi</h3>
+            <p class="text-slate-500">Hozircha o'qituvchilar mavjud emas</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

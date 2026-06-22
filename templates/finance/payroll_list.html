@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Xodimlar Oyligi{% endblock %}
+{% block header_title %}💰 Xodimlar Oyligi{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Xodimlar Oyligi</h1>
+            <p class="text-slate-500">{{ selected_month|date:"F Y" }} uchun oylik hisobi</p>
+        </div>
+
+        <!-- Oy filter -->
+        <form method="get" class="flex items-center gap-2">
+            <select name="month" onchange="this.form.submit()"
+                class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500">
+                {% for month in months %}
+                <option value="{{ month|date:'Y-m' }}" {% if month == selected_month %}selected{% endif %}>
+                    {{ month|date:"F Y" }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- Statistika -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass-panel p-5 rounded-2xl">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                    <i class="ph ph-money text-2xl text-green-600"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-slate-800">{{ stats.total_gross|floatformat:0|default:0 }}</p>
+                    <p class="text-xs text-slate-500 uppercase tracking-wide">Yalpi Summa</p>
+                </div>
+            </div>
+        </div>
+        <div class="glass-panel p-5 rounded-2xl">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-[#4F46E5]/10 flex items-center justify-center">
+                    <i class="ph ph-wallet text-2xl text-[#64748B]"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-slate-800">{{ stats.total_net|floatformat:0|default:0 }}</p>
+                    <p class="text-xs text-slate-500 uppercase tracking-wide">Sof Summa</p>
+                </div>
+            </div>
+        </div>
+        <div class="glass-panel p-5 rounded-2xl">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                    <i class="ph ph-check-circle text-2xl text-purple-600"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-slate-800">{{ stats.approved_count }}</p>
+                    <p class="text-xs text-slate-500 uppercase tracking-wide">Tasdiqlangan</p>
+                </div>
+            </div>
+        </div>
+        <div class="glass-panel p-5 rounded-2xl">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <i class="ph ph-clock text-2xl text-orange-600"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-slate-800">{{ stats.pending_count }}</p>
+                    <p class="text-xs text-slate-500 uppercase tracking-wide">Kutilmoqda</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oyliklar jadvali -->
+    <div class="glass-panel rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50 text-left">
+                    <tr>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Xodim</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Asosiy</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Bonus</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ushlab qolish
+                        </th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Jami</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Holat</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Amallar</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for payroll in payrolls %}
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#818CF8] to-purple-500 flex items-center justify-center text-white font-bold">
+                                    {{ payroll.staff.first_name|first }}
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-slate-800">{{ payroll.staff.full_name }}
+                                    </p>
+                                    <p class="text-xs text-slate-500">{{ payroll.staff.get_role_display }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-700">{{ payroll.base_salary|floatformat:0 }}
+                        </td>
+                        <td class="px-6 py-4 text-green-600">+{{ payroll.kpi_bonus|floatformat:0 }}</td>
+                        <td class="px-6 py-4 text-red-500">-{{ payroll.total_deductions|floatformat:0 }}</td>
+                        <td class="px-6 py-4 font-bold text-slate-800">{{ payroll.net_salary|floatformat:0 }}</td>
+                        <td class="px-6 py-4">
+                            <span
+                                class="px-2.5 py-1 text-xs font-bold rounded-lg
+                                {% if payroll.status == 'paid' %}bg-green-100 text-green-700
+                                {% elif payroll.status == 'approved' %}bg-[#4F46E5]/10 text-[#0F172A]
+                                {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                                {{ payroll.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <a href="{% url 'finance:calculate_payroll' payroll.staff.id %}?month={{ selected_month|date:'Y-m' }}"
+                                    class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition"
+                                    title="Tahrirlash">
+                                    <i class="ph ph-pencil"></i>
+                                </a>
+                                {% if payroll.status == 'pending' %}
+                                <form action="{% url 'finance:approve_payroll' payroll.id %}" method="post" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                        class="p-2 rounded-lg hover:bg-green-100 text-green-600 transition"
+                                        title="Tasdiqlash">
+                                        <i class="ph ph-check-circle"></i>
+                                    </button>
+                                </form>
+                                {% elif payroll.status == 'approved' %}
+                                <a href="{% url 'finance:pay_salary' payroll.id %}"
+                                    class="p-2 rounded-lg hover:bg-[#4338CA]/10 text-[#64748B] transition"
+                                    title="To'lash">
+                                    <i class="ph ph-money"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-500">
+                            <i class="ph ph-empty text-4xl mb-2"></i>
+                            <p>Bu oy uchun hisob-kitob yo'q</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Yangi hisob-kitob qo'shish -->
+    {% if staff_without_payroll %}
+    <div class="glass-panel p-6 rounded-2xl">
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">
+            <i class="ph ph-plus-circle text-[#64748B]"></i> Yangi Hisob-kitob
+        </h3>
+        <div class="flex flex-wrap gap-3">
+            {% for staff in staff_without_payroll %}
+            <a href="{% url 'finance:calculate_payroll' staff.id %}?month={{ selected_month|date:'Y-m' }}"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:shadow-md transition">
+                <div
+                    class="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white text-sm font-bold">
+                    {{ staff.first_name|first }}
+                </div>
+                <span class="text-sm font-medium text-slate-700">{{ staff.full_name }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

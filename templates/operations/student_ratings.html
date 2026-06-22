@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}O'quvchilar Reytingi{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">O'quvchilar Leaderboard 🏆</h1>
+            <p class="text-slate-500">Eng yaxshi o'quvchilar reytingi</p>
+        </div>
+        <a href="{% url 'operations:teacher_ratings' %}"
+            class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition flex items-center gap-2">
+            <i class="ph ph-chalkboard-teacher"></i> O'qituvchilar reytingi
+        </a>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-slate-50 text-slate-600 uppercase text-xs font-semibold">
+                <tr>
+                    <th class="p-4 text-center">O'rin</th>
+                    <th class="p-4 text-left">O'quvchi</th>
+                    <th class="p-4 text-center">Guruhlar</th>
+                    <th class="p-4 text-center">Davomat</th>
+                    <th class="p-4 text-center">O'rt. Baho</th>
+                    <th class="p-4 text-center">XP</th>
+                    <th class="p-4 text-center">Umumiy Ball</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for data in students_data %}
+                <tr class="hover:bg-slate-50 transition
+                    {% if data.rank == 1 %}bg-yellow-50
+                    {% elif data.rank == 2 %}bg-slate-50
+                    {% elif data.rank == 3 %}bg-orange-50{% endif %}">
+                    <td class="p-4 text-center">
+                        {% if data.rank == 1 %}
+                        <span class="text-3xl">🥇</span>
+                        {% elif data.rank == 2 %}
+                        <span class="text-3xl">🥈</span>
+                        {% elif data.rank == 3 %}
+                        <span class="text-3xl">🥉</span>
+                        {% else %}
+                        <span class="text-lg font-bold text-slate-400">#{{ data.rank }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br 
+                                {% if data.rank == 1 %}from-yellow-400 to-orange-500
+                                {% elif data.rank == 2 %}from-gray-300 to-gray-400
+                                {% elif data.rank == 3 %}from-orange-300 to-orange-400
+                                {% else %}from-[#4F46E5] to-[#818CF8]{% endif %} 
+                                text-white flex items-center justify-center font-bold">
+                                {{ data.student.first_name|first }}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-800">{{ data.student.first_name }} {{ data.student.last_name }}</p>
+                                <p class="text-xs text-slate-500">{{ data.student.phone }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center">
+                        <span class="px-2 py-1 bg-[#4F46E5]/10 text-[#0F172A] rounded-full text-sm font-medium">
+                            {{ data.group_count }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <div class="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full 
+                                    {% if data.attendance_rate >= 90 %}bg-green-500
+                                    {% elif data.attendance_rate >= 70 %}bg-yellow-500
+                                    {% else %}bg-red-500{% endif %} rounded-full"
+                                    style="width: {{ data.attendance_rate }}%;"></div>
+                            </div>
+                            <span class="text-sm font-medium text-slate-700">{{ data.attendance_rate }}%</span>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center">
+                        <span class="text-lg font-bold 
+                            {% if data.avg_grade >= 80 %}text-green-600
+                            {% elif data.avg_grade >= 60 %}text-yellow-600
+                            {% else %}text-red-600{% endif %}">
+                            {{ data.avg_grade }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-center">
+                        <span
+                            class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium flex items-center justify-center gap-1">
+                            <i class="ph ph-lightning"></i> {{ data.total_xp }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-center">
+                        <span class="text-xl font-bold text-slate-800">{{ data.score }}</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="p-12 text-center text-slate-500">
+                        <i class="ph ph-student text-5xl mb-4"></i>
+                        <p>Hozircha o'quvchilar mavjud emas</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

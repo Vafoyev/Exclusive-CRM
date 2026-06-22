@@ -1,0 +1,50 @@
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="fixed top-6 right-6 z-[200] space-y-3" style="pointer-events: none;">
+</div>
+
+<script>
+function showToast(message, type = 'success', duration = 4000) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.style.pointerEvents = 'auto';
+
+    let bgClass, iconClass, textClass, borderClass;
+    if (type === 'success') {
+        bgClass = 'bg-emerald-50';
+        iconClass = 'ph-fill ph-check-circle text-emerald-600';
+        textClass = 'text-emerald-800';
+        borderClass = 'border-emerald-200';
+    } else if (type === 'error') {
+        bgClass = 'bg-rose-50';
+        iconClass = 'ph-fill ph-warning-circle text-rose-600';
+        textClass = 'text-rose-800';
+        borderClass = 'border-rose-200';
+    } else {
+        bgClass = 'bg-blue-50';
+        iconClass = 'ph-fill ph-info text-blue-600';
+        textClass = 'text-blue-800';
+        borderClass = 'border-blue-200';
+    }
+
+    toast.className = `flex items-center gap-3 px-5 py-4 rounded-xl border shadow-lg ${bgClass} ${borderClass} transform translate-x-full transition-all duration-500 ease-out`;
+    toast.innerHTML = `
+        <i class="${iconClass} text-xl flex-shrink-0"></i>
+        <span class="text-sm font-semibold ${textClass}">${message}</span>
+        <button onclick="this.parentElement.remove()" class="${textClass} opacity-50 hover:opacity-100 transition flex-shrink-0 ml-3">
+            <i class="ph ph-x text-sm"></i>
+        </button>
+    `;
+
+    container.appendChild(toast);
+    requestAnimationFrame(() => {
+        toast.classList.remove('translate-x-full');
+        toast.classList.add('translate-x-0');
+    });
+
+    setTimeout(() => {
+        toast.classList.remove('translate-x-0');
+        toast.classList.add('translate-x-full');
+        setTimeout(() => toast.remove(), 500);
+    }, duration);
+}
+</script>

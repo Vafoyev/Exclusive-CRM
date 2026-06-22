@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Do'kon 🛍️{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- SARLAVHA -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Do'kon 🛍️</h1>
+            <p class="text-slate-400">Coinlaringizga yoki pul bilan sovg'alar oling!</p>
+        </div>
+
+        <!-- COIN BALANS va ADMIN -->
+        <div class="flex items-center gap-4">
+            <div class="px-6 py-3 bg-gradient-to-r from-amber-400 to-orange-500 rounded-2xl shadow-lg shadow-amber-500/30">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">💰</span>
+                    <div>
+                        <span class="text-xs text-amber-100">Sizning balansingiz</span>
+                        <p class="text-2xl font-bold text-slate-800">{{ user_coins }}</p>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'operations:purchase_history' %}" class="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition">
+                <i class="ph ph-clock-counter-clockwise mr-1"></i> Xaridlar tarixi
+            </a>
+            {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' %}
+            <a href="{% url 'operations:shop_item_list' %}" class="px-4 py-2.5 bg-gradient-to-r from-[#818CF8] to-violet-600 text-slate-800 rounded-xl">
+                <i class="ph ph-gear mr-1"></i> Boshqarish
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- FEATURED ITEMS -->
+    {% if featured %}
+    <div class="mb-8">
+        <h2 class="text-lg font-semibold text-slate-800 mb-4">
+            <i class="ph ph-star text-amber-500"></i> Tavsiya etilgan
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for item in featured %}
+            <div class="rounded-2xl border-2 border-amber-500/30 bg-white overflow-hidden hover:shadow-xl hover:shadow-amber-500/20 transition-all hover:-translate-y-1">
+                {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-40 object-cover">
+                {% else %}
+                <div class="w-full h-40 bg-gradient-to-br from-amber-500/20 to-orange-500/10 flex items-center justify-center">
+                    <span class="text-6xl">🎁</span>
+                </div>
+                {% endif %}
+                <div class="p-4">
+                    <h3 class="font-semibold text-slate-800">{{ item.name }}</h3>
+                    <p class="text-sm text-slate-500 truncate">{{ item.description|default:"Premium mahsulot" }}</p>
+
+                    <!-- Narxlar -->
+                    <div class="flex items-center gap-3 mt-3">
+                        {% if item.allow_coin_purchase and item.coin_price > 0 %}
+                        <span class="text-amber-400 font-bold">{{ item.coin_price }} 💰</span>
+                        {% endif %}
+                        {% if item.allow_cash_purchase and item.cash_price > 0 %}
+                        <span class="text-emerald-600 font-bold">{{ item.cash_price|floatformat:0 }} 💵</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tugmalar -->
+                    <div class="flex gap-2 mt-3">
+                        {% if item.is_in_stock %}
+                            {% if item.allow_coin_purchase and item.coin_price > 0 %}
+                                {% if user_coins >= item.coin_price %}
+                                <a href="{% url 'operations:purchase_item' item.id %}" onclick="return confirm('Coin bilan sotib olasizmi?')"
+                                    class="flex-1 py-2 text-center bg-gradient-to-r from-amber-500 to-orange-600 text-slate-800 rounded-xl text-sm font-medium">
+                                    💰 Coin
+                                </a>
+                                {% else %}
+                                <span class="flex-1 py-2 text-center bg-slate-100 text-slate-500 rounded-xl text-sm">Yetmaydi</span>
+                                {% endif %}
+                            {% endif %}
+                            {% if item.allow_cash_purchase and item.cash_price > 0 %}
+                            <a href="{% url 'operations:purchase_with_cash' item.id %}"
+                                class="flex-1 py-2 text-center bg-gradient-to-r from-emerald-500 to-green-600 text-slate-800 rounded-xl text-sm font-medium">
+                                💵 Pul
+                            </a>
+                            {% endif %}
+                        {% else %}
+                        <span class="flex-1 py-2 text-center bg-rose-500/20 text-rose-600 rounded-xl text-sm">Tugagan</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- KATEGORIYALAR VA MAHSULOTLAR -->
+    {% for category in categories %}
+    <div class="mb-8">
+        <h2 class="text-lg font-semibold text-slate-800 mb-4">{{ category.icon }} {{ category.name }}</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {% for item in items %}
+            {% if item.category == category %}
+            <div class="rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-primary-300 transition">
+                {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-28 object-cover">
+                {% else %}
+                <div class="w-full h-28 bg-slate-50 flex items-center justify-center">
+                    <span class="text-4xl">📦</span>
+                </div>
+                {% endif %}
+                <div class="p-3">
+                    <h3 class="font-medium text-slate-800 text-sm truncate">{{ item.name }}</h3>
+
+                    <div class="flex items-center gap-2 mt-2 text-xs">
+                        {% if item.allow_coin_purchase and item.coin_price > 0 %}
+                        <span class="text-amber-400 font-bold">{{ item.coin_price }} 💰</span>
+                        {% endif %}
+                        {% if item.allow_cash_purchase and item.cash_price > 0 %}
+                        <span class="text-emerald-600 font-bold">{{ item.cash_price|floatformat:0 }} 💵</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex gap-1 mt-2">
+                        {% if item.is_in_stock %}
+                            {% if item.allow_coin_purchase and item.coin_price > 0 and user_coins >= item.coin_price %}
+                            <a href="{% url 'operations:purchase_item' item.id %}" onclick="return confirm('Coin bilan?')"
+                                class="flex-1 py-1.5 text-center bg-amber-500/20 text-amber-400 rounded-lg text-xs">💰</a>
+                            {% endif %}
+                            {% if item.allow_cash_purchase and item.cash_price > 0 %}
+                            <a href="{% url 'operations:purchase_with_cash' item.id %}"
+                                class="flex-1 py-1.5 text-center bg-emerald-500/20 text-emerald-600 rounded-lg text-xs">💵</a>
+                            {% endif %}
+                            {% if not item.allow_coin_purchase or user_coins < item.coin_price %}
+                                {% if not item.allow_cash_purchase %}
+                                <span class="flex-1 py-1.5 text-center text-slate-500 text-xs">Yetmaydi</span>
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
+                        <span class="flex-1 py-1.5 text-center bg-rose-500/10 text-rose-600 rounded-lg text-xs">Tugagan</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-12">
+        <i class="ph ph-storefront text-6xl text-slate-600 mb-4"></i>
+        <p class="text-slate-500">Do'kon hali bo'sh</p>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

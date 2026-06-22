@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Voronka Bosqichlari{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Voronka Bosqichlari</h1>
+            <p class="text-slate-500">Sotuv voronkasi bosqichlarini boshqaring</p>
+        </div>
+        <a href="{% url 'crm:stage_create' %}"
+            class="px-4 py-2 bg-[#4F46E5] text-white rounded-lg hover:bg-[#4338CA] shadow-sm flex items-center gap-2">
+            <i class="ph ph-plus"></i> Yangi bosqich
+        </a>
+    </div>
+
+    <!-- Stages List -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50 text-slate-600 uppercase text-xs font-semibold">
+                <tr>
+                    <th class="p-4">Tartib</th>
+                    <th class="p-4">Nomi</th>
+                    <th class="p-4">Rang</th>
+                    <th class="p-4">Lidlar soni</th>
+                    <th class="p-4">Yutuq</th>
+                    <th class="p-4 text-right">Amallar</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for stage in stages %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-4 font-bold text-slate-600">{{ stage.order }}</td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-4 h-4 rounded-full" style="background-color: {{ stage.color }};"></span>
+                            <span class="font-semibold text-slate-800">{{ stage.name }}</span>
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <span class="px-3 py-1 text-xs rounded-full font-medium"
+                            style="background-color: {{ stage.color }}20; color: {{ stage.color }};">
+                            {{ stage.color }}
+                        </span>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-lg font-bold text-slate-800">{{ stage.lead_count }}</span>
+                        <span class="text-slate-500 text-sm">lid</span>
+                    </td>
+                    <td class="p-4">
+                        {% if stage.is_won %}
+                        <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full font-medium">
+                            <i class="ph ph-trophy"></i> Ha
+                        </span>
+                        {% else %}
+                        <span class="text-slate-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <a href="{% url 'crm:stage_edit' stage.id %}"
+                                class="p-2 text-slate-500 hover:text-[#64748B] bg-slate-100 rounded-lg hover:bg-[#4338CA]/5 transition">
+                                <i class="ph ph-pencil-simple"></i>
+                            </a>
+                            <a href="{% url 'crm:stage_delete' stage.id %}"
+                                class="p-2 text-slate-500 hover:text-red-600 bg-slate-100 rounded-lg hover:bg-red-50 transition">
+                                <i class="ph ph-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-8 text-center text-slate-500">
+                        <i class="ph ph-kanban text-4xl mb-2"></i>
+                        <p>Hozircha bosqichlar yo'q. Yangi qo'shing!</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

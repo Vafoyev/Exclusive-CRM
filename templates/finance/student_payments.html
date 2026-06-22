@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.first_name }} - To'lovlar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'group_list' %}" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+                <i class="ph ph-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">{{ student.first_name }} {{ student.last_name }}</h1>
+                <p class="text-slate-500">To'lovlar tarixi</p>
+            </div>
+        </div>
+        <a href="{% url 'finance:add_student_payment' student.id %}"
+            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2">
+            <i class="ph ph-plus"></i> To'lov qo'shish
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-slate-500">Jami To'lagan</p>
+                <p class="text-2xl font-bold text-green-600 mt-1">{{ total_paid|floatformat:0 }}</p>
+                <span class="text-xs text-slate-400">UZS</span>
+            </div>
+            <div class="p-3 bg-green-50 rounded-lg text-green-600">
+                <i class="ph ph-wallet text-2xl"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-slate-500">Joriy Balans</p>
+                <p
+                    class="text-2xl font-bold {% if student.balance < 0 %}text-red-600{% else %}text-[#64748B]{% endif %} mt-1">
+                    {{ student.balance|floatformat:0 }}
+                </p>
+                <span class="text-xs text-slate-400">UZS</span>
+            </div>
+            <div class="p-3 bg-[#4F46E5]/5 rounded-lg text-[#64748B]">
+                <i class="ph ph-coins text-2xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments List -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-slate-50 text-slate-600 uppercase text-xs font-semibold">
+                <tr>
+                    <th class="p-4 text-left">Sana</th>
+                    <th class="p-4 text-left">Kategoriya</th>
+                    <th class="p-4 text-left">Kassa</th>
+                    <th class="p-4 text-right">Summa</th>
+                    <th class="p-4 text-center">Holat</th>
+                    <th class="p-4 text-left">Izoh</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for payment in payments %}
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 text-slate-600">{{ payment.created_at|date:"d.m.Y H:i" }}</td>
+                    <td class="p-4 font-medium text-slate-800">{{ payment.category.name|default:"-" }}</td>
+                    <td class="p-4 text-slate-600">{{ payment.account.name }}</td>
+                    <td class="p-4 text-right font-bold 
+                        {% if payment.transaction_type == 'income' %}text-green-600{% else %}text-red-600{% endif %}">
+                        {% if payment.transaction_type == 'income' %}+{% else %}-{% endif %}{{ payment.amount|floatformat:0 }}
+                    </td>
+                    <td class="p-4 text-center">
+                        <span class="px-2 py-1 text-xs rounded-full font-medium
+                            {% if payment.status == 'confirmed' %}bg-green-100 text-green-700
+                            {% elif payment.status == 'pending' %}bg-yellow-100 text-yellow-700
+                            {% else %}bg-red-100 text-red-700{% endif %}">
+                            {{ payment.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-sm text-slate-500 italic">{{ payment.description }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-8 text-center text-slate-500">
+                        <i class="ph ph-receipt text-4xl mb-2"></i>
+                        <p>To'lovlar tarixi bo'sh</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+# Production Requirements
+-r base.txt
+
+# Production Server
+gunicorn>=21.0.0
+uvicorn[standard]>=0.23.0
+
+# Monitoring
+sentry-sdk>=1.32.0
+
+# Security
+django-ratelimit>=4.1.0
+django-defender>=0.9.0

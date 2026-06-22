@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Xonalar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Xonalar 🚪</h1>
+            <p class="text-slate-400">O'quv markaz xonalari</p>
+        </div>
+        {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' %}
+        <a href="{% url 'room_create' %}"
+            class="px-4 py-2 bg-gradient-to-r from-[#818CF8] to-violet-600 text-slate-800 rounded-lg hover:shadow-lg hover:shadow-indigo-500/25 transition flex items-center gap-2">
+            <i class="ph ph-plus"></i> Yangi Xona
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Rooms Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for room in rooms %}
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 hover:border-primary-300 transition">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-[#4F46E5]/15 text-[#64748B] rounded-xl flex items-center justify-center text-2xl">
+                    <i class="ph ph-door"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800">{{ room.name }}</h3>
+                    <p class="text-xs text-slate-500">{{ room.capacity }} o'rinli</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between text-sm text-slate-400 border-t border-slate-200 pt-4">
+                <span><i class="ph ph-users-three"></i> Guruhlar: {{ room.groups.count }}</span>
+                {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' %}
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'room_edit' room.id %}" class="text-[#64748B] hover:underline">Tahrirlash</a>
+                    <form method="POST" action="{% url 'room_delete' room.id %}" class="inline" onsubmit="return confirm('Bu xonani o\'chirishni tasdiqlaysizmi?')">
+                        {% csrf_token %}
+                        <button type="submit" class="text-red-400 hover:text-red-600 hover:underline">O'chirish</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-4 rounded-2xl border border-slate-200 bg-white p-12 text-center">
+            <i class="ph ph-door text-5xl text-slate-600 mb-4"></i>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Xonalar topilmadi</h3>
+            {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' %}
+            <p class="text-slate-500">Yangi xona qo'shish uchun tugmani bosing</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Sotib olish - {{ item.name }}{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Sotib olish 🛒</h1>
+            <p class="text-slate-400">Pul bilan to'lov</p>
+        </div>
+        <a href="{% url 'operations:shop' %}" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600">
+            <i class="ph ph-arrow-left"></i> Orqaga
+        </a>
+    </div>
+
+    <div class="rounded-2xl p-6 bg-white border border-slate-200">
+        <!-- Mahsulot info -->
+        <div class="flex items-center gap-4 pb-5 mb-5 border-b border-slate-200">
+            {% if item.image %}
+            <img src="{{ item.image.url }}" class="w-20 h-20 rounded-xl object-cover">
+            {% else %}
+            <div class="w-20 h-20 rounded-xl bg-slate-50 flex items-center justify-center">
+                <span class="text-3xl">{{ item.category.icon|default:'📦' }}</span>
+            </div>
+            {% endif %}
+            <div class="flex-1">
+                <h2 class="text-xl font-bold text-slate-800">{{ item.name }}</h2>
+                <p class="text-slate-500">{{ item.description|truncatechars:50 }}</p>
+            </div>
+            <div class="text-right">
+                <p class="text-2xl font-bold text-emerald-600">{{ item.cash_price|floatformat:0 }} so'm</p>
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+
+            <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                <h3 class="font-bold text-amber-400 mb-2"><i class="ph ph-info"></i> To'lov qanday amalga oshiriladi?</h3>
+                <ol class="text-sm text-slate-400 space-y-1 list-decimal list-inside">
+                    <li>Quyidagi kartaga pul o'tkazing</li>
+                    <li>Chek screenshotini yuklang</li>
+                    <li>Admin tasdiqlashini kuting</li>
+                    <li>Mahsulotni oling!</li>
+                </ol>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <p class="text-slate-400 text-sm mb-2">To'lov kartasi:</p>
+                <p class="text-slate-800 font-mono text-lg">8600 1234 5678 9012</p>
+                <p class="text-slate-500 text-sm mt-1">Egasi: Smart Edu</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-2">
+                    <i class="ph ph-image text-emerald-600"></i> Chek rasmi (screenshot) *
+                </label>
+                <input type="file" name="receipt_image" accept="image/*" required
+                    class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-slate-800">
+            </div>
+
+            <button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-slate-800 rounded-xl font-bold text-lg">
+                <i class="ph ph-paper-plane-tilt"></i> Yuborish
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

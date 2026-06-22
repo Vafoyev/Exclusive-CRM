@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lead.full_name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-7xl mx-auto">
+
+    <!-- Header Section -->
+    <div
+        class="relative bg-white rounded-3xl p-8 shadow-xl shadow-gray-100/50 border border-slate-100 overflow-hidden">
+        <!-- Decorative Background -->
+        <div
+            class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary-50 to-purple-50 rounded-full blur-3xl opacity-60 -mr-16 -mt-16 pointer-events-none">
+        </div>
+
+        <div class="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="flex items-center gap-6">
+                <a href="{% url 'crm:pipeline' %}"
+                    class="group p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:scale-105 transition-all duration-300">
+                    <i
+                        class="ph ph-arrow-left text-xl text-slate-500 group-hover:text-[#64748B]"></i>
+                </a>
+                <div>
+                    <h1
+                        class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+                        {{ lead.full_name }}</h1>
+                    <div class="flex items-center gap-2 mt-2 text-slate-500">
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 rounded-lg text-sm font-medium">
+                            <i class="ph-fill ph-phone text-[#64748B]"></i> {{ lead.phone }}
+                        </span>
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 rounded-lg text-sm font-medium">
+                            <i class="ph-fill ph-calendar text-slate-400"></i> {{ lead.created_at|date:"d M Y" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <a href="{% url 'crm:lead_edit' lead.pk %}"
+                    class="flex-1 md:flex-none justify-center px-6 py-3 bg-white text-slate-700 font-medium rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:bg-slate-50 transition-all duration-300 flex items-center gap-2">
+                    <i class="ph ph-pencil-simple text-lg"></i> Tahrirlash
+                </a>
+                <a href="{% url 'crm:lead_convert' lead.pk %}"
+                    class="flex-1 md:flex-none justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-2xl shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2">
+                    <i class="ph-bold ph-student text-lg"></i> O'quvchiga o'tkazish
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- LEFT COLUMN (INFO) -->
+        <div class="lg:col-span-4 space-y-8">
+
+            <!-- Status Card -->
+            <div
+                class="bg-white rounded-3xl p-6 shadow-xl shadow-gray-100/50 border border-slate-100">
+                <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <i class="ph-fill ph-flag text-[#64748B] text-xl"></i> Hozirgi holat
+                </h3>
+
+                <div class="relative overflow-hidden rounded-2xl p-6 mb-8 transition-all duration-300"
+                    style="background: linear-gradient(135deg, {{ lead.stage.color }}15 0%, {{ lead.stage.color }}05 100%); border: 1px solid {{ lead.stage.color }}30;">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"
+                            style="background-color: {{ lead.stage.color }}; color: white;">
+                            <i class="ph-bold ph-hash text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm opacity-70" style="color: {{ lead.stage.color }}">Bosqich</p>
+                            <p class="font-bold text-lg" style="color: {{ lead.stage.color }}">{{ lead.stage.name }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider pl-1">Bosqichni o'zgartirish
+                    </p>
+                    <div class="grid grid-cols-2 gap-2">
+                        {% for stage in stages %}
+                        {% if stage.id != lead.stage.id %}
+                        <form method="POST" action="{% url 'crm:update_lead_stage' lead.id %}" class="w-full">
+                            {% csrf_token %}
+                            <button type="button" onclick="updateStage({{ lead.id }}, {{ stage.id }})"
+                                class="w-full text-left px-4 py-3 rounded-xl border border-slate-100 hover:border-gray-300 hover:bg-slate-50 transition-all duration-200 group flex items-center gap-2 relative overflow-hidden">
+                                <span
+                                    class="w-2 h-8 rounded-full absolute left-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    style="background-color: {{ stage.color }}"></span>
+                                <span class="w-3 h-3 rounded-full" style="background-color: {{ stage.color }}"></span>
+                                <span
+                                    class="text-sm font-medium text-slate-600 group-hover:text-gray-900 truncate">{{
+                                    stage.name }}</span>
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lead Details -->
+            <div
+                class="bg-white rounded-3xl p-6 shadow-xl shadow-gray-100/50 border border-slate-100">
+                <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <i class="ph-fill ph-info text-[#64748B] text-xl"></i> Ma'lumotlar
+                </h3>
+
+                <div class="space-y-5">
+                    <div
+                        class="group flex items-center gap-4 p-3 hover:bg-slate-50 rounded-2xl transition-colors">
+                        <div
+                            class="w-12 h-12 bg-[#4F46E5]/5 rounded-2xl flex items-center justify-center text-[#64748B] group-hover:scale-110 transition-transform duration-300">
+                            <i class="ph-fill ph-phone text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-medium">Telefon raqam</p>
+                            <p class="font-semibold text-slate-800">{{ lead.phone }}</p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="group flex items-center gap-4 p-3 hover:bg-slate-50 rounded-2xl transition-colors">
+                        <div
+                            class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform duration-300">
+                            <i class="ph-fill ph-broadcast text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-medium">Manba</p>
+                            <p class="font-semibold text-slate-800">{{
+                                lead.source.name|default:"Noma'lum" }}</p>
+                        </div>
+                    </div>
+
+                    {% if lead.interested_course %}
+                    <div
+                        class="group flex items-center gap-4 p-3 hover:bg-slate-50 rounded-2xl transition-colors">
+                        <div
+                            class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform duration-300">
+                            <i class="ph-fill ph-graduation-cap text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-medium">Qiziqqan kursi</p>
+                            <p class="font-semibold text-slate-800">{{ lead.interested_course.name }}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div
+                        class="group flex items-center gap-4 p-3 hover:bg-slate-50 rounded-2xl transition-colors">
+                        <div
+                            class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform duration-300">
+                            <i class="ph-fill ph-user-circle text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-medium">Mas'ul xodim</p>
+                            <p class="font-semibold text-slate-800">{{
+                                lead.assigned_to.first_name|default:"Biriktirilmagan" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if lead.extra_data %}
+            <div
+                class="bg-white rounded-3xl p-6 shadow-xl shadow-gray-100/50 border border-slate-100">
+                <h3 class="font-bold text-slate-800 mb-4">Qo'shimcha ma'lumotlar</h3>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <pre
+                        class="text-sm text-slate-600 whitespace-pre-wrap font-mono">{{ lead.extra_data|pprint }}</pre>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- RIGHT COLUMN (ACTIVITY) -->
+        <div class="lg:col-span-8">
+            <div
+                class="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-gray-100/50 border border-slate-100 h-full">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                        <span
+                            class="w-8 h-8 rounded-lg bg-[#94A3B8]/10 text-[#64748B] flex items-center justify-center">
+                            <i class="ph-bold ph-clock-counter-clockwise"></i>
+                        </span>
+                        Faoliyat tarixi
+                    </h3>
+                </div>
+
+                <!-- Add Activity -->
+                <form method="POST" action="{% url 'crm:add_lead_activity' lead.pk %}"
+                    class="mb-10 bg-slate-50 p-2 rounded-[24px] border border-slate-100 focus-within:ring-4 focus-within:ring-primary-100 transition-all duration-300">
+                    {% csrf_token %}
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <div class="relative min-w-[140px]">
+                            <select name="activity_type"
+                                class="w-full appearance-none bg-white pl-10 pr-8 py-3.5 rounded-2xl border-0 text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-50 focus:ring-0 transition-colors">
+                                <option value="call">📞 Qo'ng'iroq</option>
+                                <option value="sms">💬 SMS</option>
+                                <option value="meeting">🤝 Uchrashuv</option>
+                                <option value="note" selected>📝 Izoh</option>
+                            </select>
+                            <i
+                                class="ph-bold ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <div
+                                class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center justify-center">
+                            </div>
+                        </div>
+
+                        <div class="flex-1 flex gap-2">
+                            <input type="text" name="comment" placeholder="Yangi faoliyat yoki izoh qoldiring..."
+                                required
+                                class="flex-1 bg-transparent border-0 py-3.5 px-4 text-slate-800 placeholder-gray-400 focus:ring-0">
+
+                            <button type="submit"
+                                class="p-3.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-2xl transition-colors shadow-lg shadow-primary-600/20">
+                                <i class="ph-bold ph-paper-plane-right text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Activity Feed -->
+                <div
+                    class="relative pl-4 sm:pl-8 space-y-8 before:content-[''] before:absolute before:left-4 sm:before:left-8 before:top-4 before:bottom-4 before:w-[2px] before:bg-slate-100">
+                    {% for activity in activities %}
+                    <div class="relative pl-8 sm:pl-10 group">
+                        <!-- Timeline Node -->
+                        <div class="absolute left-0 sm:left-4 top-1 -translate-x-1/2 w-8 h-8 rounded-full border-4 border-white flex items-center justify-center z-10 
+                            {% if activity.activity_type == 'call' %}bg-green-100 text-green-600 ring-2 ring-green-500/20
+                            {% elif activity.activity_type == 'sms' %}bg-[#4F46E5]/10 text-[#64748B] ring-2 ring-[#4F46E5]/30
+                            {% elif activity.activity_type == 'meeting' %}bg-purple-100 text-purple-600 ring-2 ring-purple-500/20
+                            {% elif activity.activity_type == 'status_change' %}bg-orange-100 text-orange-600 ring-2 ring-orange-500/20
+                            {% else %}bg-slate-100 text-slate-600 ring-2 ring-gray-500/20{% endif %}">
+
+                            {% if activity.activity_type == 'call' %}<i class="ph-fill ph-phone text-xs"></i>
+                            {% elif activity.activity_type == 'sms' %}<i
+                                class="ph-fill ph-chat-circle-text text-xs"></i>
+                            {% elif activity.activity_type == 'meeting' %}<i class="ph-fill ph-users-three text-xs"></i>
+                            {% elif activity.activity_type == 'status_change' %}<i
+                                class="ph-bold ph-arrows-left-right text-xs"></i>
+                            {% else %}<i class="ph-fill ph-note-pencil text-xs"></i>{% endif %}
+                        </div>
+
+                        <!-- Content -->
+                        <div
+                            class="bg-slate-50 p-5 rounded-2xl rounded-tl-none border border-transparent hover:border-slate-200 transition-colors">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <span class="font-bold text-gray-900 text-sm">{{
+                                    activity.user.first_name|default:"Tizim" }}</span>
+                                <span
+                                    class="text-xs font-medium text-slate-400 bg-white px-2 py-1 rounded-md border border-slate-100">
+                                    {{ activity.created_at|timesince }} oldin
+                                </span>
+                            </div>
+                            <p class="text-slate-600 leading-relaxed text-sm">{{ activity.comment }}
+                            </p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-12">
+                        <div
+                            class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+                            <i class="ph-duotone ph-chats-teardrop text-3xl"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium">Hozircha faoliyat tarixi mavjud emas</p>
+                        <p class="text-sm text-slate-400">Birinchi izoh yoki faoliyatni qo'shing</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateStage(leadId, stageId) {
+        fetch(`/crm/api/leads/${leadId}/move/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ stage_id: stageId })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert("Xatolik yuz berdi!");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Server bilan aloqa xatosi!");
+            });
+    }
+</script>
+{% endblock %}

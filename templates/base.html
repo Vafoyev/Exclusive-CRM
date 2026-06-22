@@ -1,0 +1,653 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz" x-data="sidebarManager()" x-init="initSidebar()">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} | Exclusive Akademiya</title>
+    <link rel="icon" href="data:,">
+
+    <!-- FONTS & ICONS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- HTMX - Tez AJAX so'rovlar uchun (sahifani qayta yuklamasdan) -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"
+            integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+            crossorigin="anonymous"></script>
+
+    <!-- CUSTOM PREMIUM CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#EEF2FF', 100: '#E0E7FF', 200: '#C7D2FE', 300: '#A5B4FC', 400: '#818CF8', 500: '#4F46E5', 600: '#4338CA', 700: '#3730A3', 800: '#312E81', 900: '#1E1B4B' },
+                        indigo: { 50: '#EEF2FF', 100: '#E0E7FF', 200: '#C7D2FE', 300: '#A5B4FC', 400: '#818CF8', 500: '#6366F1', 600: '#4F46E5', 700: '#4338CA' },
+                        slate: { 50: '#F8FAFC', 100: '#F1F5F9', 200: '#E2E8F0', 300: '#CBD5E1', 400: '#94A3B8', 500: '#64748B', 600: '#475569', 700: '#334155', 800: '#1E293B', 900: '#0F172A' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="font-sans antialiased overflow-hidden bg-[#F8FAFC] text-[#0F172A]" hx-boost="true">
+
+    <!-- HTMX Top Progress Bar -->
+    <div id="htmx-progress-bar" class="htmx-progress-bar"></div>
+
+    <!-- Page Loading Overlay -->
+    <div id="page-loading-overlay" class="page-loading-overlay">
+        <div class="page-loading-spinner">
+            <div class="spinner-ring"></div>
+            <span class="spinner-text">Yuklanmoqda…</span>
+        </div>
+    </div>
+
+    <div class="flex h-screen w-full">
+
+        <!-- SIDEBAR -->
+        <aside
+            class="flex-shrink-0 w-64 flex flex-col transition-all duration-300 transform lg:transform-none z-50 absolute lg:relative h-full bg-[#1E293B] shadow-xl"
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+
+            <!-- Logo + Mobile Close Button -->
+            <div
+                class="h-16 flex items-center justify-between px-4 border-b border-white/10 bg-gradient-to-r from-[#4F46E5] to-[#4338CA]">
+                <span class="text-lg sm:text-xl font-bold flex items-center gap-2 text-white">
+                    <i class="ph-fill ph-graduation-cap text-xl sm:text-2xl"></i>
+                    <span class="hidden sm:inline">Exclusive Akademiya</span>
+                    <span class="sm:hidden">EA</span>
+                </span>
+                <!-- Mobile Close Button -->
+                <button @click="closeSidebar()"
+                    class="lg:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition min-w-[40px] min-h-[40px] flex items-center justify-center">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Navigation -->
+            <div id="sidebar-nav" class="flex-1 overflow-y-auto py-4 px-3 space-y-1 bg-[#1E293B]">
+                {% include 'components/sidebar.html' %}
+            </div>
+
+            <script>
+                // Save sidebar scroll position
+                document.addEventListener('DOMContentLoaded', function () {
+                    const sidebar = document.getElementById('sidebar-nav');
+                    const savedPos = localStorage.getItem('sidebarScrollPos');
+
+                    // Restore scroll position
+                    if (savedPos && sidebar) {
+                        sidebar.scrollTop = parseInt(savedPos);
+                    }
+
+                    // Save scroll position before navigation
+                    sidebar.addEventListener('click', function (e) {
+                        const link = e.target.closest('a');
+                        if (link) {
+                            localStorage.setItem('sidebarScrollPos', sidebar.scrollTop);
+                        }
+                    });
+
+                    // Also save on scroll
+                    sidebar.addEventListener('scroll', function () {
+                        localStorage.setItem('sidebarScrollPos', sidebar.scrollTop);
+                    });
+                });
+            </script>
+
+            <!-- User Profile -->
+            <div class="p-4 border-t border-white/10 bg-[#0F172A]">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#818CF8] text-white flex items-center justify-center font-bold shadow-md">
+                        <img src="{{ request.user.avatar_url }}" alt="{{ request.user.full_name|default:'User' }}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold truncate text-white">{{ request.user.first_name }}</p>
+                        <p class="text-xs truncate text-slate-400">{{ request.user.get_role_display }}</p>
+                    </div>
+                    <a href="{% url 'logout' %}" hx-boost="false"
+                        class="transition p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10">
+                        <i class="ph-fill ph-sign-out text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden bg-[#F8FAFC]">
+
+            <!-- Header -->
+            <header
+                class="h-14 sm:h-16 flex items-center justify-between px-3 sm:px-4 md:px-6 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <!-- Mobile Toggle Button - changes icon based on state -->
+                    <button @click="toggleSidebar()"
+                        class="focus:outline-none transition p-2 rounded-lg lg:hidden text-slate-500 hover:text-[#4F46E5] hover:bg-primary-50 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                        <i class="ph text-xl sm:text-2xl" :class="sidebarOpen ? 'ph-x' : 'ph-list'"></i>
+                    </button>
+
+                    <h1
+                        class="text-sm sm:text-base md:text-lg font-bold bg-gradient-to-r from-[#4F46E5] to-[#4338CA] bg-clip-text text-transparent truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
+                        {{ organization.name|default:"Smart Edu Center" }}
+                    </h1>
+                </div>
+
+                <div class="flex items-center gap-1 sm:gap-2" x-data="{ notifOpen: false }">
+
+                    <!-- Notification Dropdown -->
+                    <div class="relative">
+                        <button @click="notifOpen = !notifOpen"
+                            class="relative p-2 sm:p-2.5 rounded-xl transition text-slate-500 hover:text-[#4F46E5] hover:bg-primary-50 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                            <i class="ph ph-bell text-lg sm:text-xl"></i>
+                            {% if unread_notifications_count > 0 %}
+                            <span class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-rose-500 rounded-full text-white text-[10px] flex items-center justify-center font-bold animate-pulse">
+                                {{ unread_notifications_count }}
+                            </span>
+                            {% endif %}
+                        </button>
+
+                        <!-- Dropdown -->
+                        <div x-show="notifOpen" @click.away="notifOpen = false" x-transition
+                            class="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-slate-200 rounded-xl shadow-xl z-50"
+                            x-cloak>
+                            <div
+                                class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-xl">
+                                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="ph-fill ph-bell text-[#4F46E5]"></i> Bildirishnomalar
+                                </h3>
+                                {% if unread_notifications_count > 0 %}
+                                <span class="text-xs bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full font-medium">
+                                    Yangi: {{ unread_notifications_count }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="max-h-72 overflow-y-auto">
+                                {% for notification in notifications %}
+                                <a href="{% url 'core:notification_read' notification.pk %}"
+                                   hx-boost="true" hx-push-url="true" hx-target="#main-content" hx-swap="innerHTML"
+                                   @click="notifOpen = false"
+                                   class="flex items-start gap-3 p-4 hover:bg-slate-50 transition border-b border-slate-100 {% if notification.status == 'sent' %}bg-blue-50/30{% endif %}">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                                        {% if notification.message_type == 'sms' %}bg-green-100 text-green-600
+                                        {% elif notification.message_type == 'telegram' %}bg-blue-100 text-blue-600
+                                        {% else %}bg-[#EEF2FF] text-[#4F46E5]{% endif %}">
+                                        {% if notification.message_type == 'sms' %}
+                                        <i class="ph-fill ph-chat-circle-text"></i>
+                                        {% elif notification.message_type == 'telegram' %}
+                                        <i class="ph-fill ph-telegram-logo"></i>
+                                        {% else %}
+                                        <i class="ph-fill ph-bell-ringing"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-slate-800 font-medium line-clamp-1">
+                                            {{ notification.message|striptags|truncatewords:8 }}
+                                        </p>
+                                        <p class="text-xs text-slate-400 mt-1">{{ notification.created_at|timesince }} oldin</p>
+                                    </div>
+                                    {% if notification.status == 'sent' %}
+                                    <span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></span>
+                                    {% endif %}
+                                </a>
+                                {% empty %}
+                                <div class="p-8 text-center">
+                                    <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i class="ph ph-bell-slash text-2xl text-slate-400"></i>
+                                    </div>
+                                    <p class="text-slate-500 text-sm">Bildirishnomalar yo'q</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if notifications %}
+                            <a href="{% url 'core:notifications' %}"
+                               hx-boost="true" hx-push-url="true" hx-target="#main-content" hx-swap="innerHTML"
+                               @click="notifOpen = false"
+                                class="block p-3 text-center text-sm text-[#4F46E5] hover:bg-primary-50 transition border-t border-slate-100 rounded-b-xl font-medium">
+                                Barchasini ko'rish →
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Settings -->
+                    <a href="{% url 'core:settings' %}"
+                        class="p-2 sm:p-2.5 text-slate-500 hover:text-[#4F46E5] hover:bg-primary-50 rounded-xl transition min-w-[44px] min-h-[44px] flex items-center justify-center">
+                        <i class="ph ph-gear text-lg sm:text-xl"></i>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main id="main-content" class="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 bg-[#F8FAFC]">
+                {% if messages %}
+                <div class="mb-4 sm:mb-6 space-y-2 sm:space-y-3" id="django-messages" role="alert" aria-live="polite">
+                    {% for message in messages %}
+                    <div class="p-4 rounded-xl flex items-center gap-3 animate-fadeIn django-message
+                        {% if message.tags == 'error' %}
+                        bg-rose-50 text-rose-600 border border-rose-200
+                        {% else %}
+                        bg-emerald-50 text-emerald-600 border border-emerald-200
+                        {% endif %}"
+                        style="transition: opacity 0.5s ease;">
+                        <i
+                            class="ph {% if message.tags == 'error' %}ph-warning-circle{% else %}ph-check-circle{% endif %} text-xl"></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <script>
+                    setTimeout(function() {
+                        var msgs = document.querySelectorAll('.django-message');
+                        msgs.forEach(function(msg) {
+                            msg.style.opacity = '0';
+                            setTimeout(function() { msg.remove(); }, 500);
+                        });
+                    }, 5000);
+                </script>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+
+        <!-- Overlay - clicking closes sidebar -->
+        <div x-show="sidebarOpen" 
+             @click="closeSidebar()" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden" 
+             x-cloak></div>
+    </div>
+
+    <!-- Sidebar Manager Script -->
+    <script>
+        function sidebarManager() {
+            return {
+                sidebarOpen: false,
+                
+                initSidebar() {
+                    // On desktop (>=1024px), sidebar is always visible
+                    // On mobile (<1024px), check localStorage or default to closed
+                    if (window.innerWidth >= 1024) {
+                        this.sidebarOpen = true;
+                    } else {
+                        // On mobile, always start closed for better UX
+                        this.sidebarOpen = false;
+                    }
+                    
+                    // Listen for window resize
+                    window.addEventListener('resize', () => {
+                        if (window.innerWidth >= 1024) {
+                            this.sidebarOpen = true;
+                        }
+                    });
+                },
+                
+                toggleSidebar() {
+                    this.sidebarOpen = !this.sidebarOpen;
+                },
+                
+                closeSidebar() {
+                    if (window.innerWidth < 1024) {
+                        this.sidebarOpen = false;
+                    }
+                },
+                
+                openSidebar() {
+                    this.sidebarOpen = true;
+                }
+            }
+        }
+    </script>
+
+    <!-- FRONTEND OPTIMIZATSIYA SCRIPTI -->
+    <script>
+        // === BARCHA MODAL/OVERLAY LARNI YOPISH (Global) ===
+        function closeAllModals() {
+            // Ma'lum IDli modallarni yopish
+            var modalIds = ['quickPaymentOverlay', 'addStudentModal', 'rejectModal', 'addModal', 'removeModal'];
+            modalIds.forEach(function(id) {
+                var modal = document.getElementById(id);
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    modal.style.display = '';
+                }
+            });
+
+            // Alpine.js bilan boshqariladigan modal holatlarini yopish
+            var modalKeys = ['logoutOpen', 'notifOpen', 'modalOpen', 'showModal', 'isOpen', 'dialogOpen', 'overlayOpen'];
+            document.querySelectorAll('[x-data]').forEach(function(el) {
+                if (el._x_dataStack) {
+                    el._x_dataStack.forEach(function(data) {
+                        modalKeys.forEach(function(key) {
+                            if (key in data && typeof data[key] === 'boolean') {
+                                data[key] = false;
+                            }
+                        });
+                    });
+                }
+            });
+
+            // Qotib qolgan backdrop/overlay elementlarni tozalash
+            document.querySelectorAll('.fixed.inset-0').forEach(function(el) {
+                // HTMX progress bar va loading overlay ni o'tkazib yuboramiz
+                if (el.id === 'htmx-progress-bar' || el.id === 'page-loading-overlay') return;
+                // Alpine.js bilan boshqariladigan elementlarni o'tkazib yuboramiz
+                if (el.hasAttribute('x-show') || el.hasAttribute('x-data')) return;
+                if (el.closest('[x-data]')) return;
+                // pointer-events: none bo'lgan elementlarni o'tkazib yuboramiz
+                if (el.style.pointerEvents === 'none' || getComputedStyle(el).pointerEvents === 'none') return;
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+                el.style.display = '';
+            });
+
+            // Body scroll-ni tiklash (modal-open klass yoki inline overflow yechish)
+            document.body.classList.remove('modal-open', 'overflow-hidden');
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+
+            // Dinamik yaratilgan .modal-backdrop elementlarni olib tashlash
+            document.querySelectorAll('.modal-backdrop').forEach(function(el) {
+                el.remove();
+            });
+        }
+
+        // === PAGE LOADING OVERLAY ===
+        function showPageLoading() {
+            var overlay = document.getElementById('page-loading-overlay');
+            if (overlay) overlay.classList.add('active');
+        }
+
+        function hidePageLoading() {
+            var overlay = document.getElementById('page-loading-overlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        // Debounce funksiyasi - qidiruv uchun
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // === HTMX EVENT LISTENER LARNI FAQAT BIR MARTA RO'YXATGA OLISH ===
+        // hx-boost body swap qilganda scriptlar qayta ishga tushadi,
+        // shuning uchun duplikat listener larni oldini olamiz
+        if (!window._htmxListenersInit) {
+            window._htmxListenersInit = true;
+
+            // HTMX konfiguratsiya
+            document.body.addEventListener('htmx:configRequest', function(evt) {
+                // CSRF token avtomatik qo'shish
+                evt.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+            });
+
+            // === TOP PROGRESS BAR ===
+            (function() {
+                var timer = null;
+
+                function getBar() {
+                    return document.getElementById('htmx-progress-bar');
+                }
+
+                function startProgress() {
+                    var bar = getBar();
+                    if (!bar) return;
+                    if (timer) clearInterval(timer);
+                    bar.style.transition = 'none';
+                    bar.style.width = '0%';
+                    bar.style.opacity = '1';
+                    // Force reflow
+                    bar.offsetWidth;
+                    bar.style.transition = 'width 0.4s ease';
+                    bar.style.width = '30%';
+
+                    var w = 30;
+                    timer = setInterval(function() {
+                        if (w < 90) {
+                            w += (90 - w) * 0.1;
+                            var b = getBar();
+                            if (b) b.style.width = w + '%';
+                        }
+                    }, 300);
+                }
+
+                function finishProgress() {
+                    var bar = getBar();
+                    if (!bar) return;
+                    if (timer) { clearInterval(timer); timer = null; }
+                    bar.style.transition = 'width 0.2s ease';
+                    bar.style.width = '100%';
+                    setTimeout(function() {
+                        var b = getBar();
+                        if (b) {
+                            b.style.transition = 'opacity 0.3s ease';
+                            b.style.opacity = '0';
+                        }
+                    }, 200);
+                }
+
+                document.body.addEventListener('htmx:beforeRequest', function(evt) {
+                    startProgress();
+                    
+                    // Sidebar navigatsiyasi uchun loading animatsiyasini (overlay) ko'rsatmaslik.
+                    // Foydalanuvchi talabiga ko'ra u faqat boshqa role ga o'tayotganda (masalan, formalar yoki maxsus amallar orqali) ko'rinishi kerak.
+                    const isSidebarNav = evt.detail.elt && (evt.detail.elt.closest('#sidebar-nav') || evt.detail.elt.classList.contains('sidebar-link'));
+                    
+                    if (!isSidebarNav) {
+                        showPageLoading();
+                    }
+
+                    // Save sidebar scroll position before swap
+                    var sidebar = document.getElementById('sidebar-nav');
+                    if (sidebar) {
+                        localStorage.setItem('sidebarScrollPos', sidebar.scrollTop);
+                    }
+
+                    // Modal/overlay yopish - HTMX so'rov boshlanganda ochiq modallarni yopish
+                    closeAllModals();
+                });
+
+                document.body.addEventListener('htmx:afterRequest', function() {
+                    finishProgress();
+                });
+
+                document.body.addEventListener('htmx:responseError', function() {
+                    finishProgress();
+                    hidePageLoading();
+                });
+
+                document.body.addEventListener('htmx:sendError', function() {
+                    finishProgress();
+                    hidePageLoading();
+                    closeAllModals();
+                });
+
+                // Tarixiy navigatsiya (brauzer Back/Forward) paytida tozalash
+                document.body.addEventListener('htmx:historyRestore', function(evt) {
+                    finishProgress();
+                    hidePageLoading();
+                    closeAllModals();
+
+                    // Sidebar scroll pozitsiyasini tiklash
+                    var sidebar = document.getElementById('sidebar-nav');
+                    var savedPos = localStorage.getItem('sidebarScrollPos');
+                    if (savedPos && sidebar) {
+                        sidebar.scrollTop = parseInt(savedPos, 10);
+                    }
+
+                    // Alpine komponentlarini qayta ishga tushirish
+                    if (window.Alpine) {
+                        window.Alpine.initTree(document.body);
+                    }
+                });
+            })();
+
+            // === JS XATOLIK SODIR BO'LGANDA MODALLARNI TOZALASH ===
+            window.addEventListener('error', function(event) {
+                console.error('Xatolik:', event.error);
+                closeAllModals();
+            });
+
+            window.addEventListener('unhandledrejection', function(event) {
+                console.error('Promise xatolik:', event.reason);
+                closeAllModals();
+            });
+
+            // === GLOBAL ESCAPE TUGMASI — barcha modallarni yopish ===
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeAllModals();
+                }
+            });
+
+            // === HTMX SWAP OLDIDAN MODALLARNI TOZALASH ===
+            document.body.addEventListener('htmx:beforeSwap', function() {
+                closeAllModals();
+            });
+
+            // === RE-INITIALIZE SCRIPTS AFTER HTMX SWAP ===
+            document.body.addEventListener('htmx:afterSettle', function(evt) {
+                // Loading overlay ni yopish
+                hidePageLoading();
+                // Restore sidebar scroll position after swap
+                var sidebar = document.getElementById('sidebar-nav');
+                var savedPos = localStorage.getItem('sidebarScrollPos');
+                if (savedPos && sidebar) {
+                    sidebar.scrollTop = parseInt(savedPos, 10);
+                }
+
+                // Re-initialize Alpine.js - butun body ichidagi barcha Alpine elementlarni
+                // qayta ishga tushirish (x-data, x-show, :class, @click va h.k.)
+                // Bu sidebar, overlay va boshqa elementlarni ham to'g'ri ulaydi
+                if (window.Alpine) {
+                    window.Alpine.initTree(document.body);
+                }
+
+                // Qotib qolgan modal/overlay larni tozalash
+                closeAllModals();
+
+                // Re-initialize Chart.js canvases (destroy old instances first)
+                if (window.Chart) {
+                    var canvases = evt.detail.target.querySelectorAll('canvas');
+                    canvases.forEach(function(canvas) {
+                        var existingChart = Chart.getChart(canvas);
+                        if (existingChart) existingChart.destroy();
+                    });
+                }
+
+                // Re-observe lazy-loaded images
+                if ('IntersectionObserver' in window && window._imageObserver) {
+                    document.querySelectorAll('img.lazy').forEach(function(img) {
+                        if (img.dataset.src && img.src !== img.dataset.src) {
+                            window._imageObserver.observe(img);
+                        }
+                    });
+                }
+            });
+
+            // Lazy loading rasmlar uchun
+            window._imageObserver = null;
+            if ('IntersectionObserver' in window) {
+                window._imageObserver = new IntersectionObserver(function(entries, observer) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            var img = entry.target;
+                            img.src = img.dataset.src;
+                            img.classList.remove('lazy');
+                            observer.unobserve(img);
+                        }
+                    });
+                });
+
+                document.querySelectorAll('img.lazy').forEach(function(img) {
+                    window._imageObserver.observe(img);
+                });
+            }
+
+            // Network status tekshirish
+            window.addEventListener('online', function() {
+                console.log('Internet qayta ulandi');
+            });
+
+            window.addEventListener('offline', function() {
+                console.log('Internet uzildi');
+            });
+
+            // === SAHIFA TO'LIQ YUKLANGANDA (non-HTMX) LOADING OVERLAY ===
+            document.addEventListener('click', function(e) {
+                var link = e.target.closest('a[href]');
+                if (!link) return;
+                var href = link.getAttribute('href');
+                // Ichki havolalar, javascript:, # va boshqa maxsus havolalarni o'tkazib yuborish
+                if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+                // hx-boost=false yoki hx-get/hx-post mavjud bo'lsa ham HTMX tomonidan boshqariladi
+                if (link.hasAttribute('hx-get') || link.hasAttribute('hx-post') || link.hasAttribute('hx-delete')) return;
+                // target="_blank" ochilsa yuklash kerak emas
+                if (link.getAttribute('target') === '_blank') return;
+                // hx-boost="false" to'liq sahifa yuklaydi — loading ko'rsatamiz
+                if (link.getAttribute('hx-boost') === 'false') {
+                    showPageLoading();
+                    closeAllModals();
+                }
+            });
+
+            // Sahifa tark etilganda tozalash
+            window.addEventListener('pagehide', function() {
+                hidePageLoading();
+            });
+
+            // Brauzer orqaga/oldinga (Back/Forward) navigatsiyada loading/modallarni yopish
+            window.addEventListener('popstate', function() {
+                hidePageLoading();
+                closeAllModals();
+            });
+        }
+    </script>
+
+    {% include 'components/toast.html' %}
+
+    {% if messages %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% for message in messages %}
+        showToast("{{ message|escapejs }}", "{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}info{% endif %}");
+        {% endfor %}
+    });
+    </script>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

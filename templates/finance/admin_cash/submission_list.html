@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Kassa Topshirishlar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Kassa Topshirishlar 🏦</h1>
+            <p class="text-slate-400">Administratorlar kassalarini topshirish so'rovlari</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="rounded-2xl p-5 bg-white border border-slate-200">
+        <form method="GET" class="flex flex-wrap gap-4 items-end">
+            <div>
+                <label class="block text-xs mb-1.5 font-medium text-slate-400">Holat</label>
+                <select name="status"
+                    class="px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 transition bg-slate-50 border-slate-200 text-slate-800 focus:ring-[#4F46E5]/30">
+                    <option value="">Barchasi</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Kutilmoqda</option>
+                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Tasdiqlangan</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rad etilgan</option>
+                </select>
+            </div>
+            <button type="submit" class="px-6 py-2.5 rounded-xl font-medium transition bg-[#4F46E5] text-white hover:bg-[#4338CA] shadow-sm">
+                <i class="ph ph-funnel"></i> Filtrlash
+            </button>
+        </form>
+    </div>
+
+    <!-- Submissions Table -->
+    <div class="rounded-2xl overflow-hidden bg-white border border-slate-200">
+        <table class="w-full">
+            <thead class="bg-slate-50 text-slate-400">
+                <tr class="uppercase text-xs font-semibold">
+                    <th class="p-4 text-left">Sana</th>
+                    <th class="p-4 text-left">Administrator</th>
+                    <th class="p-4 text-left">Davr</th>
+                    <th class="p-4 text-left">Admin Kassa</th>
+                    <th class="p-4 text-left">Asosiy Kassa</th>
+                    <th class="p-4 text-right">Naqd</th>
+                    <th class="p-4 text-right">Plastik</th>
+                    <th class="p-4 text-right">Terminal</th>
+                    <th class="p-4 text-right">Jami</th>
+                    <th class="p-4 text-center">Holat</th>
+                    <th class="p-4 text-right">Amallar</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for sub in submissions %}
+                <tr class="transition hover:bg-slate-100">
+                    <td class="p-4 text-sm text-slate-400">{{ sub.created_at|date:"d.m.Y H:i" }}</td>
+                    <td class="p-4 text-sm text-slate-700 font-medium">{% if sub.admin_user %}{{ sub.admin_user.get_full_name }}{% else %}Foydalanuvchi{% endif %}</td>
+                    <td class="p-4 text-sm text-slate-600">
+                        {{ sub.get_period_type_display }}
+                        <br><span class="text-xs text-slate-400">{{ sub.period_start|date:"d.m" }} - {{ sub.period_end|date:"d.m.Y" }}</span>
+                    </td>
+                    <td class="p-4 text-sm text-slate-600">{{ sub.admin_account.name|default:"Hisob topilmadi" }}</td>
+                    <td class="p-4 text-sm text-slate-600">{{ sub.main_account.name|default:"Asosiy kassa" }}</td>
+                    <td class="p-4 text-right text-sm text-emerald-600">{{ sub.amount_cash|floatformat:0 }}</td>
+                    <td class="p-4 text-right text-sm text-blue-600">{{ sub.amount_card|floatformat:0 }}</td>
+                    <td class="p-4 text-right text-sm text-purple-600">{{ sub.amount_terminal|floatformat:0 }}</td>
+                    <td class="p-4 text-right font-bold text-slate-700">{{ sub.net_amount|floatformat:0 }}</td>
+                    <td class="p-4 text-center">
+                        <span class="px-2.5 py-1 text-xs rounded-full font-medium
+                            {% if sub.status == 'approved' %}bg-emerald-500/20 text-emerald-600
+                            {% elif sub.status == 'pending' %}bg-amber-500/20 text-amber-400
+                            {% else %}bg-rose-500/20 text-rose-600{% endif %}">
+                            {{ sub.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-right">
+                        {% if sub.status == 'pending' %}
+                        <div class="flex items-center justify-end gap-2">
+                            <form method="POST" action="{% url 'finance:approve_cash_submission' sub.pk %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="p-2 rounded-lg transition text-emerald-600 hover:bg-emerald-500/20" title="Tasdiqlash">
+                                    <i class="ph ph-check-circle text-lg"></i>
+                                </button>
+                            </form>
+                            <form method="POST" action="{% url 'finance:reject_cash_submission' sub.pk %}" class="inline"
+                                  onsubmit="var r = prompt('Rad etish sababi:'); if(r === null) return false; this.querySelector('[name=reason]').value = r;">
+                                {% csrf_token %}
+                                <input type="hidden" name="reason" value="">
+                                <button type="submit" class="p-2 rounded-lg transition text-rose-600 hover:bg-rose-500/20" title="Rad etish">
+                                    <i class="ph ph-x-circle text-lg"></i>
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="text-xs text-slate-500">
+                            <span class="font-medium">{% if sub.approved_by %}{{ sub.approved_by.get_full_name }}{% else %}-{% endif %}</span>
+                            {% if sub.approved_at %}
+                            <br>{{ sub.approved_at|date:"d.m.Y H:i" }}
+                            {% endif %}
+                            {% if sub.rejection_reason %}
+                            <br><span class="text-rose-500">{{ sub.rejection_reason }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="p-12 text-center">
+                        <i class="ph ph-hand-coins text-5xl mb-4 text-slate-600"></i>
+                        <p class="text-slate-500">Kassa topshirishlar topilmadi</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

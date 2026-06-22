@@ -1,0 +1,122 @@
+{% extends base_template %}
+
+{% block title %}Bildirishnomalar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- SARLAVHA -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-bell text-[#64748B]"></i>
+                Bildirishnomalar
+            </h1>
+            <p class="text-slate-400">Sizga kelgan barcha xabarlar</p>
+        </div>
+
+        {% if unread_notifications_count > 0 %}
+        <form method="post" action="{% url 'core:notifications_mark_all_read' %}" class="inline">
+            {% csrf_token %}
+            <button type="submit"
+               class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#4F46E5] text-white rounded-xl font-medium hover:bg-[#4338CA] transition">
+                <i class="ph ph-checks"></i>
+                Barchasini o'qildi deb belgilash
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- BILDIRISHNOMALAR RO'YXATI -->
+    <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+        {% for notification in notifications %}
+        <div class="flex items-start gap-4 p-4 border-b border-slate-100 hover:bg-slate-50 transition {% if notification.status == 'sent' %}bg-blue-50/30{% endif %}">
+            <!-- Icon -->
+            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0
+                {% if notification.message_type == 'sms' %}bg-green-100 text-green-600
+                {% elif notification.message_type == 'telegram' %}bg-blue-100 text-blue-600
+                {% else %}bg-[#4F46E5]/10 text-[#64748B]{% endif %}">
+                {% if notification.message_type == 'sms' %}
+                <i class="ph-fill ph-chat-circle-text text-xl"></i>
+                {% elif notification.message_type == 'telegram' %}
+                <i class="ph-fill ph-telegram-logo text-xl"></i>
+                {% else %}
+                <i class="ph-fill ph-bell-ringing text-xl"></i>
+                {% endif %}
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        {% if notification.template %}
+                        <p class="text-sm font-medium text-slate-600 mb-1">{{ notification.template.title }}</p>
+                        {% endif %}
+                        <p class="text-slate-800">{{ notification.message|safe }}</p>
+                    </div>
+
+                    {% if notification.status == 'sent' %}
+                    <a href="{% url 'core:notification_read' notification.pk %}"
+                       class="flex-shrink-0 px-3 py-1 bg-[#4F46E5]/10 text-[#64748B] text-xs rounded-full hover:bg-[#4338CA]/20 transition">
+                        O'qildim
+                    </a>
+                    {% else %}
+                    <span class="flex-shrink-0 px-3 py-1 bg-slate-100 text-slate-400 text-xs rounded-full">
+                        O'qilgan
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center gap-4 mt-2 text-xs text-slate-400">
+                    <span class="flex items-center gap-1">
+                        <i class="ph ph-clock"></i>
+                        {{ notification.created_at|timesince }} oldin
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <i class="ph ph-calendar"></i>
+                        {{ notification.created_at|date:"d.m.Y H:i" }}
+                    </span>
+                    {% if notification.template %}
+                    <span class="px-2 py-0.5 bg-slate-100 rounded text-slate-500">
+                        {{ notification.template.get_message_type_display }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="p-12 text-center">
+            <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ph ph-bell-slash text-4xl text-slate-400"></i>
+            </div>
+            <h3 class="text-lg font-medium text-slate-600 mb-2">Bildirishnomalar yo'q</h3>
+            <p class="text-slate-400">Sizga hali hech qanday xabar kelmagan</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    {% if notifications.has_other_pages %}
+    <div class="flex items-center justify-center gap-2">
+        {% if notifications.has_previous %}
+        <a href="?page={{ notifications.previous_page_number }}"
+           class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition">
+            <i class="ph ph-caret-left"></i> Oldingi
+        </a>
+        {% endif %}
+
+        <span class="px-4 py-2 bg-[#4F46E5] text-white rounded-lg font-medium">
+            {{ notifications.number }} / {{ notifications.paginator.num_pages }}
+        </span>
+
+        {% if notifications.has_next %}
+        <a href="?page={{ notifications.next_page_number }}"
+           class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition">
+            Keyingi <i class="ph ph-caret-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

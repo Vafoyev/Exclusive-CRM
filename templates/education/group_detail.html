@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'group_list' %}" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+                <i class="ph ph-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">{{ group.name }}</h1>
+                <p class="text-slate-500">{{ group.course.name }}</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'group_edit' group.pk %}"
+                class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition flex items-center gap-2">
+                <i class="ph ph-pencil"></i> Tahrirlash
+            </a>
+        </div>
+    </div>
+
+    <!-- Guruh ma'lumotlari -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div>
+                <p class="text-xs text-slate-500">O'qituvchi</p>
+                <p class="font-semibold text-slate-800">{{ group.teacher.first_name|default:"Belgilanmagan" }} {{ group.teacher.last_name|default:"" }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500">Xona</p>
+                <p class="font-semibold text-slate-800">{{ group.room.name|default:"Belgilanmagan" }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500">Vaqt</p>
+                <p class="font-semibold text-slate-800">
+                    {{ group.start_time|time:"H:i"|default:"-" }} - {{ group.end_time|time:"H:i"|default:"-" }}
+                </p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500">Holat</p>
+                <span class="px-2 py-1 text-xs rounded-full font-medium
+                    {% if group.status == 'active' %}bg-green-100 text-green-700
+                    {% elif group.status == 'pending' %}bg-yellow-100 text-yellow-700
+                    {% elif group.status == 'finished' %}bg-slate-100 text-slate-700
+                    {% else %}bg-red-100 text-red-700{% endif %}">
+                    {{ group.get_status_display }}
+                </span>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500">Boshlanish</p>
+                <p class="font-semibold text-slate-800">{{ group.start_date|date:"d.m.Y"|default:"-" }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500">Tugash</p>
+                <p class="font-semibold text-slate-800">{{ group.end_date|date:"d.m.Y"|default:"-" }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500">Dars kunlari</p>
+                <p class="font-semibold text-slate-800">
+                    {% for day in group.schedule_days %}
+                    {% if day == 1 %}Du{% elif day == 2 %}Se{% elif day == 3 %}Ch{% elif day == 4 %}Pa{% elif day == 5
+                    %}Ju{% elif day == 6 %}Sh{% elif day == 7 %}Ya{% endif %}{% if not forloop.last %}, {% endif %}
+                    {% empty %}-{% endfor %}
+                </p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500">Narxi</p>
+                <p class="font-semibold text-slate-800">{{ group.course.price|floatformat:0 }} UZS</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- O'quvchilar -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="p-4 bg-slate-50 border-b flex items-center justify-between">
+            <h3 class="font-bold text-slate-800">O'quvchilar</h3>
+            <span class="text-sm text-slate-500">{{ enrollments.count }} ta</span>
+        </div>
+
+        <!-- O'quvchi qo'shish -->
+        {% if available_students %}
+        <form method="POST" action="{% url 'add_student_to_group' group.pk %}"
+            class="p-4 bg-[#4F46E5]/5 border-b flex items-center gap-4">
+            {% csrf_token %}
+            <select name="student_id"
+                class="flex-1 px-4 py-2 rounded-lg border border-[#94A3B8]/25 focus:outline-none focus:ring-2 focus:ring-primary bg-white">
+                <option value="">O'quvchi tanlang...</option>
+                {% for student in available_students %}
+                <option value="{{ student.id }}">{{ student.first_name }} {{ student.last_name }} ({{ student.phone }})
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit"
+                class="px-4 py-2 bg-[#4F46E5] text-white rounded-lg hover:bg-[#4338CA] transition flex items-center gap-2">
+                <i class="ph ph-plus"></i> Qo'shish
+            </button>
+        </form>
+        {% endif %}
+
+        <!-- O'quvchilar jadvali -->
+        <table class="w-full">
+            <thead class="bg-slate-50 text-slate-600 uppercase text-xs font-semibold">
+                <tr>
+                    <th class="p-4 text-left">#</th>
+                    <th class="p-4 text-left">O'quvchi</th>
+                    <th class="p-4 text-left">Telefon</th>
+                    <th class="p-4 text-center">Qo'shilgan</th>
+                    <th class="p-4 text-center">Holat</th>
+                    <th class="p-4 text-right">Amallar</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for e in enrollments %}
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 text-slate-500">{{ forloop.counter }}</td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#818CF8] text-white flex items-center justify-center font-bold">
+                                {{ e.student.first_name|first }}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-800">{{ e.student.first_name }} {{ e.student.last_name }}</p>
+                                <p class="text-xs text-slate-500">ID: {{ e.student.id }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 text-slate-600">{{ e.student.phone }}</td>
+                    <td class="p-4 text-center text-sm text-slate-500">{{ e.joined_at|date:"d.m.Y" }}</td>
+                    <td class="p-4 text-center">
+                        <span class="px-2 py-1 text-xs rounded-full font-medium
+                            {% if e.status == 'active' %}bg-green-100 text-green-700
+                            {% elif e.status == 'frozen' %}bg-[#4F46E5]/10 text-[#0F172A]
+                            {% else %}bg-slate-100 text-slate-700{% endif %}">
+                            {{ e.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <a href="{% url 'finance:student_payments' e.student.id %}"
+                                class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition" title="To'lovlar">
+                                <i class="ph ph-wallet"></i>
+                            </a>
+                            <form method="POST" action="{% url 'remove_student_from_group' group.pk e.student.id %}"
+                                class="inline" onsubmit="return confirm('Haqiqatan ham chiqarasizmi?');">
+                                {% csrf_token %}
+                                <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                                    title="Chiqarish">
+                                    <i class="ph ph-user-minus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-8 text-center text-slate-500">
+                        <i class="ph ph-users text-4xl mb-2"></i>
+                        <p>Hozircha o'quvchilar yo'q</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

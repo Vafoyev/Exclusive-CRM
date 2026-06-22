@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+
+{% block title %}Reytinglar{% endblock %}
+
+{% block content %}
+{% with current_tab=request.GET.tab|default:"teachers" %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-[#0F172A]">Reytinglar 🏆</h1>
+            <p class="text-[#64748B]">O'qituvchi va o'quvchilar reytingi</p>
+        </div>
+    </div>
+
+    <!-- NAVIGATSIYA - IKKITA KATTA TUGMA -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- O'qituvchilar -->
+        <a href="?tab=teachers" class="group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl
+            {% if current_tab == 'teachers' %}
+            bg-gradient-to-br from-[#4F46E5] to-[#818CF8] text-white shadow-lg shadow-[#4F46E5]/30
+            {% else %}
+            bg-white border-2 border-[#94A3B8]/30 hover:border-[#4F46E5]/50 text-[#0F172A]
+            {% endif %}">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0
+                    {% if current_tab == 'teachers' %}bg-white/20{% else %}bg-[#94A3B8]/20{% endif %}">
+                    <i
+                        class="ph-fill ph-chalkboard-teacher text-2xl {% if current_tab == 'teachers' %}text-[#94A3B8]{% else %}text-[#0F172A]{% endif %}"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold flex items-center gap-2">
+                        👨‍🏫 O'qituvchilar
+                        {% if current_tab == 'teachers' %}<i class="ph-fill ph-check-circle text-[#94A3B8]"></i>{% endif %}
+                    </h3>
+                    <p
+                        class="text-sm {% if current_tab == 'teachers' %}text-[#94A3B8]{% else %}text-[#64748B]{% endif %}">
+                        Haftalik baho: {{ current_week_start|date:"d M" }} - {{ current_week_end|date:"d M" }}
+                    </p>
+                </div>
+            </div>
+        </a>
+
+        <!-- O'quvchilar -->
+        <a href="?tab=students" class="group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl
+            {% if current_tab == 'students' %}
+            bg-gradient-to-br from-[#4F46E5] to-[#4338CA] text-white shadow-lg shadow-[#4F46E5]/30
+            {% else %}
+            bg-white border-2 border-[#94A3B8]/30 hover:border-[#4F46E5] text-[#0F172A]
+            {% endif %}">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0
+                    {% if current_tab == 'students' %}bg-white/20{% else %}bg-[#94A3B8]/20{% endif %}">
+                    <i
+                        class="ph-fill ph-student text-2xl {% if current_tab == 'students' %}text-[#94A3B8]{% else %}text-[#0F172A]{% endif %}"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold flex items-center gap-2">
+                        👨‍🎓 O'quvchilar
+                        {% if current_tab == 'students' %}<i class="ph-fill ph-check-circle text-[#94A3B8]"></i>{% endif %}
+                    </h3>
+                    <p
+                        class="text-sm {% if current_tab == 'students' %}text-[#94A3B8]{% else %}text-[#64748B]{% endif %}">
+                        XP va yutuqlar bo'yicha reyting
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- O'QITUVCHILAR REYTINGI -->
+    <!-- ============================================== -->
+    {% if current_tab == 'teachers' %}
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-[#0F172A]">O'qituvchilar ({{ teachers_data|length }})</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {% for data in teachers_data %}
+            <div class="rounded-2xl border border-[#94A3B8]/30 bg-white overflow-hidden hover:shadow-lg transition-all duration-300"
+                x-data="{ showRating: false }">
+
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-[#4F46E5] to-[#818CF8] p-4 text-white">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold">
+                            {{ data.teacher.first_name|first }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold truncate">{{ data.teacher.first_name }} {{ data.teacher.last_name }}
+                            </h3>
+                            <p class="text-[#94A3B8] text-xs">{{ data.teacher.phone }}</p>
+                        </div>
+                        {% if data.avg_rating %}
+                        <div class="text-right flex-shrink-0">
+                            <div class="flex items-center gap-0.5">
+                                {% for i in "12345" %}
+                                <i
+                                    class="ph-fill ph-star text-xs {% if forloop.counter <= data.avg_rating %}text-amber-300{% else %}text-white/30{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                            <p class="text-xs text-[#94A3B8]">{{ data.avg_rating }}/5</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-4 gap-1 p-3">
+                    <div class="text-center p-2 bg-[#94A3B8]/10 rounded-lg">
+                        <p class="text-lg font-bold text-[#0F172A]">{{ data.group_count }}</p>
+                        <p class="text-xs text-[#64748B]">Guruh</p>
+                    </div>
+                    <div class="text-center p-2 bg-[#94A3B8]/10 rounded-lg">
+                        <p class="text-lg font-bold text-emerald-600">{{ data.student_count }}</p>
+                        <p class="text-xs text-[#64748B]">O'quvchi</p>
+                    </div>
+                    <div class="text-center p-2 bg-[#94A3B8]/10 rounded-lg">
+                        <p class="text-lg font-bold text-[#64748B]">{{ data.lesson_count }}</p>
+                        <p class="text-xs text-[#64748B]">Dars</p>
+                    </div>
+                    <div class="text-center p-2 bg-[#94A3B8]/10 rounded-lg">
+                        <p class="text-lg font-bold text-orange-500">{{ data.attendance_rate }}%</p>
+                        <p class="text-xs text-[#64748B]">Davomat</p>
+                    </div>
+                </div>
+
+                <!-- Joriy hafta bahosi -->
+                {% if data.current_rating %}
+                <div class="px-3 pb-2">
+                    <div
+                        class="p-2 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
+                        <span class="text-xs text-emerald-700">Bu hafta:</span>
+                        <span class="text-sm font-bold text-emerald-700">{{ data.current_rating.average_score }}/5
+                            ⭐</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="px-3 pb-2">
+                    <div class="p-2 bg-amber-50 border border-amber-200 rounded-lg text-center">
+                        <p class="text-xs text-amber-600">⚠️ Baholanmagan</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Baho qo'yish (faqat admin) -->
+                {% if can_rate %}
+                <div class="px-3 pb-3">
+                    <button @click="showRating = !showRating"
+                        class="w-full py-2 rounded-lg text-sm font-medium transition flex items-center justify-center gap-1
+                        {% if data.current_rating %}bg-[#94A3B8]/20 text-[#0F172A] hover:bg-[#94A3B8]/40{% else %}bg-[#4F46E5] text-white hover:bg-[#4338CA]/90{% endif %}">
+                        <i class="ph ph-star"></i>
+                        <span
+                            x-text="showRating ? 'Yopish' : '{% if data.current_rating %}Tahrirlash{% else %}Baholash{% endif %}'"></span>
+                    </button>
+
+                    <!-- Baho formasi -->
+                    <div x-show="showRating" x-transition x-cloak class="mt-3 p-3 bg-[#94A3B8]/10 rounded-lg">
+                        <form method="POST" class="space-y-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="teacher_id" value="{{ data.teacher.id }}">
+
+                            {% for field in "preparation,delivery,engagement,punctuality,overall"|make_list %}
+                            {% endfor %}
+
+                            <!-- Tayyorgarlik -->
+                            <div x-data="{ r: {{ data.current_rating.preparation|default:5 }} }">
+                                <div class="flex items-center justify-between text-xs mb-1">
+                                    <span class="text-[#64748B]">Tayyorgarlik</span>
+                                    <span class="font-medium text-[#0F172A]" x-text="r+'/5'"></span>
+                                </div>
+                                <div class="flex gap-0.5">
+                                    {% for i in "12345" %}
+                                    <button type="button" @click="r={{ forloop.counter }}"
+                                        :class="r>={{ forloop.counter }}?'text-amber-400':'text-[#94A3B8]'"
+                                        class="text-xl"><i class="ph-fill ph-star"></i></button>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="preparation" :value="r">
+                            </div>
+
+                            <!-- Tushuntirish -->
+                            <div x-data="{ r: {{ data.current_rating.delivery|default:5 }} }">
+                                <div class="flex items-center justify-between text-xs mb-1">
+                                    <span class="text-[#64748B]">Tushuntirish</span>
+                                    <span class="font-medium text-[#0F172A]" x-text="r+'/5'"></span>
+                                </div>
+                                <div class="flex gap-0.5">
+                                    {% for i in "12345" %}
+                                    <button type="button" @click="r={{ forloop.counter }}"
+                                        :class="r>={{ forloop.counter }}?'text-amber-400':'text-[#94A3B8]'"
+                                        class="text-xl"><i class="ph-fill ph-star"></i></button>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="delivery" :value="r">
+                            </div>
+
+                            <!-- Faollik -->
+                            <div x-data="{ r: {{ data.current_rating.engagement|default:5 }} }">
+                                <div class="flex items-center justify-between text-xs mb-1">
+                                    <span class="text-[#64748B]">Faollik</span>
+                                    <span class="font-medium text-[#0F172A]" x-text="r+'/5'"></span>
+                                </div>
+                                <div class="flex gap-0.5">
+                                    {% for i in "12345" %}
+                                    <button type="button" @click="r={{ forloop.counter }}"
+                                        :class="r>={{ forloop.counter }}?'text-amber-400':'text-[#94A3B8]'"
+                                        class="text-xl"><i class="ph-fill ph-star"></i></button>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="engagement" :value="r">
+                            </div>
+
+                            <!-- Vaqt -->
+                            <div x-data="{ r: {{ data.current_rating.punctuality|default:5 }} }">
+                                <div class="flex items-center justify-between text-xs mb-1">
+                                    <span class="text-slate-500">Vaqtga rioya</span>
+                                    <span class="font-medium" x-text="r+'/5'"></span>
+                                </div>
+                                <div class="flex gap-0.5">
+                                    {% for i in "12345" %}
+                                    <button type="button" @click="r={{ forloop.counter }}"
+                                        :class="r>={{ forloop.counter }}?'text-amber-400':'text-slate-200'"
+                                        class="text-xl"><i class="ph-fill ph-star"></i></button>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="punctuality" :value="r">
+                            </div>
+
+                            <!-- Umumiy -->
+                            <div x-data="{ r: {{ data.current_rating.overall|default:5 }} }">
+                                <div class="flex items-center justify-between text-xs mb-1">
+                                    <span class="text-slate-500 font-medium">Umumiy</span>
+                                    <span class="font-bold text-purple-600" x-text="r+'/5'"></span>
+                                </div>
+                                <div class="flex gap-0.5">
+                                    {% for i in "12345" %}
+                                    <button type="button" @click="r={{ forloop.counter }}"
+                                        :class="r>={{ forloop.counter }}?'text-purple-500':'text-slate-200'"
+                                        class="text-xl"><i class="ph-fill ph-star"></i></button>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="overall" :value="r">
+                            </div>
+
+                            <textarea name="rating_comment" rows="1"
+                                class="w-full px-2 py-1.5 text-xs rounded border border-[#90AB8B]/30"
+                                placeholder="Izoh...">{{ data.current_rating.comment|default:"" }}</textarea>
+
+                            <button type="submit"
+                                class="w-full py-2 bg-[#5A7863] text-white rounded-lg text-sm font-medium hover:bg-[#3B4953]">
+                                {% if data.current_rating %}Yangilash{% else %}Saqlash{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="col-span-3 rounded-2xl border border-slate-200 bg-white p-8 text-center">
+                <i class="ph ph-chalkboard-teacher text-4xl text-slate-300 mb-3"></i>
+                <p class="text-slate-500">O'qituvchilar topilmadi</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- ============================================== -->
+    <!-- O'QUVCHILAR REYTINGI -->
+    <!-- ============================================== -->
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-[#0F172A]">O'quvchilar ({{ students_data|length }})</h2>
+        </div>
+
+        <!-- Top 3 -->
+        {% if students_data %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for data in students_data|slice:":3" %}
+            <div class="rounded-2xl overflow-hidden
+                {% if forloop.counter == 1 %}bg-gradient-to-br from-amber-400 to-orange-500 text-white
+                {% elif forloop.counter == 2 %}bg-gradient-to-br from-slate-300 to-slate-400 text-white
+                {% else %}bg-gradient-to-br from-orange-300 to-orange-400 text-white{% endif %}">
+                <div class="p-5 text-center">
+                    <div class="text-4xl mb-2">
+                        {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}
+                    </div>
+                    <div
+                        class="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold mb-2">
+                        {{ data.student.first_name|first }}
+                    </div>
+                    <h3 class="font-bold text-lg">{{ data.student.first_name }} {{ data.student.last_name }}</h3>
+                    <p class="text-white/80 text-sm">{{ data.group_name|default:"—" }}</p>
+                    <div class="mt-3 flex justify-center gap-4 text-sm">
+                        <span><strong>{{ data.xp }}</strong> XP</span>
+                        <span><strong>{{ data.attendance_rate }}%</strong> Davomat</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Qolgan o'quvchilar -->
+        <div class="bg-white rounded-2xl border border-[#94A3B8]/30 overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-[#94A3B8]/10">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-[#0F172A]">#</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-[#0F172A]">O'quvchi</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-[#0F172A]">Guruh</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-[#0F172A]">XP</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-[#0F172A]">Davomat</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-[#0F172A]">O'rt. Baho</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#94A3B8]/20">
+                    {% for data in students_data %}
+                    <tr class="hover:bg-[#94A3B8]/10">
+                        <td class="px-4 py-3">
+                            <span
+                                class="w-6 h-6 rounded-full bg-[#94A3B8]/20 flex items-center justify-center text-xs font-bold text-[#0F172A]">
+                                {{ forloop.counter }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#818CF8] flex items-center justify-center text-white text-xs font-bold">
+                                    {{ data.student.first_name|first }}
+                                </div>
+                                <span class="font-medium text-[#0F172A]">{{ data.student.first_name }} {{ data.student.last_name }}</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-[#64748B]">{{ data.group_name|default:"—" }}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 py-1 bg-[#94A3B8]/20 text-[#0F172A] rounded-lg text-xs font-bold">{{ data.xp }} XP</span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <span
+                                class="text-sm font-medium {% if data.attendance_rate >= 80 %}text-emerald-600{% elif data.attendance_rate >= 60 %}text-amber-600{% else %}text-red-600{% endif %}">
+                                {{ data.attendance_rate }}%
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="text-sm font-medium text-[#0F172A]">{{ data.avg_grade|default:"—" }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-[#64748B]">
+                            <i class="ph ph-student text-4xl text-[#94A3B8] mb-2"></i>
+                            <p>O'quvchilar topilmadi</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endwith %}
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="glass-panel rounded-2xl border border-slate-100 p-8">
+
+        <!-- Sarlavha -->
+        <div class="flex items-center gap-4 mb-8">
+            <div
+                class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                <i class="ph ph-chalkboard-teacher text-2xl"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">{{ title }}</h2>
+                <p class="text-slate-500">O'qituvchi ma'lumotlari</p>
+            </div>
+        </div>
+
+        {% if form.errors %}
+        <div
+            class="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm border border-red-200">
+            <div class="flex items-center gap-2 font-semibold mb-2">
+                <i class="ph ph-warning-circle"></i> Xatoliklar
+            </div>
+            {{ form.non_field_errors }}
+            {% for field in form %}
+            {% if field.errors %}
+            <p><b>{{ field.label }}:</b> {{ field.errors|striptags }}</p>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+
+            <!-- 1. SHAXSIY MA'LUMOTLAR -->
+            <div class="space-y-4">
+                <h3
+                    class="text-lg font-semibold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-200">
+                    <i class="ph ph-user text-emerald-500"></i> Shaxsiy ma'lumotlar
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Ismi *</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Familiyasi
+                            *</label>
+                        {{ form.last_name }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Otasining
+                            ismi</label>
+                        {{ form.middle_name }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Telefon raqami
+                            *</label>
+                        {{ form.phone }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Tug'ilgan
+                            sana</label>
+                        {{ form.birth_date }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Filial</label>
+                        {{ form.branch }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Parol *</label>
+                        {{ form.password }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Rasm</label>
+                        {{ form.avatar }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. HR MA'LUMOTLARI -->
+            <div class="space-y-4">
+                <h3
+                    class="text-lg font-semibold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-200">
+                    <i class="ph ph-identification-card text-[#64748B]"></i> Qo'shimcha ma'lumotlar
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Pasport
+                            seriyasi</label>
+                        {{ form.passport_series }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Manzil</label>
+                        {{ form.address }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tugmalar -->
+            <div class="pt-6 flex gap-4 border-t border-slate-200">
+                <button type="submit"
+                    class="flex-1 md:flex-none px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all flex items-center justify-center gap-2">
+                    <i class="ph ph-check-circle"></i> Saqlash
+                </button>
+                <a href="{% url 'users:user_list' %}"
+                    class="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition flex items-center gap-2">
+                    <i class="ph ph-x"></i> Bekor qilish
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        transition: all 0.2s;
+    }
+
+    .dark .form-input,
+    .dark .form-select {
+        background-color: #1f2937;
+        border-color: #374151;
+        color: #f3f4f6;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        background-color: white;
+    }
+
+    .dark .form-input:focus,
+    .dark .form-select:focus {
+        background-color: #111827;
+    }
+</style>
+{% endblock %}

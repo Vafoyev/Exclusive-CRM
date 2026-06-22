@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}To'lov Qabul Qilish{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+        <a href="{% url 'finance:student_payments' student.id %}"
+            class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+            <i class="ph ph-arrow-left text-xl text-slate-700"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">To'lov Qabul Qilish</h1>
+            <p class="text-slate-500">{{ student.first_name }} {{ student.last_name }}</p>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" enctype="multipart/form-data"
+        class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-6">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Kassa *</label>
+            {{ form.account }}
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">To'lov turi *</label>
+                {{ form.category }}
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Summa *</label>
+                {{ form.amount }}
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">To'lov usuli *</label>
+            {{ form.payment_method }}
+            <p class="text-xs text-slate-500 mt-1">
+                <i class="ph ph-info"></i> Plastik yoki bank o'tkazmasi uchun chek yuklash tavsiya etiladi
+            </p>
+        </div>
+
+        <!-- Chek yuklash (Plastik uchun) -->
+        <div id="receiptSection"
+            class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <h4 class="text-sm font-semibold text-slate-700 mb-3">
+                <i class="ph ph-receipt mr-1"></i> Chek Yuklash
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">
+                        <i class="ph ph-image"></i> Rasm (JPG, PNG)
+                    </label>
+                    {{ form.receipt_image }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">
+                        <i class="ph ph-file-pdf"></i> PDF Fayl
+                    </label>
+                    {{ form.receipt_file }}
+                </div>
+            </div>
+
+            <p class="text-xs text-amber-600 mt-2">
+                <i class="ph ph-warning"></i> Plastik to'lovlar uchun chek yuklanmasa, admin tekshirishi kerak bo'ladi
+            </p>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Izoh</label>
+            {{ form.description }}
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4 border-t border-slate-100">
+            <a href="{% url 'finance:student_payments' student.id %}"
+                class="px-6 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition">
+                Bekor qilish
+            </a>
+            <button type="submit"
+                class="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg transition flex items-center gap-2 shadow-lg shadow-green-500/25">
+                <i class="ph ph-check"></i> Qabul qilish
+            </button>
+        </div>
+    </form>
+
+</div>
+
+<script>
+    function toggleReceiptFields(select) {
+        const receiptSection = document.getElementById('receiptSection');
+        if (select.value === 'cash') {
+            receiptSection.classList.add('hidden');
+        } else {
+            receiptSection.classList.remove('hidden');
+        }
+    }
+
+    // Sahifa yuklanganda tekshirish
+    document.addEventListener('DOMContentLoaded', function () {
+        const paymentMethod = document.querySelector('[name="payment_method"]');
+        if (paymentMethod) {
+            toggleReceiptFields(paymentMethod);
+        }
+    });
+</script>
+{% endblock %}

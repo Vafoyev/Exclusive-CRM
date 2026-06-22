@@ -1,0 +1,20 @@
+<!-- Stage Leads - HTMX partial (Lazy loaded) -->
+<div class="stage-leads space-y-3" id="stage-{{ stage.id }}-leads">
+    {% for lead in leads %}
+        {% include 'crm/partials/lead_card.html' with lead=lead %}
+    {% empty %}
+        <div class="text-center py-8 text-slate-400">
+            <i class="ph ph-users text-3xl mb-2"></i>
+            <p class="text-sm">Bu bosqichda lid yo'q</p>
+        </div>
+    {% endfor %}
+
+    {% if leads.count >= 20 %}
+    <!-- Infinite scroll trigger -->
+    <div class="infinite-scroll-trigger"
+         hx-get="{% url 'crm:htmx_stage_leads' stage.id %}?page=2"
+         hx-trigger="revealed"
+         hx-swap="afterend">
+    </div>
+    {% endif %}
+</div>

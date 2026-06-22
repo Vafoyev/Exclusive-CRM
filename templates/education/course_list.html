@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load role_tags %}
+
+{% block title %}Kurslar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Kurslar 📚</h1>
+            <p class="text-slate-400">O'quv markazida mavjud kurslar</p>
+        </div>
+        {% has_permission 'education' 'create' as can_create_course %}
+        {% if can_create_course %}
+        <a href="{% url 'course_create' %}"
+            class="px-4 py-2 bg-gradient-to-r from-[#818CF8] to-violet-600 text-slate-800 rounded-lg hover:shadow-lg hover:shadow-indigo-500/25 transition flex items-center gap-2">
+            <i class="ph ph-plus"></i> Kurs qo'shish
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for course in courses %}
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 hover:border-primary-300 transition">
+            <div class="flex justify-between items-start">
+                <div class="w-12 h-12 bg-[#4F46E5]/20 text-[#64748B] rounded-xl flex items-center justify-center text-xl font-bold">
+                    {{ course.name|first }}
+                </div>
+                {% if course.is_active %}
+                    <span class="bg-emerald-500/20 text-emerald-600 text-xs px-2 py-1 rounded-full font-medium">Aktiv</span>
+                {% else %}
+                    <span class="bg-rose-500/20 text-rose-600 text-xs px-2 py-1 rounded-full font-medium">Yopilgan</span>
+                {% endif %}
+            </div>
+            <h3 class="mt-4 text-lg font-bold text-slate-800">{{ course.name }}</h3>
+            <p class="text-slate-400 text-sm mt-1">{{ course.description|truncatechars:50 }}</p>
+            <div class="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center">
+                <span class="font-bold text-slate-800">{{ course.price }} <span class="text-slate-500 font-normal text-sm">UZS</span></span>
+                <span class="text-sm text-slate-500">{{ course.duration_months }} oy</span>
+            </div>
+            {% has_permission 'education' 'edit' as can_edit_course %}
+            {% has_permission 'education' 'delete' as can_delete_course %}
+            {% if can_edit_course or can_delete_course %}
+            <div class="mt-3 pt-3 border-t border-slate-200 flex gap-2">
+                {% if can_edit_course %}
+                <a href="{% url 'course_edit' course.id %}"
+                    class="flex-1 py-2 text-center text-sm font-medium text-slate-600 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <i class="ph ph-pencil-simple"></i> Tahrirlash
+                </a>
+                {% endif %}
+                {% if can_delete_course %}
+                <form method="POST" action="{% url 'course_delete' course.id %}" class="flex-1" onsubmit="return confirm('Bu kursni o\'chirishni tasdiqlaysizmi?')">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full py-2 text-center text-sm font-medium text-red-500 bg-red-50 rounded-lg hover:bg-red-100 transition">
+                        <i class="ph ph-trash"></i> O'chirish
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="col-span-3 rounded-2xl border border-slate-200 bg-white p-12 text-center">
+            <i class="ph ph-books text-5xl text-slate-600 mb-4"></i>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Kurslar topilmadi</h3>
+            <p class="text-slate-500">Yangi kurs qo'shish uchun tugmani bosing</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

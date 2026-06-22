@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Xabar Shablonlari{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-envelope-simple text-[#64748B]"></i>
+                Xabar Shablonlari
+            </h1>
+            <p class="text-slate-500">Avtomatik xabarlar matnini boshqarish</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'automation:send_notification' %}"
+                class="px-5 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl transition flex items-center gap-2">
+                <i class="ph ph-paper-plane-tilt text-xl"></i>
+                <span>Xabar yuborish</span>
+            </a>
+            <a href="{% url 'automation:template_create' %}"
+                class="px-5 py-2.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-xl shadow-lg shadow-primary-500/30 transition flex items-center gap-2">
+                <i class="ph ph-plus-circle text-xl"></i>
+                <span>Yangi Shablon</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tushuntirish Banner -->
+    <div class="bg-gradient-to-r from-[#4F46E5]/5 to-[#818CF8]/5 border border-[#4F46E5]/10 rounded-2xl p-6">
+        <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-[#4F46E5]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i class="ph ph-info text-2xl text-[#64748B]"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="font-bold text-slate-800 mb-2">Shablonlar qanday ishlaydi?</h3>
+                <p class="text-slate-600 text-sm mb-3">
+                    Shablonlar tizim ichida <strong>avtomatik</strong> xabarlar yuborish uchun ishlatiladi:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white rounded-xl p-4 border border-slate-100">
+                        <h4 class="font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                            <i class="ph ph-lightning text-amber-500"></i> Avtomatik ishga tushadi:
+                        </h4>
+                        <ul class="text-sm text-slate-600 space-y-1.5">
+                            <li class="flex items-center gap-2">
+                                <i class="ph ph-check text-green-500"></i>
+                                Yangi foydalanuvchi qo'shilganda
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="ph ph-check text-green-500"></i>
+                                To'lov tasdiqlanganda
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="ph ph-check text-green-500"></i>
+                                O'quvchi darsga kelmaganda
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="ph ph-check text-green-500"></i>
+                                Yangi lid tayinlanganda
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 border border-slate-100">
+                        <h4 class="font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                            <i class="ph ph-code text-[#64748B]"></i> O'zgaruvchilar:
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                            <code class="text-xs bg-slate-100 px-2 py-1 rounded">{first_name}</code>
+                            <code class="text-xs bg-slate-100 px-2 py-1 rounded">{last_name}</code>
+                            <code class="text-xs bg-slate-100 px-2 py-1 rounded">{amount}</code>
+                            <code class="text-xs bg-slate-100 px-2 py-1 rounded">{balance}</code>
+                            <code class="text-xs bg-slate-100 px-2 py-1 rounded">{date}</code>
+                            <code class="text-xs bg-slate-100 px-2 py-1 rounded">{group}</code>
+                            <code class="text-xs bg-slate-100 px-2 py-1 rounded">{student_name}</code>
+                            <code class="text-xs bg-slate-100 px-2 py-1 rounded">{parent_name}</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistika -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4">
+            <div class="w-12 h-12 bg-[#4F46E5]/10 rounded-xl flex items-center justify-center">
+                <i class="ph ph-file-text text-2xl text-[#64748B]"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-slate-800">{{ templates|length }}</p>
+                <p class="text-sm text-slate-500">Jami shablonlar</p>
+            </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <i class="ph ph-paper-plane-tilt text-2xl text-green-600"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-slate-800">{{ total_sent|default:0 }}</p>
+                <p class="text-sm text-slate-500">Yuborilgan xabarlar</p>
+            </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4">
+            <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                <i class="ph ph-bell-ringing text-2xl text-amber-600"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-slate-800">{{ total_unread|default:0 }}</p>
+                <p class="text-sm text-slate-500">O'qilmagan xabarlar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for template in templates %}
+        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-[#4F46E5]/20 transition-all duration-300 group">
+            <!-- Card Header -->
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 rounded-xl
+                        {% if template.message_type == 'sms' %}bg-green-100 text-green-600
+                        {% elif template.message_type == 'telegram' %}bg-blue-100 text-blue-600
+                        {% else %}bg-purple-100 text-purple-600{% endif %}">
+                        {% if template.message_type == 'sms' %}<i class="ph ph-chat-text text-xl"></i>
+                        {% elif template.message_type == 'telegram' %}<i class="ph ph-telegram-logo text-xl"></i>
+                        {% else %}<i class="ph ph-bell text-xl"></i>{% endif %}
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-800">{{ template.title }}</h3>
+                        <code class="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-mono">{{ template.code }}</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-4">
+                <div class="bg-slate-50 rounded-xl p-3 text-sm text-slate-600 min-h-[80px]">
+                    <p class="line-clamp-3">{{ template.body }}</p>
+                </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="px-4 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                <span class="text-xs text-slate-400">
+                    {{ template.get_message_type_display }}
+                </span>
+                <div class="flex gap-1">
+                    <!-- Test tugmasi -->
+                    <a href="{% url 'automation:template_test' template.pk %}"
+                       class="p-2 hover:bg-green-50 rounded-lg text-slate-500 hover:text-green-600 transition"
+                       title="Test qilish">
+                        <i class="ph ph-play"></i>
+                    </a>
+                    <a href="{% url 'automation:template_edit' template.pk %}"
+                       class="p-2 hover:bg-white rounded-lg text-slate-500 hover:text-[#64748B] transition"
+                       title="Tahrirlash">
+                        <i class="ph ph-pencil-simple"></i>
+                    </a>
+                    <form method="POST" action="{% url 'automation:template_delete' template.pk %}"
+                          onsubmit="return confirm('Bu shablonni o\'chirasizmi?')" class="inline">
+                        {% csrf_token %}
+                        <button class="p-2 hover:bg-white rounded-lg text-slate-500 hover:text-red-500 transition"
+                                title="O'chirish">
+                            <i class="ph ph-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 bg-white border border-slate-200 p-12 text-center rounded-2xl">
+            <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ph ph-envelope-open text-4xl text-slate-400"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Shablonlar yo'q</h3>
+            <p class="text-slate-500 mb-4">Avtomatik xabarlar uchun shablon yarating</p>
+            <a href="{% url 'automation:template_create' %}"
+               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4F46E5] text-white rounded-xl hover:bg-[#4338CA] transition">
+                <i class="ph ph-plus-circle"></i>
+                Birinchi shablonni yaratish
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

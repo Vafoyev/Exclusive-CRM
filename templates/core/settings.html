@@ -1,0 +1,551 @@
+{% extends 'base.html' %}
+
+{% block title %}Sozlamalar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- SARLAVHA -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-gear text-[#64748B]"></i>
+                Sozlamalar
+            </h1>
+            <p class="text-slate-500">Tizim va tashkilot sozlamalari</p>
+        </div>
+    </div>
+
+    <!-- SOZLAMALAR BO'LIMLARI -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Moliya Sozlamalari -->
+        <div class="glass-panel rounded-2xl border border-slate-100 p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                    <i class="ph-fill ph-currency-circle-dollar text-white text-2xl"></i>
+                </div>
+                <span class="px-3 py-1 bg-green-100 text-green-600 text-xs font-bold rounded-full">
+                    {{ stats.categories_count }} kategoriya
+                </span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Moliya</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                Kategoriyalar, kassalar va moliyaviy sozlamalar
+            </p>
+            <div class="space-y-2">
+                <a href="{% url 'finance:category_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-folders mr-2"></i>Kategoriyalar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'finance:account_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-vault mr-2"></i>Kassalar ({{ stats.accounts_count }})
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'finance:payroll_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-money mr-2"></i>Oylik sozlamalari
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'finance:report' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-chart-bar mr-2"></i>Hisobotlar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Foydalanuvchilar -->
+        <div class="glass-panel rounded-2xl border border-slate-100 p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#818CF8] flex items-center justify-center">
+                    <i class="ph-fill ph-users text-white text-2xl"></i>
+                </div>
+                <span class="px-3 py-1 bg-[#4F46E5]/10 text-[#64748B] text-xs font-bold rounded-full">
+                    {{ stats.users_count }} foydalanuvchi
+                </span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Foydalanuvchilar</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                Xodimlar, o'qituvchilar va o'quvchilar
+            </p>
+            <div class="space-y-2">
+                <a href="{% url 'users:user_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-users mr-2"></i>Barcha foydalanuvchilar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'users:teacher_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-chalkboard-teacher mr-2"></i>O'qituvchilar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'users:student_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-student mr-2"></i>O'quvchilar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'users:staff_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-briefcase mr-2"></i>Xodimlar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Ta'lim Sozlamalari -->
+        <div class="glass-panel rounded-2xl border border-slate-100 p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                    <i class="ph-fill ph-graduation-cap text-white text-2xl"></i>
+                </div>
+                <span class="px-3 py-1 bg-purple-100 text-purple-600 text-xs font-bold rounded-full">
+                    {{ stats.courses_count|default:0 }} kurs
+                </span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Ta'lim</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                Kurslar, guruhlar, xonalar va materiallar
+            </p>
+            <div class="space-y-2">
+                <a href="{% url 'course_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-book-open mr-2"></i>Kurslar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'group_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-users-three mr-2"></i>Guruhlar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'room_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-door mr-2"></i>Xonalar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'material_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-files mr-2"></i>Materiallar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- CRM Sozlamalari -->
+        <div class="glass-panel rounded-2xl border border-slate-100 p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center">
+                    <i class="ph-fill ph-funnel text-white text-2xl"></i>
+                </div>
+                <span class="px-3 py-1 bg-cyan-100 text-cyan-600 text-xs font-bold rounded-full">
+                    CRM
+                </span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">CRM & Sotuv</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                Voronka, bosqichlar va manbalar
+            </p>
+            <div class="space-y-2">
+                <a href="{% url 'crm:pipeline' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-kanban mr-2"></i>Voronka (Pipeline)
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'crm:stage_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-rows mr-2"></i>Bosqichlar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'crm:source_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-megaphone mr-2"></i>Manbalar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Operations Sozlamalari -->
+        <div class="glass-panel rounded-2xl border border-slate-100 p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                    <i class="ph-fill ph-calendar-check text-white text-2xl"></i>
+                </div>
+                <span class="px-3 py-1 bg-amber-100 text-amber-600 text-xs font-bold rounded-full">
+                    Darslar
+                </span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Operatsiyalar</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                Darslar, jadval va reytinglar
+            </p>
+            <div class="space-y-2">
+                <a href="{% url 'operations:lesson_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-chalkboard mr-2"></i>Darslar
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'operations:schedule' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-calendar mr-2"></i>Jadval
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'operations:teacher_ratings' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-trophy mr-2"></i>O'qituvchi reytinglari
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'operations:shop' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-storefront mr-2"></i>Do'kon
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Hikvision Face ID -->
+        <div class="glass-panel rounded-2xl border border-slate-100 p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center">
+                    <i class="ph-fill ph-fingerprint text-white text-2xl"></i>
+                </div>
+                <span class="px-3 py-1 bg-sky-100 text-sky-700 text-xs font-bold rounded-full">
+                    {{ stats.face_id_users_count|default:0 }} sync user
+                </span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Hikvision Face ID</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                Desktop agent, user bog'lanishlari va kelish-ketish eventlari
+            </p>
+            {% if not stats.face_id_ready %}
+            <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+                Face ID jadvallari hali tayyor emas. `python manage.py migrate` kerak.
+            </div>
+            {% endif %}
+            <div class="space-y-2">
+                <a href="{% url 'hardware:face_id_settings' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-fingerprint mr-2"></i>Face ID boshqaruvi
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <div class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-clock-counter-clockwise mr-2"></i>Qabul qilingan eventlar
+                    </span>
+                    <span class="text-sm font-semibold text-slate-800">{{ stats.face_id_events_count|default:0 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tizim Sozlamalari -->
+        {% if request.user.role == 'super_admin' or request.user.role == 'owner' %}
+        <div class="glass-panel rounded-2xl border border-slate-100 p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center">
+                    <i class="ph-fill ph-gear-six text-white text-2xl"></i>
+                </div>
+                <span class="px-3 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-full">
+                    Admin
+                </span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Tizim</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                Tashkilot va tizim sozlamalari
+            </p>
+            <div class="space-y-2">
+                <a href="{% url 'core:history_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-clock-counter-clockwise mr-2"></i>Tizim tarixi
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                <a href="{% url 'automation:template_list' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-robot mr-2"></i>Avtomatizatsiya
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                {% if request.user.role == 'super_admin' %}
+                <a href="/admin/"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-shield-checkered mr-2"></i>Admin panel
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == 'super_admin' %}
+        <div class="glass-panel rounded-2xl border border-slate-100 p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                    <i class="ph-fill ph-database text-white text-2xl"></i>
+                </div>
+                <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                    Super Admin
+                </span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Backup Center</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                Telegram token, backup vaqtlari va qo'lda backup olish boshqaruvi
+            </p>
+            <div class="space-y-2">
+                <a href="{% url 'core:backup_center' %}"
+                    class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <span class="text-sm font-medium text-slate-700">
+                        <i class="ph ph-database mr-2"></i>Backup boshqaruvi
+                    </span>
+                    <i class="ph ph-caret-right text-slate-400"></i>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Tezkor Amallar -->
+    <div class="glass-panel rounded-2xl border border-slate-100 p-6 overflow-hidden relative">
+        <!-- Background decoration -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-amber-400/10 to-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+
+        <div class="relative">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                        <i class="ph-fill ph-lightning text-white text-xl"></i>
+                    </div>
+                    Tezkor Amallar
+                </h3>
+                <span class="text-xs text-slate-500">Bir bosishda yarating</span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Kategoriya -->
+                <a href="{% url 'finance:category_create' %}"
+                    class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 p-1 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-1 transition-all duration-300">
+                    <div class="bg-white rounded-xl p-4 h-full">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                <i class="ph-fill ph-folder-plus text-white text-2xl"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm font-semibold text-slate-800">Kategoriya</p>
+                                <p class="text-xs text-slate-500">Moliya</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Kassa -->
+                <a href="{% url 'finance:account_create' %}"
+                    class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#4338CA] p-1 shadow-lg shadow-[#4F46E5]/25 hover:shadow-xl hover:shadow-[#4F46E5]/40 hover:-translate-y-1 transition-all duration-300">
+                    <div class="bg-white rounded-xl p-4 h-full">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#4338CA] flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                <i class="ph-fill ph-vault text-white text-2xl"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm font-semibold text-slate-800">Kassa</p>
+                                <p class="text-xs text-slate-500">Moliya</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Kurs -->
+                <a href="{% url 'course_create' %}"
+                    class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 p-1 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-1 transition-all duration-300">
+                    <div class="bg-white rounded-xl p-4 h-full">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                <i class="ph-fill ph-book-open text-white text-2xl"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm font-semibold text-slate-800">Kurs</p>
+                                <p class="text-xs text-slate-500">Ta'lim</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Guruh -->
+                <a href="{% url 'group_create' %}"
+                    class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 p-1 shadow-lg shadow-cyan-500/25 hover:shadow-xl hover:shadow-cyan-500/40 hover:-translate-y-1 transition-all duration-300">
+                    <div class="bg-white rounded-xl p-4 h-full">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                <i class="ph-fill ph-users-three text-white text-2xl"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm font-semibold text-slate-800">Guruh</p>
+                                <p class="text-xs text-slate-500">Ta'lim</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Xona -->
+                <a href="{% url 'room_create' %}"
+                    class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 p-1 shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-1 transition-all duration-300">
+                    <div class="bg-white rounded-xl p-4 h-full">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                <i class="ph-fill ph-door text-white text-2xl"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm font-semibold text-slate-800">Xona</p>
+                                <p class="text-xs text-slate-500">Ta'lim</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Yangi Lid -->
+                <a href="{% url 'crm:lead_create' %}"
+                    class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 p-1 shadow-lg shadow-rose-500/25 hover:shadow-xl hover:shadow-rose-500/40 hover:-translate-y-1 transition-all duration-300">
+                    <div class="bg-white rounded-xl p-4 h-full">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                <i class="ph-fill ph-user-plus text-white text-2xl"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm font-semibold text-slate-800">Yangi Lid</p>
+                                <p class="text-xs text-slate-500">CRM</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Qo'shimcha amallar -->
+            <div class="mt-6 pt-6 border-t border-slate-100">
+                <p class="text-xs text-slate-500 mb-4">Ko'proq amallar</p>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{% url 'users:student_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-full text-sm text-slate-700 transition">
+                        <i class="ph ph-student text-[#64748B]"></i>
+                        O'quvchi qo'shish
+                    </a>
+                    <a href="{% url 'users:teacher_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-full text-sm text-slate-700 transition">
+                        <i class="ph ph-chalkboard-teacher text-purple-500"></i>
+                        O'qituvchi qo'shish
+                    </a>
+                    <a href="{% url 'finance:add_income' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-full text-sm text-slate-700 transition">
+                        <i class="ph ph-arrow-circle-down text-green-500"></i>
+                        Kirim qo'shish
+                    </a>
+                    <a href="{% url 'finance:add_expense' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-full text-sm text-slate-700 transition">
+                        <i class="ph ph-arrow-circle-up text-red-500"></i>
+                        Chiqim qo'shish
+                    </a>
+                    <a href="{% url 'material_upload' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-full text-sm text-slate-700 transition">
+                        <i class="ph ph-upload text-amber-500"></i>
+                        Material yuklash
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Qo'shimcha ma'lumot -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Tizim haqida -->
+        <div class="glass-panel rounded-2xl border border-slate-100 p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="ph ph-info text-[#64748B]"></i> Tizim haqida
+            </h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span class="text-slate-500">Versiya</span>
+                    <span class="font-medium text-slate-700">1.0.0</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span class="text-slate-500">Django</span>
+                    <span class="font-medium text-slate-700">6.0.1</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span class="text-slate-500">Python</span>
+                    <span class="font-medium text-slate-700">3.13</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-slate-500">Holat</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-600 text-xs font-bold rounded-full">Ishlayapti</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yordam -->
+        <div class="glass-panel rounded-2xl border border-slate-100 p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="ph ph-question text-purple-500"></i> Yordam
+            </h3>
+            <div class="space-y-3">
+                <a href="#" class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <div class="w-10 h-10 rounded-lg bg-[#4F46E5]/10 flex items-center justify-center">
+                        <i class="ph ph-book-open-text text-[#64748B] text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-slate-700">Qo'llanma</p>
+                        <p class="text-xs text-slate-500">Tizimdan foydalanish</p>
+                    </div>
+                </a>
+                <a href="#" class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                    <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                        <i class="ph ph-headset text-green-500 text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-slate-700">Qo'llab-quvvatlash</p>
+                        <p class="text-xs text-slate-500">+998 90 123 45 67</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

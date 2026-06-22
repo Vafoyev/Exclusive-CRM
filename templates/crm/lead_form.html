@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-lg mx-auto bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+    <h2 class="text-xl font-bold mb-6">Yangi Lid Qo'shish</h2>
+
+    {% if form.errors %}
+        <div class="bg-red-50 text-red-600 p-4 rounded-lg mb-4 text-sm">
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                {% if field.errors %}
+                    <p><b>{{ field.label }}:</b> {{ field.errors|striptags }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        
+        <div><label class="font-medium text-sm">Ism Familiya</label>{{ form.full_name }}</div>
+        <div><label class="font-medium text-sm">Telefon</label>{{ form.phone }}</div>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="font-medium text-sm">Manba</label>{{ form.source }}</div>
+            <div><label class="font-medium text-sm">Kurs</label>{{ form.interested_course }}</div>
+        </div>
+        
+        <div><label class="font-medium text-sm">Izoh</label>{{ form.extra_data }}</div>
+
+        <button type="submit" class="w-full bg-[#4F46E5] text-white py-3 rounded-lg font-bold hover:bg-[#4338CA] transition">
+            Saqlash
+        </button>
+    </form>
+</div>
+{% endblock %}

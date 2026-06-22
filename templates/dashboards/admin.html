@@ -1,0 +1,679 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load role_tags %}
+
+{% block title %}Boshqaruv Paneli{% endblock %}
+
+{% block content %}
+<div class="space-y-5 animate-fadeIn relative">
+
+    <div class="dash-orb dash-orb-1"></div>
+    <div class="dash-orb dash-orb-2"></div>
+
+    <!-- Header -->
+    <div class="flex items-center justify-between relative z-10">
+        <div>
+            <h1 class="text-2xl font-bold text-[#0F172A] flex items-center gap-2">
+                Xush kelibsiz, {{ request.user.first_name }}! 👋
+            </h1>
+            <p class="text-base text-[#64748B] font-semibold">{{ request.user.organization.name }}</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+            {% has_permission 'finance' 'create' as can_create_payment %}
+            {% if can_create_payment %}
+            <button onclick="openQuickPayment()"
+                class="inline-flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/25">
+                <i class="ph-fill ph-credit-card"></i> To'lov Qabul Qilish
+            </button>
+            {% endif %}
+            {% has_permission 'users' 'create' as can_create_user %}
+            {% if can_create_user %}
+            <a href="{% url 'users:student_create' %}"
+                class="inline-flex items-center gap-1.5 px-3 py-2 glass-button text-white rounded-lg text-sm font-medium transition-all hover:-translate-y-0.5">
+                <i class="ph ph-plus"></i> O'quvchi
+            </a>
+            {% endif %}
+            {% has_permission 'crm' 'create' as can_create_lead %}
+            {% if can_create_lead %}
+            <a href="{% url 'crm:lead_create' %}"
+                class="inline-flex items-center gap-1.5 px-3 py-2 liquid-glass text-[#64748B] rounded-lg text-sm font-medium hover:bg-white/80 transition">
+                <i class="ph ph-plus"></i> Lid
+            </a>
+            {% endif %}
+            {% has_permission 'operations' 'create' as can_create_lesson %}
+            {% if can_create_lesson %}
+            <a href="{% url 'operations:lesson_add' %}"
+                class="inline-flex items-center gap-1.5 px-3 py-2 liquid-glass text-[#64748B] rounded-lg text-sm font-medium hover:bg-white/80 transition">
+                <i class="ph ph-plus"></i> Dars
+            </a>
+            {% endif %}
+            {% has_permission 'operations' 'view' as can_view_operations %}
+            {% if can_view_operations %}
+            <a href="{% url 'operations:schedule' %}"
+                class="inline-flex items-center gap-1.5 px-3 py-2 liquid-glass text-[#64748B] rounded-lg text-sm font-medium hover:bg-white/80 transition">
+                <i class="ph ph-calendar"></i> Jadval
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 6-ta Stat Kartalar -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 relative z-10">
+        <div class="liquid-glass p-4 stagger-1">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-[#E0E7FF] text-[#4F46E5] rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                    <i class="ph-fill ph-student"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-[#94A3B8] uppercase tracking-wider">O'quvchilar</p>
+                    <p class="text-2xl font-extrabold text-[#0F172A] leading-tight">{{ total_students|default:"0" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="liquid-glass p-4 stagger-2">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-[#E0E7FF] text-[#4F46E5] rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                    <i class="ph-fill ph-users-three"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-[#94A3B8] uppercase tracking-wider">Guruhlar</p>
+                    <p class="text-2xl font-extrabold text-[#0F172A] leading-tight">{{ active_groups|default:"0" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="liquid-glass p-4 stagger-3">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-[#E0E7FF] text-[#4F46E5] rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                    <i class="ph-fill ph-chalkboard-teacher"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-[#94A3B8] uppercase tracking-wider">O'qituvchilar</p>
+                    <p class="text-2xl font-extrabold text-[#0F172A] leading-tight">{{ total_teachers|default:"0" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="liquid-glass p-4 stagger-4">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                    <i class="ph-fill ph-funnel"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-[#94A3B8] uppercase tracking-wider">Lidlar</p>
+                    <p class="text-2xl font-extrabold text-amber-600 leading-tight">{{ total_leads|default:"0" }}{% if new_leads %} <span class="text-xs text-emerald-500 font-bold">+{{ new_leads }}</span>{% endif %}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="liquid-glass p-4 stagger-5">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                    <i class="ph-fill ph-warning-circle"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-[#94A3B8] uppercase tracking-wider">Qarz</p>
+                    <p class="text-2xl font-extrabold text-rose-600 leading-tight">{{ total_debt|default:0|floatformat:0|intcomma }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voronka + Chart -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 relative z-10">
+        {% if stages %}
+        <div class="glass-section p-5">
+            <h3 class="text-base font-bold text-[#0F172A] mb-4 flex items-center gap-2">
+                <i class="ph-fill ph-funnel-simple text-[#64748B]"></i> Sotuv Voronkasi
+            </h3>
+            <div class="flex gap-2 flex-wrap">
+                {% for stage in stages %}
+                <div
+                    class="px-4 py-3 rounded-xl liquid-glass text-center min-w-[90px] hover:-translate-y-0.5 transition-all">
+                    <span class="w-2.5 h-2.5 rounded-full inline-block mb-1.5"
+                        style="background-color: {{ stage.color }}"></span>
+                    <p class="text-2xl font-extrabold text-[#0F172A] leading-tight">{{ stage.lead_count }}</p>
+                    <p class="text-xs text-[#94A3B8] font-semibold truncate">{{ stage.name }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Moliyaviy Grafik -->
+        <div class="glass-section p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                    <i class="ph-fill ph-chart-line text-emerald-600"></i> Moliyaviy O'sish
+                </h3>
+                <div class="flex gap-1">
+                    <button onclick="loadChartData(7)"
+                        class="px-2 py-0.5 text-xs rounded-md text-[#94A3B8] hover:bg-[#E0E7FF] hover:text-[#4F46E5] transition">7K</button>
+                    <button onclick="loadChartData(30)"
+                        class="px-2 py-0.5 text-xs rounded-md bg-[#E0E7FF] text-[#64748B] font-bold">30K</button>
+                    <button onclick="loadChartData(90)"
+                        class="px-2 py-0.5 text-xs rounded-md text-[#94A3B8] hover:bg-[#E0E7FF] hover:text-[#4F46E5] transition">90K</button>
+                </div>
+            </div>
+            <div class="h-44">
+                <canvas id="financeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasdiqlanmagan cheklar + Kutilayotgan to'lovlar -->
+    {% if pending_receipts > 0 or pending_payments > 0 %}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 relative z-10">
+        <!-- Tasdiqlanmagan Cheklar -->
+        <div class="glass-section p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-[#0F172A] flex items-center gap-2"><i
+                        class="ph-fill ph-receipt text-amber-500"></i> Tasdiqlanmagan Cheklar</h3>
+                {% if pending_receipts > 0 %}
+                <span class="px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full text-xs font-bold">{{ pending_receipts
+                    }}</span>
+                {% endif %}
+            </div>
+            <div class="space-y-2 overflow-y-auto" style="scrollbar-width: none;">
+                {% for receipt in pending_receipts_list %}
+                <div class="flex items-center gap-3 p-2.5 rounded-xl liquid-glass border-l-3 border-l-amber-400">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-semibold text-[#0F172A] text-sm truncate">{% if receipt.student %}{{
+                            receipt.student.first_name }} {{ receipt.student.last_name|default:"" }}{% else %}{{
+                            receipt.description|truncatechars:25 }}{% endif %}</h4>
+                        <p class="text-xs text-[#64748B]">{{ receipt.created_at|timesince }} oldin</p>
+                    </div>
+                    <span class="text-sm font-bold text-amber-600 flex-shrink-0">{{
+                        receipt.amount|floatformat:0|intcomma }}</span>
+                </div>
+                {% empty %}
+                <div class="flex flex-col items-center justify-center text-[#94A3B8] py-6">
+                    <i class="ph-fill ph-check-circle text-2xl text-emerald-500 mb-1.5"></i>
+                    <p class="text-xs font-medium text-emerald-600">Barchasi tasdiqlangan</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% if pending_receipts_sum > 0 %}
+            <div class="mt-3 pt-3 border-t border-[#94A3B8]/20 flex items-center justify-between">
+                <span class="text-xs text-[#94A3B8] uppercase font-semibold">Jami kutilmoqda</span>
+                <span class="text-sm font-bold text-amber-600">{{ pending_receipts_sum|floatformat:0|intcomma }}
+                    so'm</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Kutilayotgan to'lovlar soni -->
+        <div class="glass-section p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-[#0F172A] flex items-center gap-2"><i
+                        class="ph-fill ph-clock text-[#64748B]"></i> Kutilayotgan To'lovlar</h3>
+                {% if pending_payments > 0 %}
+                <span
+                    class="px-2.5 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold flex items-center gap-1"><i
+                        class="ph-fill ph-clock"></i> {{ pending_payments }} kutilmoqda</span>
+                {% endif %}
+            </div>
+            <div class="flex flex-col items-center justify-center py-6">
+                <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mb-3">
+                    <i class="ph-fill ph-hourglass text-2xl"></i>
+                </div>
+                <p class="text-3xl font-bold text-[#0F172A]">{{ pending_payments|default:0 }}</p>
+                <p class="text-sm text-[#94A3B8] mt-1">ta to'lov tasdiqlanishi kutilmoqda</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Darslar + Lidlar -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 relative z-10">
+        <div class="lg:col-span-2 glass-section p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                    <i class="ph-fill ph-calendar-check text-[#64748B]"></i> Bugungi Darslar
+                </h3>
+                <a href="{% url 'group_list' %}" class="text-xs text-[#64748B] hover:text-[#0F172A] font-bold">Barchasi
+                    →</a>
+            </div>
+            <div class="space-y-2 overflow-y-auto" style="scrollbar-width: none;">
+                {% for lesson in today_lessons %}
+                <div class="flex items-center gap-3 p-3 rounded-xl liquid-glass hover:bg-white/80 transition-all group">
+                    <div class="text-center flex-shrink-0 w-12">
+                        <span class="block text-sm font-bold text-[#0F172A] leading-tight">{{
+                            lesson.start_time|time:"H:i" }}</span>
+                        <span class="block text-xs text-[#94A3B8]">{{ lesson.end_time|time:"H:i" }}</span>
+                    </div>
+                    <div class="w-px h-8 bg-[#E0E7FF] flex-shrink-0"></div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-[#0F172A] text-sm truncate">{{ lesson.group.name }}</h4>
+                        <p class="text-xs text-[#94A3B8] font-medium">
+                            <i class="ph ph-door"></i> {{ lesson.room.name|default:"-" }} ·
+                            <i class="ph ph-user"></i> {{ lesson.teacher.first_name|default:"-" }}
+                        </p>
+                    </div>
+                    <span
+                        class="px-2 py-0.5 text-xs font-bold rounded-md flex-shrink-0 {% if lesson.status == 'started' %}text-[#64748B] bg-[#E0E7FF]{% elif lesson.status == 'finished' %}text-emerald-700 bg-emerald-50{% else %}text-[#64748B] bg-[#E0E7FF]{% endif %}">{{
+                        lesson.get_status_display }}</span>
+                </div>
+                {% empty %}
+                <div class="flex flex-col items-center justify-center text-[#94A3B8] py-8">
+                    <i class="ph ph-sun text-3xl mb-2 text-amber-400"></i>
+                    <p class="text-sm font-medium">Bugun darslar yo'q</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Yangi Lidlar -->
+        <div class="glass-section p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                    <i class="ph-fill ph-sparkle text-amber-500"></i> So'nggi Lidlar
+                </h3>
+                <a href="{% url 'crm:pipeline' %}" class="text-xs text-[#64748B] hover:text-[#0F172A] font-bold">Voronka
+                    →</a>
+            </div>
+            <div class="space-y-2 overflow-y-auto" style="scrollbar-width: none;">
+                {% for lead in recent_leads %}
+                <div class="flex items-center gap-3 p-2.5 hover:bg-white/60 rounded-lg transition">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#4F46E5] to-[#818CF8] text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
+                        {{ lead.full_name|first }}</div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-[#0F172A] text-sm truncate">{{ lead.full_name }}</h4>
+                        <p class="text-xs text-[#94A3B8] font-medium">{{ lead.created_at|timesince }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-[#94A3B8] text-center py-4 font-medium">Lidlar yo'q</p>
+                {% endfor %}
+            </div>
+            <a href="{% url 'crm:lead_create' %}"
+                class="w-full mt-4 py-2.5 text-xs font-bold text-center text-white bg-gradient-to-r from-[#4F46E5] to-[#818CF8] rounded-xl hover:shadow-lg hover:shadow-[#4F46E5]/25 transition-all active:scale-[0.98] flex items-center justify-center gap-1.5">
+                <i class="ph ph-plus-circle"></i> Yangi Lid
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    [style*="scrollbar-width"]::-webkit-scrollbar {
+        display: none;
+    }
+</style>
+
+<script>
+    let financeChart = null;
+
+    async function loadChartData(days = 30) {
+        const response = await fetch(`/api/chart-data/?days=${days}`);
+        const data = await response.json();
+        if (financeChart) financeChart.destroy();
+        const ctx = document.getElementById('financeChart').getContext('2d');
+        financeChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    { label: 'Kirim', data: data.income, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                    { label: 'Chiqim', data: data.expense, borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.05)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                plugins: { legend: { position: 'top', labels: { usePointStyle: true, color: '#64748b', font: { size: 10 }, padding: 8 } } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9 } } },
+                    y: { grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { color: '#94a3b8', font: { size: 9 }, callback: v => v.toLocaleString('uz-UZ') } }
+                }
+            }
+        });
+    }
+    document.addEventListener('DOMContentLoaded', () => loadChartData(30));
+</script>
+
+<!-- ===== QUICK PAYMENT MODAL ===== -->
+<div id="quickPaymentOverlay" class="fixed inset-0 z-[100] hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeQuickPayment()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-fadeIn">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-[#4F46E5] to-[#4338CA] px-6 py-5">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="ph-fill ph-credit-card text-xl"></i> To'lov Qabul Qilish
+                </h2>
+                <button onclick="closeQuickPayment()"
+                    class="text-white/70 hover:text-white transition p-1 rounded-lg hover:bg-white/10">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+            <p class="text-indigo-200 text-sm mt-1">Tezkor to'lov qabul qilish</p>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-5" id="qpFormContainer">
+            <!-- Student Search -->
+            <div>
+                <label class="block text-sm font-semibold text-[#334155] mb-1.5">O'quvchi</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="ph ph-magnifying-glass text-[#94A3B8]"></i>
+                    </div>
+                    <input type="text" id="qpStudentSearch" autocomplete="off" placeholder="Ism yoki telefon raqami..."
+                        class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition bg-slate-50 placeholder-[#94A3B8]"
+                        oninput="filterStudents(this.value)">
+                    <input type="hidden" id="qpStudentId" name="student_id">
+                    <!-- Dropdown -->
+                    <div id="qpStudentDropdown"
+                        class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto z-10 hidden">
+                    </div>
+                </div>
+                <div id="qpSelectedStudent"
+                    class="hidden mt-2 flex items-center gap-2 p-2.5 bg-indigo-50 rounded-xl border border-indigo-100">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4F46E5] to-[#818CF8] text-white flex items-center justify-center font-bold text-xs flex-shrink-0"
+                        id="qpStudentAvatar"></div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-[#0F172A] truncate" id="qpStudentName"></p>
+                        <p class="text-xs text-[#64748B]" id="qpStudentPhone"></p>
+                    </div>
+                    <button onclick="clearStudentSelection()" class="text-[#94A3B8] hover:text-rose-500 transition p-1">
+                        <i class="ph ph-x text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amount -->
+            <div>
+                <label class="block text-sm font-semibold text-[#334155] mb-1.5">Summa (UZS)</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="ph-fill ph-money text-[#94A3B8]"></i>
+                    </div>
+                    <input type="number" id="qpAmount" placeholder="500 000" min="1000" step="1000"
+                        class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition bg-slate-50 placeholder-[#94A3B8]">
+                </div>
+            </div>
+
+            <!-- Payment Method & Account -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-semibold text-[#334155] mb-1.5">To'lov turi</label>
+                    <select id="qpPaymentMethod" onchange="toggleQpReceipt()"
+                        class="w-full px-3 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition bg-slate-50 text-[#334155]">
+                        <option value="cash">💵 Naqd pul</option>
+                        <option value="card">💳 Plastik karta</option>
+                        <option value="transfer">🏦 Bank o'tkazmasi</option>
+                        <option value="online">📱 Online</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-[#334155] mb-1.5">Kassa</label>
+                    <select id="qpAccount"
+                        class="w-full px-3 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition bg-slate-50 text-[#334155]">
+                        {% for acc in accounts %}
+                        <option value="{{ acc.id }}">{{ acc.name }}</option>
+                        {% empty %}
+                        <option value="">Kassa mavjud emas</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Chek rasmi yuklash -->
+            <div id="qpReceiptSection" class="hidden">
+                <label class="block text-sm font-semibold text-[#334155] mb-1.5">
+                    <i class="ph ph-image text-emerald-600"></i> Chek rasmi
+                </label>
+                <input type="file" id="qpReceiptImage" accept="image/*"
+                    class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm bg-slate-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#4F46E5]/10 file:text-[#334155] file:font-medium hover:file:bg-[#4F46E5]/20 transition">
+                <p class="text-xs text-[#94A3B8] mt-1"><i class="ph ph-info"></i> Plastik/Bank o'tkazmasi uchun chek
+                    yuklash tavsiya etiladi</p>
+            </div>
+
+            <!-- Error message -->
+            <div id="qpError"
+                class="hidden p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm flex items-center gap-2">
+                <i class="ph-fill ph-warning-circle"></i>
+                <span id="qpErrorText"></span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 pb-6 flex gap-3" id="qpFooter">
+            <button onclick="closeQuickPayment()"
+                class="flex-1 px-4 py-3 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm hover:bg-slate-200 transition">
+                Bekor qilish
+            </button>
+            <button onclick="submitQuickPayment()" id="qpSubmitBtn"
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-emerald-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                <i class="ph-fill ph-check-circle"></i> Tasdiqlash
+            </button>
+        </div>
+
+        <!-- Success state -->
+        <div id="qpSuccess" class="hidden p-8 text-center">
+            <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ph-fill ph-check-circle text-3xl text-emerald-600"></i>
+            </div>
+            <h3 class="text-lg font-bold text-[#0F172A] mb-2">To'lov qabul qilindi!</h3>
+            <p class="text-sm text-[#64748B] mb-6" id="qpSuccessMessage"></p>
+            <button onclick="closeQuickPayment()"
+                class="px-6 py-2.5 bg-[#4F46E5] text-white rounded-xl font-medium text-sm hover:bg-[#4338CA] transition">
+                Yopish
+            </button>
+        </div>
+    </div>
+</div>
+
+{{ students_for_payment|json_script:"students-data-admin" }}
+<script>
+    const studentsData = JSON.parse(document.getElementById('students-data-admin').textContent);
+    const csrfToken = '{{ csrf_token }}';
+
+    function openQuickPayment() {
+        const overlay = document.getElementById('quickPaymentOverlay');
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
+        document.getElementById('qpFormContainer').classList.remove('hidden');
+        document.getElementById('qpFooter').classList.remove('hidden');
+        document.getElementById('qpSuccess').classList.add('hidden');
+        document.getElementById('qpError').classList.add('hidden');
+        document.getElementById('qpStudentSearch').value = '';
+        document.getElementById('qpStudentId').value = '';
+        document.getElementById('qpAmount').value = '';
+        document.getElementById('qpReceiptImage').value = '';
+        document.getElementById('qpPaymentMethod').value = 'cash';
+        toggleQpReceipt();
+        clearStudentSelection();
+        setTimeout(() => document.getElementById('qpStudentSearch').focus(), 100);
+    }
+
+    function toggleQpReceipt() {
+        const method = document.getElementById('qpPaymentMethod').value;
+        const section = document.getElementById('qpReceiptSection');
+        if (method === 'cash') {
+            section.classList.add('hidden');
+        } else {
+            section.classList.remove('hidden');
+        }
+    }
+
+    function closeQuickPayment() {
+        const overlay = document.getElementById('quickPaymentOverlay');
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function filterStudents(query) {
+        const dropdown = document.getElementById('qpStudentDropdown');
+        if (query.length < 1) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+        const q = query.toLowerCase();
+        const filtered = studentsData.filter(s => {
+            const fullName = ((s.first_name || '') + ' ' + (s.last_name || '')).toLowerCase();
+            const phone = (s.phone || '').toLowerCase();
+            return fullName.includes(q) || phone.includes(q);
+        }).slice(0, 8);
+
+        dropdown.innerHTML = '';
+        if (filtered.length === 0) {
+            dropdown.innerHTML = '<div class="p-3 text-center text-sm text-[#94A3B8]">Topilmadi</div>';
+        } else {
+            filtered.forEach(s => {
+                const name = (s.first_name || '') + ' ' + (s.last_name || '');
+                const initial = (s.first_name || '?')[0].toUpperCase();
+                const phone = s.phone || '';
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-3 p-3 hover:bg-slate-50 cursor-pointer transition';
+                item.addEventListener('click', () => selectStudent(s.id, name, phone, initial));
+
+                const avatar = document.createElement('div');
+                avatar.className = 'w-8 h-8 rounded-lg bg-gradient-to-br from-[#4F46E5] to-[#818CF8] text-white flex items-center justify-center font-bold text-xs flex-shrink-0';
+                avatar.textContent = initial;
+
+                const info = document.createElement('div');
+                info.className = 'flex-1 min-w-0';
+                const nameEl = document.createElement('p');
+                nameEl.className = 'text-sm font-medium text-[#0F172A] truncate';
+                nameEl.textContent = name;
+                const phoneEl = document.createElement('p');
+                phoneEl.className = 'text-xs text-[#94A3B8]';
+                phoneEl.textContent = phone;
+                info.appendChild(nameEl);
+                info.appendChild(phoneEl);
+
+                item.appendChild(avatar);
+                item.appendChild(info);
+                dropdown.appendChild(item);
+            });
+        }
+        dropdown.classList.remove('hidden');
+    }
+
+    function selectStudent(id, name, phone, initial) {
+        document.getElementById('qpStudentId').value = id;
+        document.getElementById('qpStudentSearch').classList.add('hidden');
+        document.getElementById('qpStudentDropdown').classList.add('hidden');
+        document.getElementById('qpStudentAvatar').textContent = initial;
+        document.getElementById('qpStudentName').textContent = name;
+        document.getElementById('qpStudentPhone').textContent = phone;
+        document.getElementById('qpSelectedStudent').classList.remove('hidden');
+        document.getElementById('qpSelectedStudent').classList.add('flex');
+        document.getElementById('qpAmount').focus();
+    }
+
+    function clearStudentSelection() {
+        document.getElementById('qpStudentId').value = '';
+        document.getElementById('qpStudentSearch').classList.remove('hidden');
+        document.getElementById('qpStudentSearch').value = '';
+        document.getElementById('qpSelectedStudent').classList.add('hidden');
+        document.getElementById('qpSelectedStudent').classList.remove('flex');
+        document.getElementById('qpStudentDropdown').classList.add('hidden');
+    }
+
+    async function submitQuickPayment() {
+        const studentId = document.getElementById('qpStudentId').value;
+        const amount = document.getElementById('qpAmount').value;
+        const paymentMethod = document.getElementById('qpPaymentMethod').value;
+        const accountId = document.getElementById('qpAccount').value;
+        const errorDiv = document.getElementById('qpError');
+        const errorText = document.getElementById('qpErrorText');
+
+        errorDiv.classList.add('hidden');
+
+        if (!studentId) {
+            errorText.textContent = "O'quvchini tanlang.";
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+        if (!amount || parseFloat(amount) <= 0) {
+            errorText.textContent = "Summani kiriting.";
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+        if (!accountId) {
+            errorText.textContent = "Kassani tanlang.";
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+
+        const btn = document.getElementById('qpSubmitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Yuklanmoqda...';
+
+        const formData = new FormData();
+        formData.append('student_id', studentId);
+        formData.append('amount', amount);
+        formData.append('payment_method', paymentMethod);
+        formData.append('account_id', accountId);
+
+        const receiptFile = document.getElementById('qpReceiptImage').files[0];
+        if (receiptFile) {
+            formData.append('receipt_image', receiptFile);
+        }
+
+        try {
+            const response = await fetch("{% url 'finance:quick_payment' %}", {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrfToken },
+                body: formData
+            });
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonErr) {
+                errorText.textContent = "Serverdan noto'g'ri javob keldi. Sahifani yangilang.";
+                errorDiv.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ph-fill ph-check-circle"></i> Tasdiqlash';
+                return;
+            }
+            if (data.success) {
+                document.getElementById('qpFormContainer').classList.add('hidden');
+                document.getElementById('qpFooter').classList.add('hidden');
+                document.getElementById('qpSuccessMessage').textContent = data.message;
+                document.getElementById('qpSuccess').classList.remove('hidden');
+                if (typeof showToast === 'function') {
+                    showToast("✅ " + data.message, "success");
+                }
+            } else {
+                errorText.textContent = data.error || "Xatolik yuz berdi.";
+                errorDiv.classList.remove('hidden');
+            }
+        } catch (e) {
+            errorText.textContent = "Server bilan bog'lanishda xatolik.";
+            errorDiv.classList.remove('hidden');
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ph-fill ph-check-circle"></i> Tasdiqlash';
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeQuickPayment();
+    });
+
+    document.addEventListener('click', function (e) {
+        const dropdown = document.getElementById('qpStudentDropdown');
+        const searchInput = document.getElementById('qpStudentSearch');
+        if (!dropdown.contains(e.target) && e.target !== searchInput) {
+            dropdown.classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %}

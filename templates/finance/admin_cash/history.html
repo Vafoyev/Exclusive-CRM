@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Kassa Tarixi{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'finance:admin_cash_dashboard' %}" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+                <i class="ph ph-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Kassa Tarixi 📋</h1>
+                <p class="text-slate-400">{{ admin_account.name }} - barcha operatsiyalar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="rounded-2xl p-5 bg-white border border-slate-200">
+        <form method="GET" class="flex flex-wrap gap-4 items-end">
+            <div>
+                <label class="block text-xs mb-1.5 font-medium text-slate-400">Boshlanish</label>
+                <input type="date" name="date_from" value="{{ date_from }}"
+                    class="px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 transition bg-slate-50 border-slate-200 text-slate-800 focus:ring-[#4F46E5]/30">
+            </div>
+            <div>
+                <label class="block text-xs mb-1.5 font-medium text-slate-400">Tugash</label>
+                <input type="date" name="date_to" value="{{ date_to }}"
+                    class="px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 transition bg-slate-50 border-slate-200 text-slate-800 focus:ring-[#4F46E5]/30">
+            </div>
+            <div>
+                <label class="block text-xs mb-1.5 font-medium text-slate-400">Turi</label>
+                <select name="type"
+                    class="px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 transition bg-slate-50 border-slate-200 text-slate-800 focus:ring-[#4F46E5]/30">
+                    <option value="">Barchasi</option>
+                    <option value="income" {% if trans_type == 'income' %}selected{% endif %}>Kirim</option>
+                    <option value="expense" {% if trans_type == 'expense' %}selected{% endif %}>Chiqim</option>
+                </select>
+            </div>
+            <button type="submit" class="px-6 py-2.5 rounded-xl font-medium transition bg-[#4F46E5] text-white hover:bg-[#4338CA] shadow-sm">
+                <i class="ph ph-funnel"></i> Filtrlash
+            </button>
+        </form>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="rounded-2xl overflow-hidden bg-white border border-slate-200">
+        <table class="w-full">
+            <thead class="bg-slate-50 text-slate-400">
+                <tr class="uppercase text-xs font-semibold">
+                    <th class="p-4 text-left">Sana</th>
+                    <th class="p-4 text-left">Turi</th>
+                    <th class="p-4 text-left">Kategoriya</th>
+                    <th class="p-4 text-left">Izoh</th>
+                    <th class="p-4 text-right">Summa</th>
+                    <th class="p-4 text-center">Holat</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for trans in transactions %}
+                <tr class="transition hover:bg-slate-100">
+                    <td class="p-4 text-sm text-slate-400">{{ trans.created_at|date:"d.m.Y H:i" }}</td>
+                    <td class="p-4">
+                        {% if trans.transaction_type == 'income' %}
+                        <span class="px-2.5 py-1 text-xs rounded-full font-medium bg-emerald-500/20 text-emerald-600">Kirim</span>
+                        {% else %}
+                        <span class="px-2.5 py-1 text-xs rounded-full font-medium bg-rose-500/20 text-rose-600">Chiqim</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4 text-sm text-slate-600">{{ trans.category.name|default:"-" }}</td>
+                    <td class="p-4 text-sm text-slate-500">{{ trans.description|default:"-"|truncatewords:15 }}</td>
+                    <td class="p-4 text-right font-bold {% if trans.transaction_type == 'income' %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                        {% if trans.transaction_type == 'income' %}+{% else %}-{% endif %}{{ trans.amount|floatformat:0 }}
+                    </td>
+                    <td class="p-4 text-center">
+                        <span class="px-2.5 py-1 text-xs rounded-full font-medium
+                            {% if trans.status == 'confirmed' %}bg-emerald-500/20 text-emerald-600
+                            {% elif trans.status == 'pending' %}bg-amber-500/20 text-amber-400
+                            {% else %}bg-rose-500/20 text-rose-600{% endif %}">
+                            {{ trans.get_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-12 text-center">
+                        <i class="ph ph-receipt text-5xl mb-4 text-slate-600"></i>
+                        <p class="text-slate-500">Operatsiyalar topilmadi</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

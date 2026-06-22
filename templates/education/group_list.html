@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% load role_tags %}
+{% block title %}Guruhlar{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Guruhlar</h1>
+            <p class="text-slate-500">Faol guruhlar va o'quvchilarni boshqarish</p>
+        </div>
+        {% has_permission 'education' 'create' as can_create_group %}
+        {% if can_create_group %}
+        <a href="{% url 'group_create' %}"
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#818CF8] to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all">
+            <i class="ph ph-plus-circle"></i> Guruh yaratish
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Guruhlar Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for group in groups %}
+        <div
+            class="bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg transition-all group">
+            <!-- Guruh Header -->
+            <div class="p-5 border-b border-slate-100">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg font-bold text-slate-800">{{ group.name }}</h3>
+                    <span class="px-2.5 py-1 text-xs rounded-full font-bold
+                        {% if group.status == 'active' %}bg-green-100 text-green-700
+                        {% elif group.status == 'forming' %}bg-yellow-100 text-yellow-700
+                        {% else %}bg-slate-100 text-slate-700{% endif %}">
+                        {{ group.get_status_display }}
+                    </span>
+                </div>
+                <p class="text-sm text-[#64748B] font-medium">{{ group.course.name }}</p>
+            </div>
+
+            <!-- Guruh Info -->
+            <div class="p-5 space-y-3">
+                <div class="flex items-center gap-3 text-sm text-slate-600">
+                    <i class="ph ph-chalkboard-teacher text-lg"></i>
+                    <span>{{ group.teacher.first_name }} {{ group.teacher.last_name }}</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm text-slate-600">
+                    <i class="ph ph-door text-lg"></i>
+                    <span>{{ group.room.name }}</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm text-slate-600">
+                    <i class="ph ph-clock text-lg"></i>
+                    <span>{{ group.start_time|time:"H:i" }} - {{ group.end_time|time:"H:i" }}</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm">
+                    <i class="ph ph-users text-lg text-[#64748B]"></i>
+                    <span class="font-bold text-[#64748B]">{{ group.student_count }}
+                        o'quvchi</span>
+                </div>
+            </div>
+
+            <!-- Guruh Actions -->
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex gap-2">
+                <a href="{% url 'group_detail' group.id %}"
+                    class="flex-1 py-2 text-center text-sm font-medium text-slate-600 bg-white rounded-lg hover:bg-slate-100 transition">
+                    <i class="ph ph-eye"></i> Ko'rish
+                </a>
+                {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' %}
+                <button onclick="openAddStudentModal({{ group.id }}, '{{ group.name }}')"
+                    class="flex-1 py-2 text-center text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:shadow-lg hover:shadow-green-500/30 transition flex items-center justify-center gap-1">
+                    <i class="ph ph-user-plus"></i> O'quvchi
+                </button>
+                <a href="{% url 'group_edit' group.id %}"
+                    class="px-3 py-2 text-slate-500 hover:text-[#64748B] bg-white rounded-lg hover:bg-slate-100 transition">
+                    <i class="ph ph-pencil-simple"></i>
+                </a>
+                <form method="POST" action="{% url 'group_delete' group.id %}" class="inline" onsubmit="return confirm('Bu guruhni o\'chirishni tasdiqlaysizmi?')">
+                    {% csrf_token %}
+                    <button type="submit" class="px-3 py-2 text-red-400 hover:text-red-600 bg-white rounded-lg hover:bg-red-50 transition">
+                        <i class="ph ph-trash"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div
+                class="bg-white rounded-2xl p-12 text-center border border-slate-100">
+                <div
+                    class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="ph ph-users-three text-4xl text-slate-400"></i>
+                </div>
+                <p class="text-slate-500 mb-4">Guruhlar mavjud emas</p>
+                {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' %}
+                <a href="{% url 'group_create' %}" class="text-[#64748B] hover:underline">Birinchi guruhni yarating
+                    →</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- O'quvchi Qo'shish Modal -->
+<div id="addStudentModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeAddStudentModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+        <div
+            class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <!-- Modal Header -->
+            <div
+                class="p-5 border-b border-slate-100 bg-gradient-to-r from-green-500 to-emerald-600">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">O'quvchi qo'shish</h3>
+                        <p id="modalGroupName" class="text-green-100 text-sm"></p>
+                    </div>
+                    <button onclick="closeAddStudentModal()" class="text-white/70 hover:text-white text-2xl">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Input -->
+            <div class="p-5">
+                <div class="relative">
+                    <input type="text" id="studentSearch" placeholder="Ism yoki telefon bo'yicha qidiring..."
+                        class="w-full px-4 py-3 pl-11 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <div id="searchSpinner" class="absolute right-4 top-1/2 -translate-y-1/2 hidden">
+                        <i class="ph ph-spinner animate-spin text-green-500"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <div id="searchResults" class="max-h-64 overflow-y-auto border-t border-slate-100">
+                <div class="p-5 text-center text-slate-400 text-sm">
+                    <i class="ph ph-magnifying-glass text-2xl mb-2"></i>
+                    <p>Qidirish uchun kamida 2 ta belgi kiriting</p>
+                </div>
+            </div>
+
+            <!-- Hidden Form -->
+            <form id="addStudentForm" method="POST" class="hidden">
+                {% csrf_token %}
+                <input type="hidden" name="student_id" id="selectedStudentId">
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentGroupId = null;
+    let searchTimeout = null;
+
+    function openAddStudentModal(groupId, groupName) {
+        currentGroupId = groupId;
+        document.getElementById('modalGroupName').textContent = groupName + ' guruhiga';
+        document.getElementById('addStudentModal').classList.remove('hidden');
+        document.getElementById('studentSearch').value = '';
+        document.getElementById('searchResults').innerHTML = `
+        <div class="p-5 text-center text-slate-400 text-sm">
+            <i class="ph ph-magnifying-glass text-2xl mb-2"></i>
+            <p>Qidirish uchun kamida 2 ta belgi kiriting</p>
+        </div>
+    `;
+        setTimeout(() => document.getElementById('studentSearch').focus(), 100);
+    }
+
+    function closeAddStudentModal() {
+        document.getElementById('addStudentModal').classList.add('hidden');
+        currentGroupId = null;
+    }
+
+    document.getElementById('studentSearch').addEventListener('input', function (e) {
+        const query = e.target.value.trim();
+
+        if (searchTimeout) clearTimeout(searchTimeout);
+
+        if (query.length < 2) {
+            document.getElementById('searchResults').innerHTML = `
+            <div class="p-5 text-center text-slate-400 text-sm">
+                <i class="ph ph-magnifying-glass text-2xl mb-2"></i>
+                <p>Qidirish uchun kamida 2 ta belgi kiriting</p>
+            </div>
+        `;
+            return;
+        }
+
+        document.getElementById('searchSpinner').classList.remove('hidden');
+
+        searchTimeout = setTimeout(() => {
+            fetch(`/api/search-students/?q=${encodeURIComponent(query)}&group_id=${currentGroupId}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('searchSpinner').classList.add('hidden');
+
+                    if (data.results.length === 0) {
+                        document.getElementById('searchResults').innerHTML = `
+                        <div class="p-5 text-center text-slate-400 text-sm">
+                            <i class="ph ph-user-circle-minus text-2xl mb-2"></i>
+                            <p>Hech kim topilmadi</p>
+                        </div>
+                    `;
+                        return;
+                    }
+
+                    let html = '';
+                    data.results.forEach(student => {
+                        html += `
+                        <div class="p-4 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 flex items-center justify-between"
+                             onclick="selectStudent(${student.id}, '${student.name}')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white font-bold">
+                                    ${student.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-slate-800">${student.name}</p>
+                                    <p class="text-xs text-slate-500">${student.phone}</p>
+                                </div>
+                            </div>
+                            <i class="ph ph-plus-circle text-2xl text-green-500"></i>
+                        </div>
+                    `;
+                    });
+
+                    document.getElementById('searchResults').innerHTML = html;
+                })
+                .catch(function(error) {
+                    console.error('Qidiruv xatolik:', error);
+                    document.getElementById('searchSpinner').classList.add('hidden');
+                    document.getElementById('searchResults').innerHTML = `
+                        <div class="p-5 text-center text-rose-400 text-sm">
+                            <i class="ph ph-warning-circle text-2xl mb-2"></i>
+                            <p>Xatolik yuz berdi. Qaytadan urinib ko'ring.</p>
+                        </div>
+                    `;
+                });
+        }, 300);
+    });
+
+    function selectStudent(studentId, studentName) {
+        if (confirm(`"${studentName}" ni guruhga qo'shishni tasdiqlaysizmi?`)) {
+            closeAddStudentModal();
+            document.getElementById('selectedStudentId').value = studentId;
+            document.getElementById('addStudentForm').action = `/edu/groups/${currentGroupId}/add-student/`;
+            document.getElementById('addStudentForm').submit();
+        }
+    }
+
+    // ESC tugmasi
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAddStudentModal();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}O'quvchi to'lovlari{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'finance:admin_cash_dashboard' %}" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+                <i class="ph ph-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">O'quvchi to'lovlari 🎓</h1>
+                <p class="text-slate-400">O'quvchilar to'lovlarini tekshirish va tasdiqlash</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'finance:admin_add_course_payment' %}"
+                class="px-4 py-2 bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition flex items-center gap-2">
+                <i class="ph ph-plus"></i> Kurs To'lovi Qo'shish
+            </a>
+            {% if pending_count %}
+            <div class="px-4 py-2 bg-amber-100 text-amber-800 rounded-xl flex items-center gap-2">
+                <i class="ph-fill ph-warning text-lg"></i>
+                <span class="font-medium">{{ pending_count }} ta to'lov kutilmoqda</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="rounded-2xl p-5 bg-white border border-slate-200">
+        <form method="GET" class="flex flex-wrap gap-4 items-end">
+            <div>
+                <label class="block text-xs mb-1.5 font-medium text-slate-400">Holat</label>
+                <select name="status"
+                    class="px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 transition bg-slate-50 border-slate-200 text-slate-800 focus:ring-[#4F46E5]/30">
+                    <option value="">Barchasi</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Kutilmoqda</option>
+                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Tasdiqlangan</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rad etilgan</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs mb-1.5 font-medium text-slate-400">Qidiruv</label>
+                <input type="text" name="search" value="{{ search }}" placeholder="Ism, familiya, telefon..."
+                    class="px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 transition bg-slate-50 border-slate-200 text-slate-800 focus:ring-[#4F46E5]/30">
+            </div>
+            <button type="submit" class="px-6 py-2.5 rounded-xl font-medium transition bg-[#4F46E5] text-white hover:bg-[#4338CA] shadow-sm">
+                <i class="ph ph-funnel"></i> Filtrlash
+            </button>
+        </form>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="rounded-2xl overflow-hidden bg-white border border-slate-200">
+        <table class="w-full">
+            <thead class="bg-slate-50 text-slate-400">
+                <tr class="uppercase text-xs font-semibold">
+                    <th class="p-4 text-left">O'quvchi</th>
+                    <th class="p-4 text-left">Sana</th>
+                    <th class="p-4 text-left">Kategoriya</th>
+                    <th class="p-4 text-left">To'lov usuli</th>
+                    <th class="p-4 text-left">Izoh</th>
+                    <th class="p-4 text-right">Summa</th>
+                    <th class="p-4 text-center">Chek</th>
+                    <th class="p-4 text-center">Holat</th>
+                    <th class="p-4 text-right">Amallar</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for payment in payments %}
+                <tr class="transition hover:bg-slate-100">
+                    <td class="p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
+                                {{ payment.student.first_name|first }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-700">{{ payment.student.get_full_name }}</p>
+                                <p class="text-xs text-slate-400">{{ payment.student.phone }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 text-sm text-slate-400">{{ payment.created_at|date:"d.m.Y H:i" }}</td>
+                    <td class="p-4 text-sm text-slate-600">{{ payment.category.name|default:"-" }}</td>
+                    <td class="p-4">
+                        <span class="px-2.5 py-1 text-xs rounded-full font-medium bg-slate-100 text-slate-600">
+                            {{ payment.get_payment_method_display }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-sm text-slate-500">{{ payment.description|default:"-"|truncatewords:10 }}</td>
+                    <td class="p-4 text-right font-bold text-emerald-600">{{ payment.amount|floatformat:0 }} UZS</td>
+                    <td class="p-4 text-center">
+                        {% if payment.receipt_image %}
+                        <a href="{{ payment.receipt_image.url }}" target="_blank"
+                            class="text-indigo-600 hover:text-indigo-800" title="Chekni ko'rish">
+                            <i class="ph ph-image text-lg"></i>
+                        </a>
+                        {% elif payment.receipt_file %}
+                        <a href="{{ payment.receipt_file.url }}" target="_blank"
+                            class="text-indigo-600 hover:text-indigo-800" title="Faylni ko'rish">
+                            <i class="ph ph-file-pdf text-lg"></i>
+                        </a>
+                        {% else %}
+                        <span class="text-slate-300">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4 text-center">
+                        <span class="px-2.5 py-1 text-xs rounded-full font-medium
+                            {% if payment.status == 'confirmed' %}bg-emerald-500/20 text-emerald-600
+                            {% elif payment.status == 'pending' %}bg-amber-500/20 text-amber-400
+                            {% else %}bg-rose-500/20 text-rose-600{% endif %}">
+                            {{ payment.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-right">
+                        {% if payment.status == 'pending' %}
+                        <div class="flex items-center justify-end gap-2">
+                            <form method="POST" action="{% url 'finance:admin_confirm_student_payment' payment.pk %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="p-2 rounded-lg transition text-emerald-600 hover:bg-emerald-500/20" title="Tasdiqlash">
+                                    <i class="ph ph-check-circle text-lg"></i>
+                                </button>
+                            </form>
+                            <form method="POST" action="{% url 'finance:admin_reject_student_payment' payment.pk %}" class="inline"
+                                  onsubmit="var r = prompt('Rad etish sababi:'); if(r === null) return false; this.querySelector('[name=reason]').value = r;">
+                                {% csrf_token %}
+                                <input type="hidden" name="reason" value="">
+                                <button type="submit" class="p-2 rounded-lg transition text-rose-600 hover:bg-rose-500/20" title="Rad etish">
+                                    <i class="ph ph-x-circle text-lg"></i>
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <span class="text-xs text-slate-500">
+                            {% if payment.confirmed_by %}{{ payment.confirmed_by.first_name }}{% else %}-{% endif %}
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="p-12 text-center">
+                        <i class="ph ph-student text-5xl mb-4 text-slate-600"></i>
+                        <p class="text-slate-500">O'quvchi to'lovlari topilmadi</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

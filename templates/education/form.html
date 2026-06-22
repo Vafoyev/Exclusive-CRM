@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+        <a href="javascript:history.back()" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+            <i class="ph ph-arrow-left text-xl"></i>
+        </a>
+        <h1 class="text-2xl font-bold text-slate-800">{{ title }}</h1>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-6">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="flex justify-end gap-4 pt-4 border-t">
+            <a href="javascript:history.back()"
+                class="px-6 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition">
+                Bekor qilish
+            </a>
+            <button type="submit" class="px-6 py-2 bg-[#4F46E5] text-white rounded-lg hover:bg-[#4338CA] transition">
+                Saqlash
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

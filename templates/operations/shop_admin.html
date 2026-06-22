@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Do'kon Boshqaruvi{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- SARLAVHA -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Do'kon Boshqaruvi 🎁</h1>
+            <p class="text-slate-500">Mahsulotlar va xaridlarni boshqaring</p>
+        </div>
+
+        <div class="flex gap-3">
+            {% if pending_count > 0 %}
+            <div
+                class="px-4 py-2 bg-amber-50 rounded-xl border border-amber-200">
+                <span class="text-amber-600">
+                    <i class="ph ph-clock"></i> {{ pending_count }} ta kutilmoqda
+                </span>
+            </div>
+            {% endif %}
+            <a href="{% url 'operations:shop' %}"
+                class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition">
+                <i class="ph ph-storefront mr-1"></i> Do'konga o'tish
+            </a>
+        </div>
+    </div>
+
+    <!-- KUTILAYOTGAN XARIDLAR -->
+    {% if pending_purchases %}
+    <div class="glass-panel rounded-2xl border border-amber-200 overflow-hidden">
+        <div class="p-4 bg-amber-50 border-b border-amber-200">
+            <h3 class="font-semibold text-amber-800">
+                <i class="ph ph-clock"></i> Topshirilishi kerak ({{ pending_count }})
+            </h3>
+        </div>
+        <div class="divide-y divide-slate-100">
+            {% for p in pending_purchases %}
+            <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-[#4F46E5] to-[#818CF8] rounded-xl flex items-center justify-center text-white font-bold">
+                        {{ p.student.first_name|first }}
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-slate-800">{{ p.student.first_name }}</h4>
+                        <p class="text-sm text-slate-500">{{ p.item.name }}</p>
+                        <span class="text-xs text-slate-400">{{ p.created_at|date:"d M, H:i" }}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-amber-600 font-semibold">{{ p.coin_spent }} 💰</span>
+                    <a href="{% url 'operations:deliver_purchase' p.pk %}"
+                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                        <i class="ph ph-check"></i> Topshirdim
+                    </a>
+                    <a href="{% url 'operations:cancel_purchase' p.pk %}"
+                        onclick="return confirm('Bekor qilsangiz coin qaytariladi')"
+                        class="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">
+                        <i class="ph ph-x"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- MAHSULOTLAR RO'YXATI -->
+    <div class="glass-panel rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="font-semibold text-slate-800">
+                <i class="ph ph-package"></i> Mahsulotlar ({{ items.count }})
+            </h3>
+            <!-- TODO: Mahsulot qo'shish formasi -->
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Mahsulot</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Kategoriya</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Narx</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Qoldi</th>
+                        <th class="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Holat</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for item in items %}
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" class="w-10 h-10 rounded-lg object-cover">
+                                {% else %}
+                                <div
+                                    class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                                    <span class="text-lg">📦</span>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <p class="font-medium text-slate-800">{{ item.name }}</p>
+                                    {% if item.is_featured %}
+                                    <span class="text-xs text-amber-500">⭐ Tavsiya</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-slate-600">
+                            {{ item.category.name|default:"-" }}
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="font-semibold text-amber-600">{{ item.coin_price }} 💰</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span
+                                class="{% if item.available_stock < 5 %}text-red-500{% else %}text-slate-600{% endif %}">
+                                {{ item.available_stock }} ta
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            {% if item.is_active %}
+                            <span
+                                class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
+                                Faol
+                            </span>
+                            {% else %}
+                            <span
+                                class="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-600">
+                                Nofaol
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-slate-500">
+                            Mahsulotlar yo'q
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

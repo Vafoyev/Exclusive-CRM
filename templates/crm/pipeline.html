@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sotuv Voronkasi{% endblock %}
+
+{% block content %}
+<!-- SortableJS kutubxonasini ulaymiz -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+<div class="h-[calc(100vh-8rem)] flex flex-col">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-slate-800">Sotuv Voronkasi</h1>
+        <div class="flex gap-3">
+            <a href="{% url 'crm:stage_list' %}"
+                class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition">
+                <i class="ph ph-gear"></i> Bosqichlar
+            </a>
+            <a href="{% url 'crm:lead_create' %}"
+                class="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition shadow-sm">
+                <i class="ph ph-plus"></i> Yangi Lid
+            </a>
+        </div>
+    </div>
+
+    <!-- KANBAN BOARD (Gorizontal Scroll) -->
+    <div class="flex gap-6 overflow-x-auto pb-6 h-full items-start px-2">
+
+        {% for stage in stages %}
+        <div
+            class="flex-shrink-0 w-80 flex flex-col h-full bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-glass">
+
+            <!-- STAGE HEADER -->
+            <div
+                class="p-4 border-b border-white/20 flex justify-between items-center bg-white/30 rounded-t-2xl backdrop-blur-sm">
+                <div class="flex items-center gap-3">
+                    <span class="w-2.5 h-10 rounded-full shadow-lg shadow-current"
+                        style="background-color: {{ stage.color }};"></span>
+                    <h3 class="font-bold text-slate-800">{{ stage.name }}</h3>
+                </div>
+                <span
+                    class="bg-white/50 text-slate-600 text-xs px-2.5 py-1 rounded-lg font-bold border border-white/20 shadow-sm">
+                    {{ stage.leads.count }}
+                </span>
+            </div>
+
+            <!-- DRAGGABLE AREA -->
+            <div class="p-3 flex-1 overflow-y-auto space-y-2.5 sortable-list custom-scrollbar"
+                data-stage-id="{{ stage.id }}">
+
+                {% for lead in stage.leads.all %}
+                <!-- LEAD CARD - Ixcham va chiroyli dizayn -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:border-[#4F46E5]/20 transition-all duration-200 cursor-grab active:cursor-grabbing group"
+                    data-lead-id="{{ lead.id }}">
+
+                    <!-- Card Header -->
+                    <div class="p-3 pb-2">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-slate-800 text-sm truncate">{{ lead.full_name }}</h4>
+                                <p class="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                                    <i class="ph ph-phone text-xs"></i>
+                                    {{ lead.phone }}
+                                </p>
+                            </div>
+                            <a href="{% url 'crm:lead_detail' lead.id %}"
+                               class="w-7 h-7 rounded-lg bg-slate-50 text-slate-400 hover:bg-[#4338CA] hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                                <i class="ph ph-arrow-right text-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    {% if lead.interested_course %}
+                    <div class="px-3 pb-2">
+                        <span class="inline-flex items-center gap-1 text-xs font-medium text-[#64748B] bg-[#4F46E5]/5 px-2 py-1 rounded-md">
+                            <i class="ph ph-book-open text-xs"></i>
+                            {{ lead.interested_course.name|truncatewords:3 }}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Card Footer -->
+                    <div class="px-3 py-2 border-t border-slate-50 flex items-center justify-between">
+                        <span class="text-xs text-slate-400 flex items-center gap-1">
+                            <i class="ph ph-flow-arrow text-xs"></i>
+                            {{ lead.source.name|default:"Noma'lum"|truncatewords:1 }}
+                        </span>
+                        <span class="text-xs text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded">
+                            {{ lead.created_at|date:"d.m" }}
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="py-8 text-center">
+                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i class="ph ph-user-plus text-slate-400"></i>
+                    </div>
+                    <p class="text-xs text-slate-400">Lidlar yo'q</p>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+        {% empty %}
+        <div class="flex items-center justify-center w-full h-64 text-slate-400 glass-panel rounded-2xl">
+            <div class="text-center">
+                <i class="ph ph-kanban text-4xl mb-3 opacity-50"></i>
+                <p>Hozircha bosqichlar yo'q</p>
+                <a href="#" class="text-primary hover:underline text-sm mt-2 block">Bosqich qo'shish +</a>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+<!-- JAVASCRIPT LOGIC (Drag & Drop) -->
+<script>
+    const lists = document.querySelectorAll('.sortable-list');
+
+    lists.forEach(list => {
+        new Sortable(list, {
+            group: 'shared', // Hamma ustunlar bir guruhda (biridan ikkinchisiga o'tadi)
+            animation: 150,
+            ghostClass: 'bg-[#4F46E5]/5', // Sudrayotganda orqada qolgan joy rangi
+
+            // DROP BO'LGANDA ISHLAYDI
+            onEnd: function (evt) {
+                const itemEl = evt.item;  // Surilgan karta
+                const newStageEl = evt.to; // Tushgan yangi ustun
+
+                const leadId = itemEl.getAttribute('data-lead-id');
+                const newStageId = newStageEl.getAttribute('data-stage-id');
+
+                // Agar joyi o'zgarmagan bo'lsa, to'xtaymiz
+                if (evt.from === evt.to) return;
+
+                // SERVERGA YUBORISH (AJAX)
+                fetch(`/crm/api/leads/${leadId}/move/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ stage_id: newStageId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            console.log("Status o'zgardi!");
+                            // Bu yerda Toast xabar chiqarish mumkin
+                        } else {
+                            alert("Xatolik yuz berdi!");
+                            // Joyiga qaytarish (agar xato bo'lsa)
+                            // location.reload(); 
+                        }
+                    });
+            }
+        });
+    });
+</script>
+{% endblock %}

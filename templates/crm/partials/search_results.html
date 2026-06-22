@@ -1,0 +1,35 @@
+<!-- Search Results - HTMX partial -->
+<div class="search-results">
+    {% if leads %}
+        <div class="space-y-2">
+            {% for lead in leads %}
+            <a href="{% url 'crm:lead_detail' lead.id %}"
+               class="flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-slate-50 transition">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#4338CA] flex items-center justify-center text-white font-semibold">
+                    {{ lead.full_name|slice:":1"|upper }}
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-medium text-slate-800">{{ lead.full_name }}</h4>
+                    <p class="text-sm text-slate-500">{{ lead.phone }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="px-2 py-1 text-xs rounded-lg"
+                          style="background-color: {{ lead.stage.color }}20; color: {{ lead.stage.color }};">
+                        {{ lead.stage.name }}
+                    </span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    {% elif query %}
+        <div class="text-center py-8 text-slate-400">
+            <i class="ph ph-magnifying-glass text-3xl mb-2"></i>
+            <p>"{{ query }}" bo'yicha natija topilmadi</p>
+        </div>
+    {% else %}
+        <div class="text-center py-8 text-slate-400">
+            <i class="ph ph-magnifying-glass text-3xl mb-2"></i>
+            <p>Qidiruv uchun yozing...</p>
+        </div>
+    {% endif %}
+</div>

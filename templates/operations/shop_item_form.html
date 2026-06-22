@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">{{ title }}</h1>
+            <p class="text-slate-400">Mahsulot ma'lumotlarini kiriting</p>
+        </div>
+        <a href="{% url 'operations:shop_item_list' %}" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600">
+            <i class="ph ph-arrow-left"></i> Orqaga
+        </a>
+    </div>
+
+    <div class="rounded-2xl p-6 bg-white border border-slate-200">
+        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Mahsulot nomi *</label>
+                    <input type="text" name="name" value="{{ item.name|default:'' }}" required
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 focus:ring-2 focus:ring-[#4F46E5]/30"
+                        placeholder="Masalan: IELTS Kitob">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Kategoriya</label>
+                    <select name="category" class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800">
+                        <option value="">Tanlang...</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if item.category_id == cat.id %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Mahsulot turi</label>
+                    <select name="item_type" class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800">
+                        {% for val, label in item_types %}
+                        <option value="{{ val }}" {% if item.item_type == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">💰 Coin narxi</label>
+                    <input type="number" name="coin_price" value="{{ item.coin_price|default:0 }}"
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800" placeholder="0">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">💵 Pul narxi (so'm)</label>
+                    <input type="number" name="cash_price" value="{{ item.cash_price|default:0 }}"
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800" placeholder="0">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Mavjud soni</label>
+                    <input type="number" name="stock" value="{{ item.stock|default:0 }}"
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800" placeholder="0">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Rasm</label>
+                    <input type="file" name="image" accept="image/*"
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#4F46E5]/50 file:text-slate-800">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Tavsif</label>
+                    <textarea name="description" rows="3"
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800"
+                        placeholder="Mahsulot haqida...">{{ item.description|default:'' }}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Elektron fayl (PDF)</label>
+                    <input type="file" name="digital_file" accept=".pdf"
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-slate-800">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Tashqi havola</label>
+                    <input type="url" name="digital_link" value="{{ item.digital_link|default:'' }}"
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800"
+                        placeholder="https://...">
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-6 pt-4 border-t border-slate-200">
+                <label class="flex items-center gap-2 text-slate-600">
+                    <input type="checkbox" name="allow_coin_purchase" {% if item.allow_coin_purchase or not item %}checked{% endif %}
+                        class="w-5 h-5 rounded border-slate-200 bg-slate-50 text-[#64748B]">
+                    💰 Coin bilan sotib olish
+                </label>
+                <label class="flex items-center gap-2 text-slate-600">
+                    <input type="checkbox" name="allow_cash_purchase" {% if item.allow_cash_purchase or not item %}checked{% endif %}
+                        class="w-5 h-5 rounded border-slate-200 bg-slate-50 text-[#64748B]">
+                    💵 Pul bilan sotib olish
+                </label>
+                <label class="flex items-center gap-2 text-slate-600">
+                    <input type="checkbox" name="is_active" {% if item.is_active or not item %}checked{% endif %}
+                        class="w-5 h-5 rounded border-slate-200 bg-slate-50 text-emerald-500">
+                    ✅ Faol
+                </label>
+                <label class="flex items-center gap-2 text-slate-600">
+                    <input type="checkbox" name="is_featured" {% if item.is_featured %}checked{% endif %}
+                        class="w-5 h-5 rounded border-slate-200 bg-slate-50 text-amber-500">
+                    ⭐ Tavsiya etilgan
+                </label>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-slate-800 rounded-xl font-medium">
+                    <i class="ph ph-check"></i> Saqlash
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

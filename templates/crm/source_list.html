@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Manbalar{% endblock %}
+{% block header_title %}📣 Lidlar Manbalari{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-slate-800">Manbalar</h1>
+        <a href="{% url 'crm:source_create' %}"
+            class="px-4 py-2 bg-[#4F46E5] text-white rounded-xl hover:bg-[#4338CA]/10 transition flex items-center gap-2">
+            <i class="ph ph-plus"></i> Yangi Manba
+        </a>
+    </div>
+
+    <!-- Manbalar ro'yxati -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for source in sources %}
+        <div class="glass-panel p-5 rounded-2xl hover:shadow-lg transition">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#818CF8] to-purple-500 flex items-center justify-center text-white text-xl">
+                        <i class="ph ph-megaphone"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800">{{ source.name }}</h3>
+                        <p class="text-sm text-slate-500">{{ source.lead_count }} lid</p>
+                    </div>
+                </div>
+                <a href="{% url 'crm:source_edit' source.id %}"
+                    class="p-2 rounded-lg hover:bg-slate-100 text-slate-500">
+                    <i class="ph ph-pencil"></i>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12 text-slate-500">
+            <i class="ph ph-megaphone text-5xl mb-4"></i>
+            <p>Hozircha manbalar yo'q</p>
+            <a href="{% url 'crm:source_create' %}" class="text-[#64748B] hover:underline mt-2 inline-block">+ Yangi manba
+                qo'shish</a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

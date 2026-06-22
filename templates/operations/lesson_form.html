@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_edit %}Darsni tahrirlash{% else %}Yangi Dars{% endif %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">{% if is_edit %}Darsni tahrirlash ✏️{% else %}Yangi Dars Qo'shish 📝{% endif %}</h1>
+            <p class="text-slate-400">Dars jadvalini to'ldiring</p>
+        </div>
+        <a href="{% url 'operations:lesson_list' %}"
+            class="px-4 py-2.5 rounded-xl flex items-center gap-2 transition font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">
+            <i class="ph ph-arrow-left"></i> Orqaga
+        </a>
+    </div>
+
+    <!-- Form -->
+    <div class="rounded-2xl p-6 bg-white border border-slate-200">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Guruh -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Guruh *</label>
+                    <select name="group" required
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30 focus:border-[#4F46E5]">
+                        <option value="">Tanlang...</option>
+                        {% for group in groups %}
+                        <option value="{{ group.id }}" {% if is_edit and lesson.group_id == group.id %}selected{% endif %}>{{ group.name }} ({{ group.teacher.first_name|default:"-" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Sana -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Sana *</label>
+                    <input type="date" name="date" value="{% if is_edit %}{{ lesson.date|date:'Y-m-d' }}{% else %}{{ today }}{% endif %}" required
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30 focus:border-[#4F46E5]">
+                </div>
+
+                <!-- Boshlanish vaqti -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Boshlanish *</label>
+                    <input type="time" name="start_time" value="{% if is_edit %}{{ lesson.start_time|time:'H:i' }}{% else %}09:00{% endif %}" required
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30 focus:border-[#4F46E5]">
+                </div>
+
+                <!-- Tugash vaqti -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Tugash *</label>
+                    <input type="time" name="end_time" value="{% if is_edit %}{{ lesson.end_time|time:'H:i' }}{% else %}10:30{% endif %}" required
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30 focus:border-[#4F46E5]">
+                </div>
+
+                <!-- Xona -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Xona</label>
+                    <select name="room"
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30 focus:border-[#4F46E5]">
+                        <option value="">Tanlang...</option>
+                        {% for room in rooms %}
+                        <option value="{{ room.id }}" {% if is_edit and lesson.room_id == room.id %}selected{% endif %}>{{ room.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Mavzu -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Dars mavzusi</label>
+                    <input type="text" name="topic" value="{% if is_edit %}{{ lesson.topic }}{% endif %}" placeholder="Masalan: Unit 5 - Grammar"
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30 focus:border-[#4F46E5]">
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="flex justify-end gap-3 pt-6 border-t border-slate-200">
+                <a href="{% url 'operations:lesson_list' %}"
+                    class="px-6 py-3 rounded-xl font-medium transition bg-slate-100 text-slate-600 hover:bg-slate-200">
+                    Bekor qilish
+                </a>
+                <button type="submit"
+                    class="px-6 py-3 bg-gradient-to-r from-[#818CF8] to-violet-600 text-slate-800 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition flex items-center gap-2 font-medium">
+                    <i class="ph ph-check"></i> Saqlash
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

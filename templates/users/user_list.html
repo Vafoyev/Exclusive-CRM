@@ -1,0 +1,443 @@
+{% extends 'base.html' %}
+{% load role_tags %}
+
+{% block title %}Foydalanuvchilar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- SARLAVHA + QUICK ACTIONS -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Foydalanuvchilar</h1>
+            <p class="text-slate-500">Xodimlar, O'qituvchilar va O'quvchilar</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="?filter=debtors"
+                class="inline-flex items-center gap-2 px-4 py-2.5 {% if current_filter == 'debtors' %}bg-red-500 text-white{% else %}bg-red-50 text-red-600{% endif %} rounded-xl font-medium hover:bg-red-600 hover:text-white transition">
+                <i class="ph ph-warning-circle"></i>
+                Qarzdorlar ({{ debtors_count }})
+            </a>
+
+            <!-- Tez qo'shish tugmalari - faqat create ruxsati bor bo'lsa -->
+            {% has_permission 'users' 'create' as can_create %}
+            {% if can_create %}
+            <a href="{% url 'users:student_create' %}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white rounded-xl font-medium shadow-lg shadow-[#4F46E5]/25 hover:shadow-[#4F46E5]/40 transition-all hover:-translate-y-0.5">
+                <i class="ph ph-student"></i>
+                O'quvchi
+            </a>
+            <a href="{% url 'users:teacher_create' %}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all hover:-translate-y-0.5">
+                <i class="ph ph-chalkboard-teacher"></i>
+                O'qituvchi
+            </a>
+            <a href="{% url 'users:staff_create' %}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-xl font-medium shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all hover:-translate-y-0.5">
+                <i class="ph ph-user-gear"></i>
+                Xodim
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- STATISTIKA KARTALAR -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="glass-panel p-4 rounded-xl border border-emerald-200">
+            <div class="flex items-center gap-3">
+                <div class="p-3 bg-green-100 rounded-lg">
+                    <i class="ph ph-student text-xl text-green-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500">Jami O'quvchilar</p>
+                    <p class="text-xl font-bold text-slate-800">{{ total_students }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="glass-panel p-4 rounded-xl border border-amber-200">
+            <div class="flex items-center gap-3">
+                <div class="p-3 bg-orange-100 rounded-lg">
+                    <i class="ph ph-warning text-xl text-orange-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500">Qarzdorlar</p>
+                    <p class="text-xl font-bold text-orange-600">{{ debtors_count }} nafar</p>
+                </div>
+            </div>
+        </div>
+        <div class="glass-panel p-4 rounded-xl border border-rose-200">
+            <div class="flex items-center gap-3">
+                <div class="p-3 bg-red-100 rounded-lg">
+                    <i class="ph ph-money text-xl text-red-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500">Umumiy Qarz</p>
+                    <p class="text-xl font-bold text-red-600">{{ total_debt|floatformat:0 }} so'm</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTERLAR -->
+    <div class="glass-panel rounded-xl border border-slate-100 p-4">
+        <form method="GET" class="flex flex-wrap items-center gap-4" id="searchForm">
+            <!-- Qidiruv -->
+            <div class="flex-1 min-w-[200px]">
+                <div class="relative">
+                    <input type="text" name="q" value="{{ current_search|default:'' }}"
+                        placeholder="   Ism, telefon bo'yicha qidirish..." id="searchInput"
+                        class="w-full pl-10 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:ring-2 focus:ring-[#4F46E5]/30 focus:outline-none">
+                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                </div>
+            </div>
+
+            <!-- Rol filteri -->
+            <select name="role"
+                class="min-w-[150px] px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:ring-2 focus:ring-[#4F46E5]/30 focus:outline-none">
+                <option value="">Barcha rollar</option>
+                {% for value, label in role_choices %}
+                <option value="{{ value }}" {% if current_role == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit"
+                class="px-4 py-2.5 bg-[#4F46E5] text-white rounded-xl font-medium hover:bg-[#4338CA] transition">
+                <i class="ph ph-funnel"></i> Filtrlash
+            </button>
+            <a href="{% url 'users:user_list' %}"
+                class="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-medium hover:bg-slate-200 transition">
+                Tozalash
+            </a>
+
+            <!-- Export tugmalari -->
+            {% has_permission 'users' 'export_excel' as can_export_excel %}
+            {% if can_export_excel %}
+            <a href="{% url 'users:export_users_excel' %}?{{ request.GET.urlencode }}"
+                class="px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition flex items-center gap-2">
+                <i class="ph ph-file-xls"></i> Excel
+            </a>
+            {% endif %}
+            {% has_permission 'users' 'export_pdf' as can_export_pdf %}
+            {% if can_export_pdf %}
+            <a href="{% url 'users:export_users_pdf' %}?{{ request.GET.urlencode }}"
+                class="px-4 py-2.5 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition flex items-center gap-2">
+                <i class="ph ph-file-pdf"></i> PDF
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- JADVAL -->
+    <div class="glass-panel rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            F.I.O</th>
+                        <th class="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            Telefon</th>
+                        <th class="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            Rol
+                        </th>
+                        <th class="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            Balans</th>
+                        <th class="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            Holat</th>
+                        <th class="text-right px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            Amallar</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for user in users %}
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#818CF8] flex items-center justify-center text-white font-bold overflow-hidden">
+                                    <img src="{{ user.avatar_url }}" alt="{{ user.full_name|default:'Foydalanuvchi' }}" class="w-full h-full object-cover">
+                                </div>
+                                <div>
+                                    <a href="{% url 'users:user_detail' user.id %}" class="font-semibold text-slate-800 hover:text-[#4F46E5] transition">{{ user.first_name }}
+                                        {{ user.last_name }}</a>
+                                    <div class="text-xs text-slate-500">ID: {{ user.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-600">{{ user.phone }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 text-xs rounded-full font-medium 
+                                {% if user.role == 'super_admin' %}bg-purple-100 text-purple-700
+                                {% elif user.role == 'student' %}bg-green-100 text-green-700
+                                {% elif user.role == 'teacher' %}bg-[#4F46E5]/10 text-[#0F172A]
+                                {% elif user.role == 'parent' %}bg-pink-100 text-pink-700
+                                {% else %}bg-slate-100 text-slate-700{% endif %}">
+                                {{ user.get_role_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if user.role == 'student' %}
+                            <span
+                                class="font-semibold {% if user.balance < 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                                {{ user.balance|floatformat:0 }} so'm
+                            </span>
+                            {% else %}
+                            <span class="text-slate-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if user.is_active %}
+                            <span class="inline-flex items-center gap-1 text-green-600 text-xs font-bold">
+                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Aktiv
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 text-red-500 text-xs font-bold">
+                                <span class="w-2 h-2 rounded-full bg-red-500"></span> Bloklangan
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{% url 'users:user_detail' user.id %}"
+                                    class="p-2 text-slate-500 hover:text-[#4F46E5] bg-slate-100 rounded-lg hover:bg-[#4F46E5]/10 transition"
+                                    title="Ko'rish">
+                                    <i class="ph ph-eye"></i>
+                                </a>
+                                {% has_permission 'users' 'edit' as can_edit %}
+                                {% if can_edit %}
+                                <a href="{% url 'users:user_update' user.id %}"
+                                    class="p-2 text-slate-500 hover:text-[#64748B] bg-slate-100 rounded-lg hover:bg-[#4338CA]/5 transition"
+                                    title="Tahrirlash">
+                                    <i class="ph ph-pencil-simple"></i>
+                                </a>
+                                {% else %}
+                                <span class="p-2 text-slate-300 bg-slate-50 rounded-lg cursor-not-allowed"
+                                    title="Tahrirlash ruxsati yo'q">
+                                    <i class="ph ph-pencil-simple"></i>
+                                </span>
+                                {% endif %}
+
+                                {% if user.role == 'student' %}
+                                {% has_permission 'finance' 'create' as can_pay %}
+                                {% if can_pay %}
+                                <a href="{% url 'finance:student_payment' user.id %}"
+                                    class="p-2 text-slate-500 hover:text-green-600 bg-slate-100 rounded-lg hover:bg-green-50 transition"
+                                    title="To'lov qabul qilish">
+                                    <i class="ph ph-money"></i>
+                                </a>
+                                {% endif %}
+                                {% if request.user.role == 'super_admin' %}
+                                <button type="button" onclick="openBonusModal('{{ user.id }}', '{{ user.first_name }} {{ user.last_name }}', '{{ user.bonus_amount|floatformat:0 }}', '{{ user.bonus_percentage }}')"
+                                    class="p-2 rounded-lg transition {% if user.bonus_amount > 0 or user.bonus_percentage > 0 %}bg-amber-50 text-amber-600{% else %}bg-slate-100 text-slate-500 hover:bg-amber-50 hover:text-amber-600{% endif %}"
+                                    title="Bonus: {% if user.bonus_amount > 0 %}{{ user.bonus_amount|floatformat:0 }} UZS{% elif user.bonus_percentage > 0 %}{{ user.bonus_percentage }}%{% else %}Berish{% endif %}">
+                                    <i class="ph ph-gift text-lg"></i>
+                                </button>
+                                {% endif %}
+                                {% endif %}
+
+                                {% has_permission 'users' 'delete' as can_delete %}
+                                {% if can_delete %}
+                                <a href="{% url 'users:user_delete' user.id %}"
+                                    class="p-2 text-slate-500 hover:text-red-600 bg-slate-100 rounded-lg hover:bg-red-50 transition"
+                                    title="O'chirish">
+                                    <i class="ph ph-trash"></i>
+                                </a>
+                                {% else %}
+                                <span class="p-2 text-slate-300 bg-slate-50 rounded-lg cursor-not-allowed"
+                                    title="O'chirish ruxsati yo'q">
+                                    <i class="ph ph-trash"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                                    <i class="ph ph-users text-3xl text-slate-400"></i>
+                                </div>
+                                <p class="text-slate-500">Hech kim topilmadi</p>
+                                {% has_permission 'users' 'create' as can_create_empty %}
+                                {% if can_create_empty %}
+                                <a href="{% url 'users:student_create' %}"
+                                    class="text-[#64748B] hover:underline mt-2">Yangi
+                                    qo'shish →</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        {% if users.has_other_pages %}
+        <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
+            <div class="text-sm text-slate-500">
+                {{ users.start_index }} - {{ users.end_index }} / {{ users.paginator.count }} ta
+            </div>
+            <div class="flex items-center gap-2">
+                {% if users.has_previous %}
+                <a href="?page={{ users.previous_page_number }}{% if current_role %}&role={{ current_role }}{% endif %}{% if current_filter %}&filter={{ current_filter }}{% endif %}{% if current_search %}&q={{ current_search }}{% endif %}"
+                    class="px-3 py-1.5 bg-slate-100 rounded-lg text-sm hover:bg-slate-200 transition">
+                    <i class="ph ph-caret-left"></i>
+                </a>
+                {% endif %}
+
+                <span class="px-3 py-1.5 bg-[#4F46E5]/10 text-[#0F172A] rounded-lg text-sm font-medium">
+                    {{ users.number }}
+                </span>
+
+                {% if users.has_next %}
+                <a href="?page={{ users.next_page_number }}{% if current_role %}&role={{ current_role }}{% endif %}{% if current_filter %}&filter={{ current_filter }}{% endif %}{% if current_search %}&q={{ current_search }}{% endif %}"
+                    class="px-3 py-1.5 bg-slate-100 rounded-lg text-sm hover:bg-slate-200 transition">
+                    <i class="ph ph-caret-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- BONUS MODAL -->
+<div id="bonusModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeBonusModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800" id="bonusModalTitle">Bonus Berish</h3>
+            <button type="button" onclick="closeBonusModal()" class="text-slate-400 hover:text-slate-600 transition">
+                <i class="ph ph-x text-xl"></i>
+            </button>
+        </div>
+        
+        <form method="POST" action="{% url 'users:admin_set_student_bonus' %}">
+            {% csrf_token %}
+            <input type="hidden" name="student_id" id="bonusStudentId">
+            
+            <div class="space-y-5">
+                <!-- Bonus turi -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Bonus turi</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="bonus_type" value="amount" class="peer sr-only" checked onchange="toggleBonusType()">
+                            <div class="p-3 rounded-xl border-2 border-slate-200 peer-checked:border-amber-500 peer-checked:bg-amber-50 hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                                <i class="ph ph-money text-lg peer-checked:text-amber-600"></i>
+                                <span class="text-sm font-medium text-slate-600 peer-checked:text-amber-700">Summada</span>
+                            </div>
+                        </label>
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="bonus_type" value="percentage" class="peer sr-only" onchange="toggleBonusType()">
+                            <div class="p-3 rounded-xl border-2 border-slate-200 peer-checked:border-amber-500 peer-checked:bg-amber-50 hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                                <i class="ph ph-percent text-lg peer-checked:text-amber-600"></i>
+                                <span class="text-sm font-medium text-slate-600 peer-checked:text-amber-700">Foizda</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="bonusAmountContainer">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Chegirma summasi <span class="text-slate-400 font-normal">(UZS)</span></label>
+                    <input type="number" name="bonus_amount" id="bonusAmountInput" value="0" min="0" step="1000"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 outline-none transition">
+                    <p class="text-xs text-slate-500 mt-2 flex items-start gap-1">
+                        <i class="ph ph-info mt-0.5"></i>
+                        Bu summa o'quvchining har darsiga yoziladigan to'lovdan ayirib boriladi.
+                    </p>
+                </div>
+                
+                <div id="bonusPercentageContainer" class="hidden">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Chegirma foizi <span class="text-slate-400 font-normal">(%)</span></label>
+                    <input type="number" name="bonus_percentage" id="bonusPercentageInput" value="0" min="0" max="100"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 outline-none transition">
+                    <p class="text-xs text-slate-500 mt-2 flex items-start gap-1">
+                        <i class="ph ph-info mt-0.5"></i>
+                        O'quvchi butun oy uchun faqat qolgan foizini to'laydi (masalan: 10 yozsangiz, 10% chegirma bo'ladi va 90% narxlanadi).
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onclick="closeBonusModal()"
+                    class="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition">Bekor qilish</button>
+                <button type="submit"
+                    class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 shadow-md shadow-amber-500/20 text-white rounded-xl font-medium hover:from-amber-600 hover:to-orange-600 transition">
+                    Saqlash
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Real-time search (Debounce)
+    let searchTimeout = null;
+    const searchInput = document.getElementById('searchInput');
+    const searchForm = document.getElementById('searchForm');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            if (searchTimeout) clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchForm.submit();
+            }, 500); // 500ms kutiladi
+        });
+        
+        // Kursor inputning oxiriga borishi uchun (reload bo'lganda)
+        const val = searchInput.value;
+        searchInput.focus();
+        searchInput.value = '';
+        searchInput.value = val;
+    }
+
+    // Bonus Modal
+    function openBonusModal(studentId, studentName, currentBonusAmount, currentBonusPercentage) {
+        document.getElementById('bonusStudentId').value = studentId;
+        document.getElementById('bonusModalTitle').innerText = studentName + " uchun Bonus";
+        
+        const amountInput = document.getElementById('bonusAmountInput');
+        const percentInput = document.getElementById('bonusPercentageInput');
+        const amountRadio = document.querySelector('input[name="bonus_type"][value="amount"]');
+        const percentRadio = document.querySelector('input[name="bonus_type"][value="percentage"]');
+
+        amountInput.value = currentBonusAmount || 0;
+        percentInput.value = currentBonusPercentage || 0;
+        
+        if (parseInt(currentBonusPercentage) > 0) {
+            percentRadio.checked = true;
+        } else {
+            amountRadio.checked = true;
+        }
+        
+        toggleBonusType();
+        document.getElementById('bonusModal').classList.remove('hidden');
+    }
+    
+    function toggleBonusType() {
+        const type = document.querySelector('input[name="bonus_type"]:checked').value;
+        const amountContainer = document.getElementById('bonusAmountContainer');
+        const percentContainer = document.getElementById('bonusPercentageContainer');
+        const amountInput = document.getElementById('bonusAmountInput');
+        const percentInput = document.getElementById('bonusPercentageInput');
+        
+        if (type === 'amount') {
+            amountContainer.classList.remove('hidden');
+            percentContainer.classList.add('hidden');
+            percentInput.value = '0'; // reset percentage
+        } else {
+            percentContainer.classList.remove('hidden');
+            amountContainer.classList.add('hidden');
+            amountInput.value = '0'; // reset amount
+        }
+    }
+
+    function closeBonusModal() {
+        document.getElementById('bonusModal').classList.add('hidden');
+    }
+</script>
+
+{% endblock %}

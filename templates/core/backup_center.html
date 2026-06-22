@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Backup Center{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-database text-[#64748B]"></i>
+                Backup Center
+            </h1>
+            <p class="text-slate-500">Telegramga backup yuborish, vaqtini sozlash va bir tugma bilan zaxira olish</p>
+        </div>
+        {% if access_confirmed %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="lock_access">
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition">
+                Qulflash
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if not access_confirmed %}
+    <div class="glass-panel rounded-3xl border border-slate-100 p-6 lg:p-8">
+        <div class="max-w-xl mx-auto text-center">
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 text-white">
+                <i class="ph ph-shield-check text-3xl"></i>
+            </div>
+            <h2 class="mt-5 text-2xl font-bold text-slate-800">Qo'shimcha kirish tasdig'i</h2>
+            <p class="mt-2 text-sm text-slate-500">
+                Backup bo'limi sezgir ma'lumotlar bilan ishlaydi. Davom etish uchun akkaunt parolingizni kiriting.
+            </p>
+            <form method="post" class="mt-6 space-y-4 text-left">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="unlock">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Parol</label>
+                    <input type="password" name="password" required
+                        class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/15">
+                </div>
+                <button type="submit" class="w-full rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+                    Kirishni tasdiqlash
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div class="xl:col-span-2 space-y-6">
+            <form method="post" class="glass-panel rounded-3xl border border-slate-100 p-6 space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save_settings">
+
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Asosiy sozlamalar</h2>
+                        <p class="mt-1 text-sm text-slate-500">Bot token, schedule va saqlash muddatini shu yerdan boshqarasiz.</p>
+                    </div>
+                    <label class="inline-flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+                        <input type="checkbox" name="is_enabled" class="form-checkbox" {% if backup_config.is_enabled %}checked{% endif %}>
+                        <span class="text-sm font-medium text-slate-700">Avtomatik backup yoqilsin</span>
+                    </label>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Telegram bot token</label>
+                        <input type="text" name="telegram_bot_token" value="{{ backup_config.telegram_bot_token }}"
+                            class="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800"
+                            placeholder="123456:ABC...">
+                        {% if masked_bot_token %}
+                        <p class="mt-2 text-xs text-slate-500">Saqlangan token: {{ masked_bot_token }}</p>
+                        {% else %}
+                        <p class="mt-2 text-xs text-slate-500">Faqat token kiritilsa ham bo'ladi. Chat ID bo'sh qolsa tizim oxirgi chatni topishga urinadi.</p>
+                        {% endif %}
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Telegram chat ID</label>
+                        <input type="text" name="telegram_chat_id" value="{{ backup_config.telegram_chat_id }}"
+                            class="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800"
+                            placeholder="Masalan: 123456789">
+                        <label class="mt-3 inline-flex items-center gap-2 text-sm text-slate-700">
+                            <input type="checkbox" name="auto_detect_chat" class="form-checkbox" {% if backup_config.auto_detect_chat %}checked{% endif %}>
+                            <span>Chat ID ni avtomatik topishga harakat qilsin</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-3">
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Backup rejimi</label>
+                        <select name="schedule_type" class="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800">
+                            <option value="manual" {% if backup_config.schedule_type == 'manual' %}selected{% endif %}>Faqat qo'lda</option>
+                            <option value="interval" {% if backup_config.schedule_type == 'interval' %}selected{% endif %}>Har N soatda</option>
+                            <option value="daily" {% if backup_config.schedule_type == 'daily' %}selected{% endif %}>Har kuni</option>
+                        </select>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Interval (soat)</label>
+                        <input type="number" min="1" name="interval_hours" value="{{ backup_config.interval_hours|default:24 }}"
+                            class="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800">
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Kunlik vaqt</label>
+                        <input type="time" name="daily_time" value="{{ backup_config.daily_time|time:'H:i' }}"
+                            class="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800">
+                    </div>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Saqlash muddati (kun)</label>
+                        <input type="number" min="1" name="retention_days" value="{{ backup_config.retention_days|default:30 }}"
+                            class="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800">
+                        <p class="mt-2 text-xs text-slate-500">Shundan eski backup fayllar avtomatik tozalanadi.</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Scheduler command</p>
+                        <code class="mt-3 block rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-800">{{ scheduler_command }}</code>
+                        <p class="mt-2 text-xs text-slate-500">Task Scheduler, cron yoki Celery Beat orqali shu command ni periodik chaqirish mumkin.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+                    <button type="submit" class="rounded-2xl bg-[#4F46E5] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#4338CA]">
+                        Sozlamalarni saqlash
+                    </button>
+                </div>
+            </form>
+
+            <div class="glass-panel rounded-3xl border border-slate-100 p-6">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Qo'lda backup</h2>
+                        <p class="mt-1 text-sm text-slate-500">Istalgan paytda bir tugma bilan backup olib, Telegramga yuborishingiz mumkin.</p>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="run_backup_now">
+                        <button type="submit" class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                            Hozir backup olish
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="glass-panel rounded-3xl border border-slate-100 p-6">
+                <h2 class="text-xl font-bold text-slate-800">Holat</h2>
+                <div class="mt-4 space-y-3 text-sm text-slate-700">
+                    <div class="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+                        <span>Oxirgi status</span>
+                        <strong>
+                            {% if backup_config.last_status == 'success' %}Muvaffaqiyatli{% elif backup_config.last_status == 'failed' %}Xatolik{% else %}Hali ishlamagan{% endif %}
+                        </strong>
+                    </div>
+                    <div class="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+                        <span>Oxirgi backup</span>
+                        <strong>{% if backup_config.last_run_at %}{{ backup_config.last_run_at|date:"d.m.Y H:i" }}{% else %}-{% endif %}</strong>
+                    </div>
+                    <div class="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+                        <span>Keyingi backup</span>
+                        <strong>{% if backup_config.next_run_at %}{{ backup_config.next_run_at|date:"d.m.Y H:i" }}{% elif next_run_preview %}{{ next_run_preview|date:"d.m.Y H:i" }}{% else %}-{% endif %}</strong>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                        <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Oxirgi xabar</p>
+                        <p class="mt-2 text-sm text-slate-700">{{ backup_config.last_message|default:"Hali xabar yo'q" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-3xl border border-slate-100 p-6">
+                <h2 class="text-xl font-bold text-slate-800">Kirish himoyasi</h2>
+                <p class="mt-3 text-sm leading-6 text-slate-600">Bu bo'limga kirish tasdig'i {{ reauth_minutes }} daqiqa amal qiladi. Vaqt tugasa sahifa yana parol so'raydi.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-panel rounded-3xl border border-slate-100 p-6">
+        <h2 class="text-xl font-bold text-slate-800">Oxirgi backup loglari</h2>
+        <div class="mt-5 overflow-x-auto">
+            <table class="w-full min-w-[880px]">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Boshlangan</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Turi</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Holat</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Fayl</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Telegram</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Izoh</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td class="px-4 py-4 text-sm text-slate-700">{{ log.started_at|date:"d.m.Y H:i" }}</td>
+                        <td class="px-4 py-4 text-sm text-slate-700">{{ log.get_trigger_source_display }}</td>
+                        <td class="px-4 py-4 text-sm">
+                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {% if log.status == 'success' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">
+                                {{ log.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 text-sm text-slate-700">
+                            {% if log.backup_file_name %}{{ log.backup_file_name }} ({{ log.file_size_display }}){% else %}-{% endif %}
+                        </td>
+                        <td class="px-4 py-4 text-sm text-slate-700">{% if log.sent_to_telegram %}Yuborildi{% else %}Yo'q{% endif %}</td>
+                        <td class="px-4 py-4 text-sm text-slate-600">{{ log.message|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-10 text-center text-slate-500">Backup loglari hali yo'q.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

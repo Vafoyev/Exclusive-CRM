@@ -1,0 +1,29 @@
+{% comment %}
+HTMX so'rovlari uchun base template.
+Faqat content qismini qaytaradi (sidebar, header yo'q).
+{% endcomment %}
+
+{% load static %}
+
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="p-4 rounded-xl flex items-center gap-3 animate-fadeIn
+        {% if message.tags == 'error' %}
+        bg-rose-50 text-rose-600 border border-rose-200
+        {% else %}
+        bg-emerald-50 text-emerald-600 border border-emerald-200
+        {% endif %}">
+        <i class="ph-fill {% if message.tags == 'error' %}ph-warning{% else %}ph-check-circle{% endif %} text-xl"></i>
+        <span class="flex-1">{{ message }}</span>
+        <button onclick="this.parentElement.remove()" class="p-1 hover:bg-black/5 rounded-lg">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+{% block extra_js %}{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+
+    <!-- Xatolar va Ogohlantirishlar -->
+    {% if all_alerts %}
+    <div class="space-y-3">
+        <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-amber-500">notifications_active</span>
+            Diqqatga sazovor
+        </h2>
+        {% for alert in all_alerts %}
+        <a href="{{ alert.link }}" class="block p-4 rounded-xl border transition-all hover:shadow-md {% if alert.type == 'error' %}bg-red-50 border-red-200 hover:bg-red-100{% elif alert.type == 'warning' %}bg-amber-50 border-amber-200 hover:bg-amber-100{% else %}bg-blue-50 border-blue-200 hover:bg-blue-100{% endif %}">
+            <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-xl {% if alert.type == 'error' %}text-red-500{% elif alert.type == 'warning' %}text-amber-500{% else %}text-blue-500{% endif %}">{{ alert.icon }}</span>
+                <div>
+                    <h3 class="font-semibold {% if alert.type == 'error' %}text-red-800{% elif alert.type == 'warning' %}text-amber-800{% else %}text-blue-800{% endif %}">{{ alert.title }}</h3>
+                    <p class="text-sm {% if alert.type == 'error' %}text-red-600{% elif alert.type == 'warning' %}text-amber-600{% else %}text-blue-600{% endif %}">{{ alert.description }}</p>
+                </div>
+                <span class="material-symbols-outlined ml-auto {% if alert.type == 'error' %}text-red-400{% elif alert.type == 'warning' %}text-amber-400{% else %}text-blue-400{% endif %}">arrow_forward</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Asosiy Statistika -->
+    {% if stats %}
+    <div>
+        <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-primary-500">analytics</span>
+            Asosiy Statistika
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for stat in stats %}
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="material-symbols-outlined text-2xl {% if stat.color == 'primary' %}text-primary-500{% elif stat.color == 'success' %}text-green-500{% elif stat.color == 'info' %}text-blue-500{% elif stat.color == 'warning' %}text-amber-500{% else %}text-gray-500{% endif %}">{{ stat.icon }}</span>
+                    {% if stat.badge %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">{{ stat.badge }}</span>
+                    {% endif %}
+                </div>
+                <p class="text-sm text-gray-500 mb-1">{{ stat.title }}</p>
+                <p class="text-2xl font-bold text-gray-800">{{ stat.value }}</p>
+                {% if stat.footer %}
+                <p class="text-xs text-gray-400 mt-2">{{ stat.footer }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Ikkinchi qator statistika -->
+    {% if stats_row2 %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% for stat in stats_row2 %}
+        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+                <span class="material-symbols-outlined text-2xl {% if stat.color == 'primary' %}text-primary-500{% elif stat.color == 'success' %}text-green-500{% elif stat.color == 'info' %}text-blue-500{% elif stat.color == 'warning' %}text-amber-500{% else %}text-gray-500{% endif %}">{{ stat.icon }}</span>
+            </div>
+            <p class="text-sm text-gray-500 mb-1">{{ stat.title }}</p>
+            <div class="flex items-baseline gap-1">
+                <p class="text-2xl font-bold text-gray-800">{{ stat.value }}</p>
+                {% if stat.total %}
+                <span class="text-sm text-gray-400">/ {{ stat.total }}</span>
+                {% endif %}
+            </div>
+            {% if stat.footer %}
+            <p class="text-xs text-gray-400 mt-2">{{ stat.footer }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Qo'shimcha ma'lumotlar kartochkalari -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl p-5 text-white">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="material-symbols-outlined text-2xl">business</span>
+                <span class="text-lg font-semibold">Tashkilotlar</span>
+            </div>
+            <p class="text-3xl font-bold">{{ organizations_count|default:0 }}</p>
+            <p class="text-sm opacity-80 mt-1">{{ branches_count|default:0 }} filial</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-5 text-white">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="material-symbols-outlined text-2xl">pending_actions</span>
+                <span class="text-lg font-semibold">Kutilayotgan</span>
+            </div>
+            <p class="text-3xl font-bold">{{ pending_transactions|default:0 }}</p>
+            <p class="text-sm opacity-80 mt-1">tasdiqlanmagan to'lov</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-5 text-white">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="material-symbols-outlined text-2xl">verified</span>
+                <span class="text-lg font-semibold">Tizim holati</span>
+            </div>
+            <p class="text-3xl font-bold">✓</p>
+            <p class="text-sm opacity-80 mt-1">Barcha xizmatlar ishlayapti</p>
+        </div>
+    </div>
+
+    <!-- Tez harakatlar -->
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary-500">bolt</span>
+            Tez Harakatlar
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <a href="{% url 'admin:users_user_add' %}" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 hover:bg-primary-50 hover:text-primary-600 transition-colors text-center group">
+                <span class="material-symbols-outlined text-2xl text-gray-400 group-hover:text-primary-500">person_add</span>
+                <span class="text-sm font-medium">Foydalanuvchi</span>
+            </a>
+            <a href="{% url 'admin:education_group_add' %}" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 hover:bg-primary-50 hover:text-primary-600 transition-colors text-center group">
+                <span class="material-symbols-outlined text-2xl text-gray-400 group-hover:text-primary-500">group_add</span>
+                <span class="text-sm font-medium">Guruh</span>
+            </a>
+            <a href="{% url 'admin:education_course_add' %}" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 hover:bg-primary-50 hover:text-primary-600 transition-colors text-center group">
+                <span class="material-symbols-outlined text-2xl text-gray-400 group-hover:text-primary-500">add_box</span>
+                <span class="text-sm font-medium">Kurs</span>
+            </a>
+            <a href="{% url 'admin:finance_transaction_add' %}" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 hover:bg-primary-50 hover:text-primary-600 transition-colors text-center group">
+                <span class="material-symbols-outlined text-2xl text-gray-400 group-hover:text-primary-500">add_card</span>
+                <span class="text-sm font-medium">To'lov</span>
+            </a>
+            <a href="{% url 'admin:crm_lead_add' %}" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 hover:bg-primary-50 hover:text-primary-600 transition-colors text-center group">
+                <span class="material-symbols-outlined text-2xl text-gray-400 group-hover:text-primary-500">person_search</span>
+                <span class="text-sm font-medium">Lid</span>
+            </a>
+            <a href="/" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 hover:bg-green-50 hover:text-green-600 transition-colors text-center group">
+                <span class="material-symbols-outlined text-2xl text-gray-400 group-hover:text-green-500">home</span>
+                <span class="text-sm font-medium">Saytga qaytish</span>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+{{ block.super }}
+{% endblock %}

@@ -1,0 +1,253 @@
+<!-- Dashboard -->
+<a href="{% url 'dashboard' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+    <i class="ph-fill ph-squares-four text-xl"></i>
+    <span>Dashboard</span>
+</a>
+
+<!-- BOSHQARUV -->
+{% if full_access or 'users' in user_modules %}
+<p class="sidebar-section">Boshqaruv</p>
+
+<a href="{% url 'users:user_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'users' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-users text-xl"></i>
+    <span>Foydalanuvchilar</span>
+</a>
+
+{% if full_access or 'automation' in user_modules %}
+<a href="{% url 'automation:template_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'automation' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-robot text-xl"></i>
+    <span>Avtomatizatsiya</span>
+</a>
+{% endif %}
+{% endif %}
+
+<!-- CRM -->
+{% if full_access or 'crm' in user_modules %}
+<p class="sidebar-section">Sotuv & CRM</p>
+
+<a href="{% url 'crm:pipeline' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'crm' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-funnel text-xl"></i>
+    <span>Sotuv & CRM</span>
+</a>
+{% endif %}
+
+<!-- EDUCATION -->
+{% if full_access or 'education' in user_modules or request.user.role == 'teacher' %}
+<p class="sidebar-section">O'quv Jarayoni</p>
+
+<a href="{% url 'group_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'groups' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-users-three text-xl"></i>
+    <span>Guruhlar</span>
+</a>
+
+<a href="{% url 'course_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'courses' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-books text-xl"></i>
+    <span>Kurslar</span>
+</a>
+
+{% if full_access %}
+<a href="{% url 'room_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'rooms' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-door text-xl"></i>
+    <span>Xonalar</span>
+</a>
+{% endif %}
+
+<a href="{% url 'material_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'materials' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-file-video text-xl"></i>
+    <span>Materiallar</span>
+</a>
+{% endif %}
+
+<!-- OPERATIONS -->
+{% if full_access or 'operations' in user_modules or request.user.role == 'teacher' %}
+<p class="sidebar-section">Operatsiyalar</p>
+
+<a href="{% url 'operations:lesson_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'lessons' in request.path or 'schedule' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-chalkboard text-xl"></i>
+    <span>Darslar & Jadval</span>
+</a>
+{% endif %}
+
+<!-- RATINGS -->
+<p class="sidebar-section">Reytinglar</p>
+
+<a href="{% url 'operations:teacher_ratings' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'ratings' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-trophy text-xl"></i>
+    <span>Reytinglar</span>
+</a>
+
+{% if request.user.role == 'super_admin' %}
+<a href="{% url 'operations:shop' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'shop' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-storefront text-xl"></i>
+    <span>Do'kon</span>
+</a>
+{% endif %}
+
+<!-- TO'LOV (O'quvchi va Ota-ona uchun) -->
+{% if request.user.role == 'student' or request.user.role == 'parent' %}
+<p class="sidebar-section">To'lov</p>
+
+<a href="{% url 'finance:student_payment_page' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if '/finance/pay' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-credit-card text-xl"></i>
+    <span>To'lov qilish</span>
+</a>
+
+<a href="{% url 'finance:my_payments' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'my-payments' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-receipt text-xl"></i>
+    <span>To'lovlar tarixi</span>
+</a>
+{% endif %}
+
+<!-- ADMIN KASSA (Administrator kirim-chiqim) -->
+{% if 'admin_finance' in user_modules %}
+<p class="sidebar-section">Kassa Kirim-Chiqim</p>
+
+<a href="{% url 'finance:admin_cash_dashboard' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if '/finance/admin-cash' in request.path and 'history' not in request.path and 'submit' not in request.path and 'income' not in request.path and 'expense' not in request.path and 'course-payment' not in request.path and 'student-payments' not in request.path %}active{% endif %}">
+    <i class="ph-fill ph-cash-register text-xl"></i>
+    <span>Kassam</span>
+</a>
+
+<a href="{% url 'finance:admin_add_income' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'admin-cash/income' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-arrow-circle-down text-xl"></i>
+    <span>Kirim</span>
+</a>
+
+<a href="{% url 'finance:admin_add_expense' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'admin-cash/expense' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-arrow-circle-up text-xl"></i>
+    <span>Chiqim</span>
+</a>
+
+<a href="{% url 'finance:admin_add_course_payment' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'course-payment' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-student text-xl"></i>
+    <span>Kurs To'lovi</span>
+</a>
+
+<a href="{% url 'finance:admin_student_payments' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'student-payments' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-receipt text-xl"></i>
+    <span>Chek Tekshirish</span>
+</a>
+
+<a href="{% url 'finance:admin_cash_history' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'admin-cash/history' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-clock-counter-clockwise text-xl"></i>
+    <span>Tarix</span>
+</a>
+
+<a href="{% url 'finance:admin_submit_cash' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'admin-cash/submit' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-paper-plane-tilt text-xl"></i>
+    <span>Kassa Topshirish</span>
+</a>
+
+<a href="{% url 'finance:cash_submission_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'cash-submissions' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-hand-coins text-xl"></i>
+    <span>Topshirishlar</span>
+</a>
+
+<a href="{% url 'finance:supply_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'supplies' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-package text-xl"></i>
+    <span>Omborxona</span>
+</a>
+{% endif %}
+
+<!-- FINANCE -->
+{% if full_access or 'finance' in user_modules %}
+<p class="sidebar-section">Moliya</p>
+
+<a href="{% url 'finance:account_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'accounts' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-vault text-xl"></i>
+    <span>Kassalar</span>
+</a>
+
+<a href="{% url 'finance:category_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'categories' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-folders text-xl"></i>
+    <span>Kategoriyalar</span>
+</a>
+
+<a href="{% url 'finance:transaction_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'transactions' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-arrows-left-right text-xl"></i>
+    <span>Kirim-Chiqim</span>
+</a>
+
+<a href="{% url 'finance:report' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'report' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-chart-bar text-xl"></i>
+    <span>Hisobotlar</span>
+</a>
+
+<a href="{% url 'finance:payroll_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'payroll' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-money text-xl"></i>
+    <span>Oyliklar</span>
+</a>
+
+<a href="{% url 'finance:supply_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'supplies' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-package text-xl"></i>
+    <span>Sklad</span>
+</a>
+
+<a href="{% url 'finance:pending_receipts' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'receipts' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-receipt text-xl"></i>
+    <span>Chek Tekshirish</span>
+</a>
+
+<a href="{% url 'finance:cash_submission_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'cash-submissions' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-hand-coins text-xl"></i>
+    <span>Kassa Topshirishlar</span>
+</a>
+{% endif %}
+
+<!-- SETTINGS -->
+{% if full_access or 'settings' in user_modules %}
+<a href="{% url 'core:settings' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'settings' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-gear text-xl"></i>
+    <span>Sozlamalar</span>
+</a>
+
+<a href="{% url 'hardware:face_id_settings' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'face-id' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-fingerprint text-xl"></i>
+    <span>Hikvision Face ID</span>
+</a>
+
+<a href="{% url 'core:history_list' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'history' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-clock-counter-clockwise text-xl"></i>
+    <span>Tarix</span>
+</a>
+
+{% if request.user.role == 'super_admin' %}
+<a href="{% url 'core:backup_center' %}" @click="closeSidebar && closeSidebar()"
+    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'backup-center' in request.path %}active{% endif %}">
+    <i class="ph-fill ph-database text-xl"></i>
+    <span>Backup Center</span>
+</a>
+{% endif %}
+{% endif %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Sklad kategoriyalari{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Kategoriyalar</h1>
+            <p class="text-slate-400">Sklad kategoriyalari</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'finance:supply_list' %}" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200">
+                <i class="ph ph-arrow-left"></i> Materiallar
+            </a>
+            <a href="{% url 'finance:supply_category_create' %}" class="px-4 py-2.5 bg-gradient-to-r from-[#818CF8] to-violet-600 text-slate-800 rounded-xl font-medium">
+                <i class="ph ph-plus"></i> Yangi kategoriya
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for cat in categories %}
+        <div class="rounded-2xl p-5 bg-white border border-slate-200 hover:border-primary-300 transition">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-[#4F46E5]/15 flex items-center justify-center">
+                        <i class="ph ph-folder text-xl text-[#64748B]"></i>
+                    </div>
+                    <h3 class="text-slate-800 font-bold">{{ cat.name }}</h3>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{% url 'finance:supply_category_edit' cat.pk %}" class="p-2 rounded-lg bg-[#4F46E5]/15 text-[#64748B] hover:bg-[#4338CA]/25">
+                        <i class="ph ph-pencil"></i>
+                    </a>
+                    <a href="{% url 'finance:supply_category_delete' cat.pk %}" onclick="return confirm('Ochirish?')" class="p-2 rounded-lg bg-rose-500/20 text-rose-600 hover:bg-rose-500/30">
+                        <i class="ph ph-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full rounded-2xl p-12 bg-white border border-slate-200 text-center">
+            <i class="ph ph-folder-open text-6xl text-slate-600 mb-4"></i>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Kategoriyalar yoq</h3>
+            <a href="{% url 'finance:supply_category_create' %}" class="text-[#64748B] hover:underline">Birinchi kategoriyani yarating</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

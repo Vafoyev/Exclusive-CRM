@@ -1,0 +1,17 @@
+[Unit]
+Description=Celery Service for Crmtizim
+After=network.target redis.service
+
+[Service]
+Type=forking
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/Crmtizim
+EnvironmentFile=/var/www/Crmtizim/.env
+ExecStart=/var/www/Crmtizim/venv/bin/celery -A config worker --loglevel=info --detach
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

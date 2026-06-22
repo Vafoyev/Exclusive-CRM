@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}To'lov qilish{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">To'lov qilish 💳</h1>
+            <p class="text-slate-400">Chek yuklang va to'lovni yuboring</p>
+        </div>
+
+        {% if children %}
+        <div class="flex items-center gap-3">
+            <span class="text-slate-400 text-sm">Farzand:</span>
+            <select onchange="window.location.href='?student='+this.value"
+                class="px-4 py-2 rounded-xl border bg-slate-50 border-slate-200 text-slate-800">
+                {% for child in children %}
+                <option value="{{ child.id }}" {% if child.id == student.id %}selected{% endif %}>
+                    {{ child.first_name }} {{ child.last_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Balans kartasi -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="rounded-2xl p-6 bg-white border border-slate-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400">Joriy balans</p>
+                    <p class="text-3xl font-bold mt-1 {% if student.balance < 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">
+                        {{ student.balance|floatformat:0 }} <span class="text-lg text-slate-500">so'm</span>
+                    </p>
+                </div>
+                <div class="p-4 rounded-xl {% if student.balance < 0 %}bg-rose-500/20{% else %}bg-emerald-500/20{% endif %}">
+                    <i class="ph-fill ph-wallet text-3xl {% if student.balance < 0 %}text-rose-600{% else %}text-emerald-600{% endif %}"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-2xl p-6 bg-white border border-slate-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400">Jami to'langan</p>
+                    <p class="text-3xl font-bold mt-1 text-[#64748B]">{{ total_paid|floatformat:0 }} <span class="text-lg text-slate-500">so'm</span></p>
+                </div>
+                <div class="p-4 rounded-xl bg-[#4F46E5]/15">
+                    <i class="ph-fill ph-check-circle text-3xl text-[#64748B]"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-2xl p-6 bg-white border border-slate-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400">Kutilmoqda</p>
+                    <p class="text-3xl font-bold mt-1 text-amber-400">{{ pending_payments.count }} <span class="text-lg text-slate-500">ta</span></p>
+                </div>
+                <div class="p-4 rounded-xl bg-amber-500/20">
+                    <i class="ph-fill ph-hourglass text-3xl text-amber-400"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- To'lov formasi -->
+        <div class="rounded-2xl p-6 bg-white border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <i class="ph-fill ph-credit-card text-[#64748B]"></i> Yangi to'lov
+            </h2>
+
+            <form method="POST" action="{% url 'finance:submit_payment' %}" enctype="multipart/form-data" class="space-y-5">
+                {% csrf_token %}
+                <input type="hidden" name="student_id" value="{{ student.id }}">
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">To'lov oyi *</label>
+                    <select name="payment_month" required
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30">
+                        <option value="1">Yanvar</option>
+                        <option value="2">Fevral</option>
+                        <option value="3">Mart</option>
+                        <option value="4">Aprel</option>
+                        <option value="5">May</option>
+                        <option value="6">Iyun</option>
+                        <option value="7">Iyul</option>
+                        <option value="8">Avgust</option>
+                        <option value="9">Sentabr</option>
+                        <option value="10">Oktabr</option>
+                        <option value="11">Noyabr</option>
+                        <option value="12">Dekabr</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">To'lov summasi *</label>
+                    <div class="relative">
+                        <input type="text" name="amount" required
+                            class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 text-xl font-bold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30"
+                            placeholder="1 000 000">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">so'm</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">To'lov usuli *</label>
+                    <select name="payment_method" required
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30">
+                        <option value="transfer">🏦 Bank o'tkazmasi</option>
+                        <option value="card">💳 Plastik karta</option>
+                        <option value="online">📱 Click / Payme</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">
+                        <i class="ph ph-image text-emerald-600"></i> Chek rasmi *
+                    </label>
+                    <input type="file" name="receipt_image" accept="image/*" required
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#4F46E5]/50 file:text-slate-800 hover:file:bg-[#4F46E5]">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Izoh</label>
+                    <textarea name="description" rows="2"
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30"
+                        placeholder="Masalan: Fevral oyi uchun"></textarea>
+                </div>
+
+                <button type="submit"
+                    class="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-slate-800 rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition flex items-center justify-center gap-2 font-bold text-lg">
+                    <i class="ph ph-paper-plane-tilt"></i> To'lovni yuborish
+                </button>
+
+                <p class="text-center text-slate-500 text-sm">
+                    <i class="ph ph-info"></i> Admin tasdiqlagach balansga tushadi
+                </p>
+            </form>
+        </div>
+
+        <!-- To'lovlar tarixi -->
+        <div class="rounded-2xl p-6 bg-white border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <i class="ph-fill ph-clock-counter-clockwise text-violet-400"></i> To'lovlar tarixi
+            </h2>
+
+            <div class="space-y-3 max-h-[500px] overflow-y-auto">
+                {% for payment in payments %}
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            {% if payment.status == 'confirmed' %}
+                            <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                <i class="ph-fill ph-check-circle text-emerald-600"></i>
+                            </div>
+                            {% elif payment.status == 'pending' %}
+                            <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                                <i class="ph-fill ph-hourglass text-amber-400 animate-pulse"></i>
+                            </div>
+                            {% else %}
+                            <div class="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center">
+                                <i class="ph-fill ph-x-circle text-rose-600"></i>
+                            </div>
+                            {% endif %}
+
+                            <div>
+                                <p class="font-bold text-slate-800">{{ payment.amount|floatformat:0 }} so'm</p>
+                                <p class="text-sm text-slate-500">{{ payment.created_at|date:"d.m.Y H:i" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="text-right">
+                            {% if payment.status == 'confirmed' %}
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-600">Tasdiqlandi</span>
+                            {% elif payment.status == 'pending' %}
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400">Kutilmoqda</span>
+                            {% else %}
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-rose-500/20 text-rose-600">Rad etildi</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-12">
+                    <i class="ph ph-receipt text-5xl text-slate-600 mb-4"></i>
+                    <p class="text-slate-500">Hali to'lovlar yo'q</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Joriy oyni default tanlash
+    (function() {
+        var sel = document.querySelector('select[name="payment_month"]');
+        if (sel) { sel.value = new Date().getMonth() + 1; }
+    })();
+</script>
+{% endblock %}

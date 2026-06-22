@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chiqish | Smart Edu</title>
+
+    <!-- FONTS & ICONS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F1F5F9 100%);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .logout-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(79, 70, 229, 0.12);
+            box-shadow: 0 25px 50px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes checkmark {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .float-1 {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .float-2 {
+            animation: float 8s ease-in-out infinite 1s;
+        }
+
+        .float-3 {
+            animation: float 7s ease-in-out infinite 2s;
+        }
+
+        .checkmark-animation {
+            animation: checkmark 0.5s ease-out forwards;
+        }
+
+        .countdown {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen px-4">
+
+    <!-- Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-20 w-72 h-72 bg-[#94A3B8]/10 rounded-full blur-3xl float-1"></div>
+        <div class="absolute bottom-20 right-20 w-96 h-96 bg-[#4F46E5]/10 rounded-full blur-3xl float-2"></div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#94A3B8]/5 rounded-full blur-3xl float-3">
+        </div>
+    </div>
+
+    <div class="w-full max-w-sm logout-card p-8 rounded-3xl relative z-10 text-center">
+
+        <!-- Success Icon -->
+        <div class="mb-6">
+            <div
+                class="w-24 h-24 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full mx-auto flex items-center justify-center text-white text-5xl shadow-xl shadow-emerald-500/25 checkmark-animation">
+                <i class="ph-fill ph-check-circle"></i>
+            </div>
+        </div>
+
+        <!-- Message -->
+        <h1 class="text-2xl font-bold text-[#0F172A] mb-2">Xayr! 👋</h1>
+        <p class="text-[#94A3B8] mb-6">Siz tizimdan muvaffaqiyatli chiqdingiz</p>
+
+        <!-- Info Box -->
+        <div class="bg-[#EEF2FF] border border-[#94A3B8]/20 rounded-xl p-4 mb-6">
+            <div class="flex items-center justify-center gap-2 text-[#64748B] text-sm">
+                <i class="ph ph-shield-check text-emerald-500"></i>
+                <span>Sessiyangiz xavfsiz tugatildi</span>
+            </div>
+        </div>
+
+        <!-- Countdown -->
+        <p class="text-[#94A3B8] text-sm mb-4">
+            <span class="countdown font-bold text-[#64748B]" id="countdown">5</span> soniyadan so'ng kirish sahifasiga
+            o'tasiz...
+        </p>
+
+        <!-- Button -->
+        <a href="{% url 'login' %}"
+            class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-[#4F46E5]/30 transition-all duration-300 hover:-translate-y-0.5">
+            <i class="ph ph-sign-in"></i>
+            Qayta kirish
+        </a>
+
+        <!-- Footer -->
+        <div class="mt-8 pt-6 border-t border-[#94A3B8]/15 text-center">
+            <div class="flex items-center justify-center gap-2 text-[#94A3B8] text-sm">
+                <i class="ph-fill ph-graduation-cap text-[#64748B]"></i>
+                <span>Smart Edu</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Auto redirect script -->
+    <script>
+        // Oldingi sessiya holatini tozalash (overlay/modal qotib qolishini oldini olish uchun)
+        window._htmxListenersInit = false;
+        localStorage.removeItem('sidebarScrollPos');
+
+        let countdown = 5;
+        const countdownEl = document.getElementById('countdown');
+
+        const timer = setInterval(() => {
+            countdown--;
+            countdownEl.textContent = countdown;
+
+            if (countdown <= 0) {
+                clearInterval(timer);
+                window.location.href = "{% url 'login' %}";
+            }
+        }, 1000);
+    </script>
+
+</body>
+
+</html>

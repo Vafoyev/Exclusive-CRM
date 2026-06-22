@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}O'quvchi Paneli{% endblock %}
+
+{% block content %}
+<div class="space-y-5 animate-fadeIn relative">
+
+    <!-- Floating Orbs -->
+    <div class="dash-orb dash-orb-1"></div>
+    <div class="dash-orb dash-orb-2"></div>
+
+    <!-- Header -->
+    <div class="flex items-center justify-between relative z-10">
+        <h1 class="text-2xl font-bold text-[#0F172A]">🎓 Salom, {{ request.user.first_name }}!</h1>
+        
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 relative z-10">
+        <div class="liquid-glass p-4 stagger-1">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-[#4F46E5]/10 text-[#0F172A] rounded-xl flex items-center justify-center glass-icon flex-shrink-0">
+                    <i class="ph-fill ph-calendar-check text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-[#94A3B8] uppercase">Davomat</p>
+                    <p class="text-xl font-bold text-[#0F172A]">{{ attendance_rate }}%</p>
+                </div>
+            </div>
+        </div>
+        <div class="liquid-glass p-4 stagger-2">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-amber-100/60 text-amber-600 rounded-xl flex items-center justify-center glass-icon flex-shrink-0">
+                    <i class="ph-fill ph-star text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-[#94A3B8] uppercase">O'rtacha</p>
+                    <p class="text-xl font-bold text-[#0F172A]">{{ avg_grade }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="liquid-glass p-4 stagger-3">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-purple-100/60 text-purple-600 rounded-xl flex items-center justify-center glass-icon flex-shrink-0">
+                    <i class="ph-fill ph-lightning text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-[#94A3B8] uppercase">XP</p>
+                    <p class="text-xl font-bold text-violet-600">
+                        {{ coin_balance }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="liquid-glass p-4 stagger-4">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 rounded-xl flex items-center justify-center glass-icon flex-shrink-0
+                    {% if balance < 0 %}bg-rose-100/60 text-rose-600{% else %}bg-emerald-100/60 text-emerald-600{% endif %}">
+                    <i class="ph-fill ph-wallet text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-[#94A3B8] uppercase">Balans</p>
+                    <p class="text-xl font-bold {% if balance < 0 %}text-rose-600{% else %}text-[#0F172A]{% endif %}">{{ balance|floatformat:0|intcomma }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="liquid-glass p-4 stagger-1">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-rose-100/60 text-rose-600 rounded-xl flex items-center justify-center glass-icon flex-shrink-0">
+                    <i class="ph-fill ph-calendar-x text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-[#94A3B8] uppercase">Qoldirilgan</p>
+                    <p class="text-xl font-bold text-rose-600">{{ missed_lessons_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="liquid-glass p-4 stagger-2">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-sky-100/70 text-sky-600 rounded-xl flex items-center justify-center glass-icon flex-shrink-0">
+                    <i class="ph-fill ph-sign-in text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-[#94A3B8] uppercase">Bugun keldi</p>
+                    <p class="text-lg font-bold text-[#0F172A]">
+                        {% if today_presence and today_presence.check_in_at %}{{ today_presence.check_in_at|date:"H:i" }}{% else %}—{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="liquid-glass p-4 stagger-3">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-amber-100/70 text-amber-600 rounded-xl flex items-center justify-center glass-icon flex-shrink-0">
+                    <i class="ph-fill ph-sign-out text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-[#94A3B8] uppercase">Bugun ketdi</p>
+                    <p class="text-lg font-bold text-[#0F172A]">
+                        {% if today_presence and today_presence.check_out_at %}{{ today_presence.check_out_at|date:"H:i" }}{% else %}—{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-section p-5 relative z-10">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                <i class="ph-fill ph-fingerprint text-[#64748B]"></i> Markazga kelish tarixi
+            </h3>
+            <span class="text-xs text-[#94A3B8]">Keldi va ketdi vaqtlar</span>
+        </div>
+        <div class="overflow-y-auto" style="scrollbar-width: none;">
+            <table class="w-full text-xs">
+                <thead class="sticky top-0 bg-white/60 backdrop-blur-sm">
+                    <tr class="text-xs uppercase tracking-wider text-[#94A3B8] border-b border-[#94A3B8]/10">
+                        <th class="py-2 text-left font-semibold">Sana</th>
+                        <th class="py-2 text-center font-semibold">Keldi</th>
+                        <th class="py-2 text-center font-semibold">Ketdi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_face_logs %}
+                    <tr class="border-b border-[#94A3B8]/5 hover:bg-white/40 transition">
+                        <td class="py-2 text-[#0F172A] font-medium">{{ log.date|date:"d.m.Y" }}</td>
+                        <td class="py-2 text-center text-emerald-700 font-bold">
+                            {% if log.check_in_at %}Keldi {{ log.check_in_at|date:"H:i" }}{% else %}—{% endif %}
+                        </td>
+                        <td class="py-2 text-center text-amber-700 font-bold">
+                            {% if log.check_out_at %}Ketdi {{ log.check_out_at|date:"H:i" }}{% else %}—{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-6 text-[#94A3B8]">Kelish-ketish ma'lumoti hali yo'q</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Grafik + Kurslar + Leaderboard -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 relative z-10">
+
+        <!-- Grafik -->
+        <div class="lg:col-span-5 glass-section p-5">
+            <h3 class="text-base font-bold text-[#0F172A] mb-3 flex items-center gap-2">
+                <i class="ph-fill ph-trend-up text-[#0F172A]"></i> O'zlashtirish
+            </h3>
+            <div class="h-48">
+                <canvas id="gradesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Kurslarim -->
+        <div class="lg:col-span-4 glass-section p-5">
+            <h3 class="text-base font-bold text-[#0F172A] mb-3 flex items-center gap-2">
+                <i class="ph-fill ph-books text-[#64748B]"></i> Kurslarim
+            </h3>
+            <div class="space-y-2 overflow-y-auto" style="scrollbar-width: none;">
+                {% for enrollment in my_enrollments %}
+                <div class="p-3 liquid-glass rounded-xl">
+                    <div class="flex items-center gap-2.5">
+                        <div
+                            class="w-8 h-8 bg-gradient-to-br from-[#4F46E5] to-[#818CF8] rounded-lg text-white flex items-center justify-center font-bold text-xs shadow-sm flex-shrink-0">
+                            {{ enrollment.group.name|first }}
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="font-semibold text-[#0F172A] text-xs truncate">{{ enrollment.group.name }}</h4>
+                            <p class="text-xs text-[#64748B]">{{ enrollment.group.course.name }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-[#94A3B8] text-sm text-center py-4">Kurs yo'q</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        {% if leaderboard %}
+        <div class="lg:col-span-3 glass-section p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                    <i class="ph-fill ph-trophy text-amber-500"></i> Reyting
+                </h3>
+                {% if student_rank > 0 %}
+                <span class="text-xs font-bold text-amber-600 bg-amber-50/80 px-2 py-0.5 rounded-full">#{{ student_rank }}</span>
+                {% endif %}
+            </div>
+            <div class="space-y-1 overflow-y-auto" style="scrollbar-width: none;">
+                {% for s in leaderboard %}
+                <div class="flex items-center gap-2 p-1.5 rounded-lg text-sm
+                    {% if s.id == request.user.id %}bg-[#4F46E5]/10{% else %}hover:bg-white/40{% endif %} transition">
+                    <span class="w-5 h-5 rounded text-xs font-bold flex items-center justify-center flex-shrink-0
+                        {% if forloop.counter == 1 %}bg-amber-400 text-white
+                        {% elif forloop.counter == 2 %}bg-gray-300 text-white
+                        {% elif forloop.counter == 3 %}bg-amber-600 text-white
+                        {% else %}bg-[#64748B]/15 text-[#64748B]{% endif %}">{{ forloop.counter }}</span>
+                    <span class="flex-1 truncate font-medium text-[#0F172A] text-xs">{{ s.first_name }}</span>
+                    <span class="text-xs font-bold text-purple-600 flex-shrink-0">{{ s.xp_total }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- So'nggi Davomat -->
+    <div class="glass-section p-5 relative z-10">
+        <h3 class="text-base font-bold text-[#0F172A] mb-3 flex items-center gap-2">
+            <i class="ph-fill ph-clock-counter-clockwise text-[#64748B]"></i> So'nggi Davomat
+        </h3>
+        <div class="overflow-y-auto" style="scrollbar-width: none;">
+            <table class="w-full text-xs">
+                <thead class="sticky top-0 bg-white/60 backdrop-blur-sm">
+                    <tr class="text-xs uppercase tracking-wider text-[#94A3B8] border-b border-[#94A3B8]/10">
+                        <th class="py-2 text-left font-semibold">Sana</th>
+                        <th class="py-2 text-left font-semibold">Guruh</th>
+                        <th class="py-2 text-center font-semibold">Holat</th>
+                        <th class="py-2 text-center font-semibold">Baho</th>
+                        <th class="py-2 text-center font-semibold">XP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in my_attendance %}
+                    <tr class="border-b border-[#94A3B8]/5 hover:bg-white/40 transition">
+                        <td class="py-2 text-[#0F172A] font-medium">{{ att.lesson.date|date:"d.m" }}</td>
+                        <td class="py-2 text-[#64748B]">{{ att.lesson.group.name }}</td>
+                        <td class="py-2 text-center">
+                            <span class="px-1.5 py-0.5 text-xs font-bold rounded
+                                {% if att.status == 'present' %}bg-emerald-50/80 text-emerald-700
+                                {% elif att.status == 'absent' %}bg-rose-50/80 text-rose-700
+                                {% else %}bg-amber-50/80 text-amber-700{% endif %}">
+                                {% if att.status == 'present' %}✓{% elif att.status == 'absent' %}✗{% else %}...{% endif %}
+                            </span>
+                        </td>
+                        <td class="py-2 text-center font-bold text-[#0F172A]">{{ att.grade|default:"—" }}</td>
+                        <td class="py-2 text-center">
+                            {% if att.xp_points %}
+                            <span class="font-bold text-purple-600">+{{ att.xp_points }}</span>
+                            {% else %}—{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-6 text-[#94A3B8]">Ma'lumot yo'q</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    [style*="scrollbar-width"]::-webkit-scrollbar {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const chartLabels = {{ chart_labels| safe }};
+    const chartData = {{ chart_data| safe }};
+    if (chartLabels.length > 0) {
+        const ctx = document.getElementById('gradesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Baho', data: chartData, borderColor: '#4F46E5',
+                    backgroundColor: 'rgba(79,70,229,0.08)', fill: true, tension: 0.4,
+                    pointBackgroundColor: '#0F172A', pointBorderColor: '#F8FAFC',
+                    pointBorderWidth: 2, pointRadius: 4, borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 5, grid: { color: 'rgba(17,45,78,0.03)' }, ticks: { color: '#64748B', font: { size: 9 } } },
+                    x: { grid: { display: false }, ticks: { color: '#64748B', font: { size: 9 } } }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

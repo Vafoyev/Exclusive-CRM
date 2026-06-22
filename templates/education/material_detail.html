@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}{{ material.title }}{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Orqaga tugmasi -->
+    <a href="{% url 'material_list' %}"
+        class="inline-flex items-center gap-2 text-slate-500 hover:text-[#64748B] transition">
+        <i class="ph ph-arrow-left"></i> Barcha materiallar
+    </a>
+
+    <!-- Material Card -->
+    <div
+        class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+
+        <!-- Header -->
+        <div class="p-6 border-b border-slate-100">
+            <div class="flex items-start justify-between">
+                <div>
+                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-full mb-3
+                        {% if material.material_type == 'video' %}bg-red-100 text-red-700
+                        {% elif material.material_type == 'pdf' %}bg-[#4F46E5]/10 text-[#0F172A]
+                        {% elif material.material_type == 'audio' %}bg-purple-100 text-purple-700
+                        {% else %}bg-slate-100 text-slate-700{% endif %}">
+                        {% if material.material_type == 'video' %}🎬{% elif material.material_type == 'pdf' %}📄{% elif
+                        material.material_type == 'audio' %}🎧{% else %}📁{% endif %}
+                        {{ material.get_material_type_display }}
+                    </span>
+                    <h1 class="text-2xl font-bold text-slate-800">{{ material.title }}</h1>
+                    {% if material.category %}
+                    <p class="text-[#64748B] font-medium mt-1">{{ material.category.icon }} {{ material.category.name }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Stats -->
+                <div class="flex items-center gap-4 text-sm text-slate-500">
+                    <span class="flex items-center gap-1">
+                        <i class="ph ph-eye"></i> {{ material.view_count }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <i class="ph ph-download-simple"></i> {{ material.download_count }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="p-6">
+            {% if material.description %}
+            <div class="prose max-w-none mb-6">
+                <p class="text-slate-600">{{ material.description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Video embed -->
+            {% if material.material_type == 'video' and material.external_url %}
+            <div class="aspect-video bg-gray-900 rounded-xl overflow-hidden mb-6">
+                {% if 'youtube.com' in material.external_url or 'youtu.be' in material.external_url %}
+                <iframe class="w-full h-full"
+                    src="{{ material.external_url|cut:'watch?v='|cut:'youtu.be/' }}{% if 'youtube.com' in material.external_url %}?rel=0{% endif %}"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+                {% else %}
+                <video controls class="w-full h-full">
+                    <source
+                        src="{% if material.file %}{{ material.file.url }}{% else %}{{ material.external_url }}{% endif %}">
+                </video>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Audio player -->
+            {% if material.material_type == 'audio' %}
+            <div class="p-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl mb-6">
+                <audio controls class="w-full">
+                    <source
+                        src="{% if material.file %}{{ material.file.url }}{% else %}{{ material.external_url }}{% endif %}">
+                </audio>
+            </div>
+            {% endif %}
+
+            <!-- PDF preview -->
+            {% if material.material_type == 'pdf' and material.file %}
+            <div class="aspect-[4/3] bg-slate-100 rounded-xl overflow-hidden mb-6">
+                <iframe src="{{ material.file.url }}" class="w-full h-full"></iframe>
+            </div>
+            {% endif %}
+
+            <!-- Meta info -->
+            <div
+                class="flex flex-wrap items-center gap-4 text-sm text-slate-500 border-t border-slate-100 pt-6">
+                <span class="flex items-center gap-1">
+                    <i class="ph ph-user"></i> {{ material.uploaded_by.first_name }}
+                </span>
+                <span class="flex items-center gap-1">
+                    <i class="ph ph-calendar"></i> {{ material.created_at|date:"d.m.Y" }}
+                </span>
+                {% if material.file %}
+                <span class="flex items-center gap-1">
+                    <i class="ph ph-file"></i> {{ material.file_size|filesizeformat }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+            {% if material.file %}
+            <a href="{% url 'material_download' material.id %}"
+                class="flex-1 py-3 text-center text-white font-bold bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition flex items-center justify-center gap-2">
+                <i class="ph ph-download-simple"></i> Yuklab olish
+            </a>
+            {% endif %}
+            {% if material.external_url %}
+            <a href="{{ material.external_url }}" target="_blank"
+                class="flex-1 py-3 text-center text-white font-bold bg-gradient-to-r from-[#4F46E5] to-[#4338CA] rounded-xl hover:shadow-lg hover:shadow-[#4F46E5]/30 transition flex items-center justify-center gap-2">
+                <i class="ph ph-arrow-square-out"></i> Tashqi havola
+            </a>
+            {% endif %}
+
+            {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' or request.user.role == 'teacher' %}
+            <a href="{% url 'material_edit' material.id %}"
+                class="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-gray-300 transition flex items-center gap-2">
+                <i class="ph ph-pencil-simple"></i> Tahrirlash
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

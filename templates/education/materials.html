@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Materiallar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- SARLAVHA -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-[#0F172A]">📚 Materiallar</h1>
+            <p class="text-[#64748B]">Video darslar, PDF kitoblar va boshqa o'quv materiallari</p>
+        </div>
+
+        {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' or request.user.role == 'teacher' %}
+        <div class="flex gap-3">
+            <a href="{% url 'material_category_list' %}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#94A3B8]/20 text-[#0F172A] rounded-xl font-medium hover:bg-[#94A3B8]/40 transition border border-[#94A3B8]/30">
+                <i class="ph ph-folders text-lg"></i>
+                <span>Kategoriyalar</span>
+            </a>
+            <a href="{% url 'material_upload' %}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#4F46E5] to-[#818CF8] text-white rounded-xl font-medium shadow-lg shadow-[#4F46E5]/25 hover:shadow-[#4F46E5]/40 transition-all hover:-translate-y-0.5">
+                <i class="ph ph-upload-simple text-lg"></i>
+                <span>Yangi Material</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- FILTR VA QIDIRUV - Glass Effect -->
+    <div class="bg-white/70 backdrop-blur-xl p-4 rounded-2xl border border-[#94A3B8]/20 shadow-lg">
+        <form method="GET" class="flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-xs font-medium text-[#64748B] mb-1">Qidiruv</label>
+                <input type="text" name="q" value="{{ search }}" placeholder="Nom bo'yicha..."
+                    class="w-full px-4 py-2.5 rounded-xl bg-white/60 backdrop-blur-sm border border-[#94A3B8]/30 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/50 focus:border-[#4F46E5] focus:bg-white transition-all">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[#64748B] mb-1">Kategoriya</label>
+                <select name="category"
+                    class="px-4 py-2.5 rounded-xl bg-white/60 backdrop-blur-sm border border-[#94A3B8]/30 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/50 focus:bg-white transition-all">
+                    <option value="">Barchasi</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if category_id == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[#64748B] mb-1">Turi</label>
+                <select name="type"
+                    class="px-4 py-2.5 rounded-xl bg-white/60 backdrop-blur-sm border border-[#94A3B8]/30 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/50 focus:bg-white transition-all">
+                    <option value="">Barchasi</option>
+                    <option value="video" {% if material_type == 'video' %}selected{% endif %}>🎬 Video</option>
+                    <option value="pdf" {% if material_type == 'pdf' %}selected{% endif %}>📄 PDF</option>
+                    <option value="audio" {% if material_type == 'audio' %}selected{% endif %}>🎵 Audio</option>
+                </select>
+            </div>
+            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-[#4F46E5] to-[#818CF8] text-white rounded-xl hover:shadow-lg hover:shadow-[#4F46E5]/25 transition-all hover:-translate-y-0.5 font-medium">
+                <i class="ph ph-magnifying-glass mr-1"></i> Qidirish
+            </button>
+        </form>
+    </div>
+
+    <!-- FEATURED MATERIALS -->
+    {% if featured %}
+    <div class="mb-6">
+        <h2 class="text-lg font-semibold text-[#0F172A] mb-4">
+            <i class="ph ph-star text-[#64748B]"></i> Tavsiya etilgan
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for m in featured %}
+            <a href="{% url 'material_view' m.pk %}"
+                class="bg-white rounded-2xl border-2 border-[#4F46E5]/30 overflow-hidden hover:shadow-xl hover:shadow-[#4F46E5]/20 transition-all hover:-translate-y-1 block">
+                {% if m.thumbnail %}
+                <img src="{{ m.thumbnail.url }}" alt="{{ m.title }}" class="w-full h-32 object-cover">
+                {% else %}
+                <div
+                    class="w-full h-32 bg-gradient-to-br from-[#818CF8]/30 to-[#818CF8]/20 flex items-center justify-center">
+                    <span class="text-5xl">
+                        {% if m.material_type == 'video' %}<i class="ph-fill ph-video-camera text-[#0F172A]"></i>
+                        {% elif m.material_type == 'pdf' %}<i class="ph-fill ph-file-pdf text-red-500"></i>
+                        {% elif m.material_type == 'audio' %}<i class="ph-fill ph-music-notes text-[#64748B]"></i>
+                        {% else %}<i class="ph-fill ph-file text-[#94A3B8]"></i>{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                <div class="p-4">
+                    <h3 class="font-semibold text-[#0F172A] truncate">{{ m.title }}</h3>
+                    <div class="flex items-center justify-between mt-2 text-sm text-[#64748B]">
+                        <span>{{ m.view_count }} ko'rish</span>
+                        <span>{{ m.created_at|date:"d M" }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- MATERIALLAR RO'YXATI -->
+    {% if materials %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for m in materials %}
+        <div
+            class="bg-white rounded-xl border border-[#94A3B8]/30 overflow-hidden hover:shadow-lg hover:border-[#4F46E5]/50 transition-all block group cursor-pointer"
+            tabindex="0" role="link"
+            onclick="window.location.href='{% url 'material_view' m.pk %}'"
+            onkeydown="if(event.key==='Enter')window.location.href='{% url 'material_view' m.pk %}'">
+            {% if m.thumbnail %}
+            <img src="{{ m.thumbnail.url }}" alt="{{ m.title }}"
+                class="w-full h-28 object-cover group-hover:scale-105 transition-transform duration-300">
+            {% else %}
+            <div
+                class="w-full h-28 bg-gradient-to-br from-[#F8FAFC] to-[#818CF8]/20 flex items-center justify-center">
+                <span class="text-4xl">
+                    {% if m.material_type == 'video' %}<i class="ph-fill ph-video-camera text-[#0F172A]"></i>
+                    {% elif m.material_type == 'pdf' %}<i class="ph-fill ph-file-pdf text-red-500"></i>
+                    {% elif m.material_type == 'audio' %}<i class="ph-fill ph-music-notes text-[#64748B]"></i>
+                    {% else %}<i class="ph-fill ph-file text-[#94A3B8]"></i>{% endif %}
+                </span>
+            </div>
+            {% endif %}
+            <div class="p-4">
+                <div class="flex items-start justify-between gap-2 mb-2">
+                    <h4 class="font-medium text-[#0F172A] text-sm line-clamp-2">{{ m.title }}</h4>
+                    <span
+                        class="px-2 py-0.5 text-xs rounded-full bg-[#94A3B8]/20 text-[#0F172A] whitespace-nowrap">
+                        {{ m.get_material_type_display }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-[#64748B]">
+                    <span><i class="ph ph-eye"></i> {{ m.view_count }}</span>
+                    {% if m.file_size %}
+                    <span>{{ m.file_size }} MB</span>
+                    {% endif %}
+                </div>
+                {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' or request.user.role == 'teacher' %}
+                <div class="mt-2 pt-2 border-t border-[#94A3B8]/20 flex gap-2">
+                    <a href="{% url 'material_edit' m.pk %}" class="flex-1 py-1 text-center text-xs font-medium text-[#64748B] bg-[#94A3B8]/10 rounded-lg hover:bg-[#94A3B8]/20 transition" onclick="event.stopPropagation();">
+                        <i class="ph ph-pencil-simple"></i> Tahrirlash
+                    </a>
+                    <form method="POST" action="{% url 'material_delete' m.pk %}" class="flex-1" onsubmit="event.stopPropagation(); return confirm('Bu materialni o\'chirishni tasdiqlaysizmi?')">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full py-1 text-center text-xs font-medium text-red-500 bg-red-50 rounded-lg hover:bg-red-100 transition" onclick="event.stopPropagation();">
+                            <i class="ph ph-trash"></i> O'chirish
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white p-12 rounded-2xl border border-[#94A3B8]/30 text-center shadow-sm">
+        <div class="w-20 h-20 mx-auto mb-4 bg-[#94A3B8]/20 rounded-full flex items-center justify-center">
+            <i class="ph-fill ph-folder-open text-4xl text-[#64748B]"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-[#0F172A] mb-2">Materiallar topilmadi</h3>
+        <p class="text-[#64748B]">
+            {% if search %}Qidiruv natijasi bo'sh{% else %}Hozircha materiallar qo'shilmagan{% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

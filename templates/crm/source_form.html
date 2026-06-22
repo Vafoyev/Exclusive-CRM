@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block header_title %}📣 {{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <div class="glass-panel rounded-2xl p-6 border border-slate-100">
+
+        <h2 class="text-xl font-bold text-slate-800 mb-6">{{ title }}</h2>
+
+        {% if form.errors %}
+        <div class="bg-red-50 text-red-600 p-4 rounded-xl mb-4 text-sm">
+            {{ form.non_field_errors }}
+            {% for field in form %}
+            {% if field.errors %}
+            <p><b>{{ field.label }}:</b> {{ field.errors|striptags }}</p>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <i class="ph ph-megaphone text-[#64748B] mr-1"></i> Manba nomi
+                </label>
+                {{ form.name }}
+                <p class="text-xs text-slate-400 mt-1">Masalan: Instagram Reklama, Telegram, Ko'cha banner</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <i class="ph ph-link text-[#64748B] mr-1"></i> UTM Source (ixtiyoriy)
+                </label>
+                {{ form.utm_source }}
+                <p class="text-xs text-slate-400 mt-1">Masalan: ig_ads_2026, telegram_bot</p>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <button type="submit"
+                    class="flex-1 px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-purple-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-indigo-500/30 transition-all">
+                    <i class="ph ph-check mr-2"></i> Saqlash
+                </button>
+                <a href="{% url 'crm:source_list' %}"
+                    class="px-6 py-3 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition">
+                    Bekor qilish
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

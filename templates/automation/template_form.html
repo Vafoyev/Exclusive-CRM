@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center gap-4 mb-8">
+        <a href="{% url 'automation:template_list' %}"
+            class="p-3 bg-white hover:bg-slate-100 rounded-xl shadow-sm transition">
+            <i class="ph ph-arrow-left text-xl"></i>
+        </a>
+        <h1 class="text-2xl font-bold text-slate-800">{{ title }}</h1>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" class="glass-panel p-8 rounded-2xl shadow-lg space-y-6">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-slate-700">Nomi</label>
+                {{ form.title }}
+            </div>
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-slate-700">Kod (System Code)</label>
+                {{ form.code }}
+                <p class="text-xs text-slate-400">Tizim ichida chaqirish uchun</p>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-700">Xabar Turi</label>
+            {{ form.message_type }}
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-700">Xabar Matni</label>
+            {{ form.body }}
+            <p class="text-xs text-slate-500 mt-1">
+                Mavjud o'zgaruvchilar: <code class="bg-slate-100 px-1 rounded">{first_name}</code>, <code
+                    class="bg-slate-100 px-1 rounded">{last_name}</code>, <code
+                    class="bg-slate-100 px-1 rounded">{phone}</code>
+            </p>
+        </div>
+
+        <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
+            <a href="{% url 'automation:template_list' %}"
+                class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition">
+                Bekor qilish
+            </a>
+            <button type="submit"
+                class="px-6 py-2.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-xl shadow-lg shadow-primary-500/30 transition flex items-center gap-2">
+                <i class="ph ph-check-circle text-xl"></i>
+                <span>Saqlash</span>
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

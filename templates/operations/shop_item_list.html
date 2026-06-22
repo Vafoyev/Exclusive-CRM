@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Mahsulotlar{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Do'kon mahsulotlari 📦</h1>
+            <p class="text-slate-400">Barcha mahsulotlarni boshqaring</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'operations:shop_category_list' %}" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600">
+                <i class="ph ph-folder"></i> Kategoriyalar
+            </a>
+            <a href="{% url 'operations:shop_item_create' %}" class="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-slate-800 rounded-xl font-medium">
+                <i class="ph ph-plus"></i> Yangi mahsulot
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="flex gap-4">
+        <select onchange="window.location.href='?category='+this.value" class="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800">
+            <option value="">Barcha kategoriyalar</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if cat_filter == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {% for item in items %}
+        <div class="rounded-2xl overflow-hidden bg-white border border-slate-200 {% if not item.is_active %}opacity-50{% endif %}">
+            {% if item.image %}
+            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-36 object-cover">
+            {% else %}
+            <div class="w-full h-36 bg-slate-50 flex items-center justify-center">
+                <span class="text-5xl">{{ item.category.icon|default:'📦' }}</span>
+            </div>
+            {% endif %}
+
+            <div class="p-4">
+                <div class="flex items-start justify-between gap-2">
+                    <h3 class="text-slate-800 font-bold">{{ item.name }}</h3>
+                    {% if item.is_featured %}
+                    <span class="text-amber-400">⭐</span>
+                    {% endif %}
+                </div>
+
+                <p class="text-slate-500 text-sm truncate">{{ item.description|default:'-' }}</p>
+
+                <div class="flex items-center gap-3 mt-3">
+                    {% if item.coin_price > 0 %}
+                    <span class="text-amber-400 font-bold">{{ item.coin_price }} 💰</span>
+                    {% endif %}
+                    {% if item.cash_price > 0 %}
+                    <span class="text-emerald-600 font-bold">{{ item.cash_price|floatformat:0 }} 💵</span>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-200">
+                    <span class="text-sm text-slate-500">Stock: {{ item.available_stock }}</span>
+                    <div class="flex gap-1">
+                        <a href="{% url 'operations:shop_item_edit' item.pk %}" class="p-2 rounded-lg bg-[#4F46E5]/15 text-[#64748B] hover:bg-[#4338CA]/25">
+                            <i class="ph ph-pencil"></i>
+                        </a>
+                        <a href="{% url 'operations:shop_item_delete' item.pk %}" onclick="return confirm('O\'chirish?')" class="p-2 rounded-lg bg-rose-500/20 text-rose-600 hover:bg-rose-500/30">
+                            <i class="ph ph-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-4 text-center py-12">
+            <i class="ph ph-package text-5xl text-slate-600 mb-4"></i>
+            <p class="text-slate-500">Mahsulotlar yo'q</p>
+            <a href="{% url 'operations:shop_item_create' %}" class="text-[#64748B] hover:underline mt-2 inline-block">
+                Birinchi mahsulotni qo'shing →
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

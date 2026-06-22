@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Bugungi Darslar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Bugungi Darslar 📚</h1>
+            <p class="text-slate-400">Kunlik darslar jadvali va davomat</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'operations:schedule' %}"
+                class="px-4 py-2.5 rounded-xl flex items-center gap-2 transition font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">
+                <i class="ph ph-calendar"></i> Haftalik jadval
+            </a>
+            {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' or request.user.role == 'teacher' %}
+            <a href="{% url 'operations:lesson_add' %}"
+                class="px-4 py-2.5 bg-gradient-to-r from-[#818CF8] to-violet-600 text-slate-800 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition flex items-center gap-2 font-medium">
+                <i class="ph ph-plus"></i> Yangi dars
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="rounded-2xl p-5 bg-white border border-slate-200">
+        <form method="GET" class="flex flex-wrap gap-4 items-end">
+            <div>
+                <label class="block text-xs mb-1.5 font-medium text-slate-400">Sana</label>
+                <input type="date" name="date" value="{{ date_filter }}"
+                    class="px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 transition bg-slate-50 border-slate-200 text-slate-800 focus:ring-[#4F46E5]/30">
+            </div>
+            <div>
+                <label class="block text-xs mb-1.5 font-medium text-slate-400">Guruh</label>
+                <select name="group"
+                    class="px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 transition bg-slate-50 border-slate-200 text-slate-800 focus:ring-[#4F46E5]/30">
+                    <option value="">Barchasi</option>
+                    {% for group in groups %}
+                    <option value="{{ group.id }}" {% if group_filter == group.id|stringformat:"s" %}selected{% endif %}>
+                        {{ group.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs mb-1.5 font-medium text-slate-400">Holat</label>
+                <select name="status"
+                    class="px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 transition bg-slate-50 border-slate-200 text-slate-800 focus:ring-[#4F46E5]/30">
+                    <option value="">Barchasi</option>
+                    <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>Rejalashtirilgan</option>
+                    <option value="started" {% if status_filter == 'started' %}selected{% endif %}>Darsda</option>
+                    <option value="finished" {% if status_filter == 'finished' %}selected{% endif %}>Yakunlangan</option>
+                </select>
+            </div>
+            <button type="submit" class="px-6 py-2.5 rounded-xl font-medium transition bg-[#4F46E5] text-white hover:bg-[#4338CA] shadow-sm">
+                <i class="ph ph-funnel"></i> Filtrlash
+            </button>
+
+            <!-- Export tugmalari -->
+            <div class="flex gap-2 ml-auto">
+                <a href="{% url 'operations:export_lessons_excel' %}?{{ request.GET.urlencode }}"
+                   class="px-4 py-2.5 rounded-xl font-medium transition bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2">
+                    <i class="ph ph-file-xls"></i> Excel
+                </a>
+                <a href="{% url 'operations:export_lessons_pdf' %}?{{ request.GET.urlencode }}"
+                   class="px-4 py-2.5 rounded-xl font-medium transition bg-rose-600 text-white hover:bg-rose-700 flex items-center gap-2">
+                    <i class="ph ph-file-pdf"></i> PDF
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lessons List -->
+    <div class="space-y-4">
+        {% for item in lessons_data %}
+        {% with lesson=item.lesson %}
+        <div class="rounded-2xl p-5 bg-white border border-slate-200 hover:border-primary-300 transition">
+            <div class="flex items-center gap-4">
+                <!-- Vaqt -->
+                <div class="w-20 text-center">
+                    <p class="text-xl font-bold text-slate-800">{{ lesson.start_time|time:"H:i" }}</p>
+                    <p class="text-xs text-slate-500">{{ lesson.end_time|time:"H:i" }}</p>
+                </div>
+
+                <!-- Status indikator -->
+                <div class="w-1 h-16 rounded-full {% if lesson.status == 'started' %}bg-[#4F46E5]/50 animate-pulse{% elif lesson.status == 'finished' %}bg-green-500{% elif lesson.status == 'cancelled' %}bg-red-500{% else %}bg-gray-600{% endif %}"></div>
+
+                <!-- Ma'lumot -->
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold text-slate-800">{{ lesson.group.name }}</h3>
+                    <div class="flex items-center gap-4 text-sm mt-1.5 text-slate-400">
+                        <span class="flex items-center gap-1.5"><i class="ph ph-user"></i> {{ lesson.teacher.first_name }} {{ lesson.teacher.last_name }}</span>
+                        <span class="flex items-center gap-1.5"><i class="ph ph-door"></i> {{ lesson.room.name|default:"-" }}</span>
+                        {% if lesson.topic %}
+                        <span class="flex items-center gap-1.5"><i class="ph ph-book-open"></i> {{ lesson.topic }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Davomat holati -->
+                {% if item.attendance_taken %}
+                <div class="text-center px-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl text-emerald-600 bg-emerald-500/20">
+                        <i class="ph-fill ph-check-circle"></i> Davomat olingan
+                    </span>
+                    <p class="text-xs mt-1.5 text-slate-500">{{ item.present_count }}/{{ item.attendance_count }} kelgan</p>
+                </div>
+                {% else %}
+                <span class="px-3 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1.5 text-amber-400 bg-amber-500/20">
+                    <i class="ph ph-warning"></i> Davomat olinmagan
+                </span>
+                {% endif %}
+
+                <!-- Status badge -->
+                <span class="px-3 py-1.5 text-xs font-bold rounded-xl
+                    {% if lesson.status == 'started' %}text-[#64748B] bg-[#4F46E5]/15
+                    {% elif lesson.status == 'finished' %}text-emerald-600 bg-emerald-500/20
+                    {% elif lesson.status == 'cancelled' %}text-rose-600 bg-rose-500/20
+                    {% else %}text-slate-400 bg-slate-500/20{% endif %}">
+                    {{ lesson.get_status_display }}
+                </span>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-2">
+                    {% if lesson.status == 'scheduled' %}
+                    <a href="{% url 'operations:start_lesson' lesson.pk %}"
+                        class="px-4 py-2.5 bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white rounded-xl hover:shadow-lg hover:shadow-[#4F46E5]/25 transition text-sm font-medium flex items-center gap-1.5">
+                        <i class="ph-fill ph-play"></i> Boshlash
+                    </a>
+                    {% elif lesson.status == 'started' %}
+                    <a href="{% url 'operations:take_attendance' lesson.pk %}"
+                        class="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-slate-800 rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition text-sm font-medium flex items-center gap-1.5">
+                        <i class="ph-fill ph-check-circle"></i> Davomat
+                    </a>
+                    {% else %}
+                    <a href="{% url 'operations:lesson_detail' lesson.pk %}"
+                        class="px-4 py-2.5 rounded-xl transition text-sm font-medium flex items-center gap-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200">
+                        <i class="ph ph-eye"></i> Ko'rish
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+        {% empty %}
+        <div class="rounded-2xl p-12 text-center bg-white border border-slate-200">
+            <i class="ph ph-calendar-blank text-5xl mb-4 text-slate-600"></i>
+            <h3 class="text-lg font-bold mb-2 text-slate-800">Darslar topilmadi</h3>
+            <p class="text-slate-400 mb-4">Tanlangan sana uchun darslar mavjud emas</p>
+            <p class="text-sm text-slate-500">
+                Darslar avtomatik yaratilishi uchun
+                <a href="{% url 'operations:schedule' %}" class="font-medium text-[#64748B] hover:underline">haftalik jadval</a>
+                dan foydalaning
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

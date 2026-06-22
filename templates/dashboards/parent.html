@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Ota-ona Paneli{% endblock %}
+
+{% block content %}
+<div class="space-y-5 animate-fadeIn relative">
+
+    <!-- Floating Orbs -->
+    <div class="dash-orb dash-orb-1"></div>
+    <div class="dash-orb dash-orb-2"></div>
+
+    <!-- Header -->
+    <div class="flex items-center justify-between relative z-10">
+        <h1 class="text-2xl font-bold text-[#0F172A] flex items-center gap-2">
+            <i class="ph-fill ph-house text-[#0F172A]"></i>
+            Salom, {{ request.user.first_name }}! 👨‍👩‍👧‍👦
+        </h1>
+        {% if has_any_debt %}
+        <div
+            class="px-3 py-1.5 bg-rose-50/80 border border-rose-200 text-rose-600 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+            <i class="ph-fill ph-warning-circle"></i>
+            Umumiy qarz: {{ total_debt|floatformat:0|intcomma }} so'm
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Farzandlar -->
+    {% for data in children_data %}
+    <div class="glass-section p-5 relative z-10">
+        <!-- Farzand Header -->
+        <div class="flex items-center gap-4 mb-4 pb-3 border-b border-[#94A3B8]/10">
+            <div
+                class="w-12 h-12 bg-gradient-to-br from-[#4F46E5] to-[#818CF8] rounded-xl text-white flex items-center justify-center font-bold text-lg shadow-lg">
+                {{ data.child.first_name|first }}
+            </div>
+            <div class="flex-1">
+                <h3 class="text-base font-bold text-[#0F172A]">{{ data.child.first_name }} {{ data.child.last_name }}
+                </h3>
+                <p class="text-xs text-[#64748B]">{{ data.relation_type }}</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="text-center">
+                    <p class="text-xs text-[#94A3B8] uppercase font-semibold">Davomat</p>
+                    <p class="text-lg font-bold text-[#0F172A]">{{ data.attendance_rate }}%</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-[#94A3B8] uppercase font-semibold">O'rt. baho</p>
+                    <p class="text-lg font-bold text-amber-600">{{ data.avg_grade }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-[#94A3B8] uppercase font-semibold">XP</p>
+                    <p class="text-lg font-bold text-purple-600">{{ data.xp }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-[#94A3B8] uppercase font-semibold">Qoldirilgan</p>
+                    <p class="text-lg font-bold text-rose-600">{{ data.missed_lessons_count }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-[#94A3B8] uppercase font-semibold">Balans</p>
+                    <p
+                        class="text-lg font-bold {% if data.has_debt %}text-rose-600{% else %}text-emerald-600{% endif %}">
+                        {{ data.balance|floatformat:0|intcomma }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farzand Guruhlari + Davomat -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+            <!-- Guruhlar -->
+            <div>
+                <h4 class="text-sm font-bold text-[#0F172A] mb-2 flex items-center gap-1.5">
+                    <i class="ph-fill ph-books text-[#64748B]"></i> Guruhlar
+                </h4>
+                <div class="space-y-2">
+                    {% for enrollment in data.enrollments %}
+                    <div class="flex items-center gap-3 p-2.5 liquid-glass rounded-xl">
+                        <div
+                            class="w-8 h-8 bg-gradient-to-br from-[#4F46E5] to-[#818CF8] rounded-lg text-white flex items-center justify-center font-bold text-xs shadow-sm flex-shrink-0">
+                            {{ enrollment.group.name|first }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h5 class="font-semibold text-[#0F172A] text-xs truncate">{{ enrollment.group.name }}</h5>
+                            <p class="text-xs text-[#64748B]">{{ enrollment.group.course.name }} · {{ enrollment.group.teacher.first_name|default:"-" }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-[#94A3B8] text-xs text-center py-3">Guruhlar yo'q</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- So'nggi Davomat -->
+            <div>
+                <h4 class="text-sm font-bold text-[#0F172A] mb-2 flex items-center gap-1.5">
+                    <i class="ph-fill ph-clock-counter-clockwise text-[#64748B]"></i> So'nggi davomat
+                </h4>
+                <div class="space-y-1">
+                    {% for att in data.recent_attendance %}
+                    <div class="flex items-center justify-between p-2 rounded-lg hover:bg-white/60 transition text-xs">
+                        <span class="text-[#0F172A] font-medium">{{ att.lesson.date|date:"d.m" }}</span>
+                        <span class="text-[#64748B] truncate mx-2 flex-1">{{ att.lesson.group.name }}</span>
+                        <span class="px-1.5 py-0.5 text-xs font-bold rounded
+                            {% if att.status == 'present' %}bg-emerald-50/80 text-emerald-700
+                            {% elif att.status == 'absent' %}bg-rose-50/80 text-rose-700
+                            {% else %}bg-amber-50/80 text-amber-700{% endif %}">
+                            {% if att.status == 'present' %}✓{% elif att.status == 'absent' %}✗{% else %}...{% endif %}
+                        </span>
+                        <span class="font-bold text-[#0F172A] ml-2 w-6 text-center">{{ att.grade|default:"—" }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-[#94A3B8] text-xs text-center py-3">Ma'lumot yo'q</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-bold text-[#0F172A] mb-2 flex items-center gap-1.5">
+                    <i class="ph-fill ph-fingerprint text-[#64748B]"></i> Markazga kelish
+                </h4>
+                <div class="mb-3 p-3 liquid-glass rounded-xl">
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <p class="text-[#94A3B8] uppercase font-semibold">Bugun keldi</p>
+                            <p class="mt-1 font-bold text-emerald-700">
+                                {% if data.today_presence and data.today_presence.check_in_at %}{{ data.today_presence.check_in_at|date:"H:i" }}{% else %}—{% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-[#94A3B8] uppercase font-semibold">Bugun ketdi</p>
+                            <p class="mt-1 font-bold text-amber-700">
+                                {% if data.today_presence and data.today_presence.check_out_at %}{{ data.today_presence.check_out_at|date:"H:i" }}{% else %}—{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    {% for log in data.recent_face_logs %}
+                    <div class="flex items-center justify-between p-2.5 liquid-glass rounded-xl text-xs">
+                        <span class="font-medium text-[#0F172A]">{{ log.date|date:"d.m.Y" }}</span>
+                        <span class="text-emerald-700 font-bold">
+                            {% if log.check_in_at %}Keldi {{ log.check_in_at|date:"H:i" }}{% else %}—{% endif %}
+                        </span>
+                        <span class="text-amber-700 font-bold">
+                            {% if log.check_out_at %}Ketdi {{ log.check_out_at|date:"H:i" }}{% else %}—{% endif %}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p class="text-[#94A3B8] text-xs text-center py-3">Kelish-ketish ma'lumoti yo'q</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="glass-section p-8 text-center relative z-10">
+        <i class="ph-fill ph-user-circle text-4xl text-[#94A3B8] mb-3"></i>
+        <p class="text-[#64748B] font-medium">Farzandlar topilmadi</p>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}
