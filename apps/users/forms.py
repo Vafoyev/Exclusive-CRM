@@ -263,11 +263,10 @@ MODULE_EXTRA_ACTIONS = {
     'settings': [],
 }
 
-# Xodim rollari
+# Xodim rollari (owner chiqarilgan — faqat super_admin owner yarata oladi)
 STAFF_ROLE_CHOICES = [
     ('admin', 'Administrator'),
     ('staff', 'Xodim'),
-    ('owner', 'Direktor'),
 ]
 
 

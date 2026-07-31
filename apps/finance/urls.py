@@ -9,6 +9,9 @@ from . import admin_cash_views
 app_name = 'finance'
 
 urlpatterns = [
+    # Kassa Dashboard
+    path('kassa/', views.kassa_dashboard, name='kassa'),
+
     # Accounts (Kassalar)
     path('accounts/', views.account_list, name='account_list'),
     path('accounts/add/', views.account_create, name='account_create'),

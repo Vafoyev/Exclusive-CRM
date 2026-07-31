@@ -19,6 +19,13 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
+def kassa_dashboard(request):
+    """Moliya / Kassa Dashboard View"""
+    return render(request, 'finance/kassa.html')
+
+
+
+@login_required
 @permission_required('finance', 'view')
 def transaction_list(request):
     """Tranzaksiyalar ro'yxati"""

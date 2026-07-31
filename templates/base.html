@@ -5,8 +5,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Dashboard{% endblock %} | Exclusive Akademiya</title>
+    <title>{% block title %}Dashboard{% endblock %} | Smart EDU</title>
     <link rel="icon" href="data:,">
+
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        })();
+    </script>
 
     <!-- FONTS & ICONS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,13 +38,13 @@
 
     <script>
         tailwind.config = {
+            darkMode: ['selector', '[data-theme="dark"]'],
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: { 50: '#EEF2FF', 100: '#E0E7FF', 200: '#C7D2FE', 300: '#A5B4FC', 400: '#818CF8', 500: '#4F46E5', 600: '#4338CA', 700: '#3730A3', 800: '#312E81', 900: '#1E1B4B' },
-                        indigo: { 50: '#EEF2FF', 100: '#E0E7FF', 200: '#C7D2FE', 300: '#A5B4FC', 400: '#818CF8', 500: '#6366F1', 600: '#4F46E5', 700: '#4338CA' },
-                        slate: { 50: '#F8FAFC', 100: '#F1F5F9', 200: '#E2E8F0', 300: '#CBD5E1', 400: '#94A3B8', 500: '#64748B', 600: '#475569', 700: '#334155', 800: '#1E293B', 900: '#0F172A' }
+                        primary: { 50: '#FAFAFA', 100: '#F4F4F5', 200: '#E4E4E7', 300: '#D4D4D8', 400: '#A1A1AA', 500: '#18181B', 600: '#27272A', 700: '#3F3F46', 800: '#52525B', 900: '#71717A' },
+                        emerald: { 50: '#ECFDF5', 100: '#D1FAE5', 500: '#10B981', 700: '#047857', 900: '#022C22' }
                     }
                 }
             }
@@ -46,7 +57,7 @@
     </style>
 </head>
 
-<body class="font-sans antialiased overflow-hidden bg-[#F8FAFC] text-[#0F172A]" hx-boost="true">
+<body class="font-sans antialiased overflow-hidden bg-[var(--bg-page)] text-[var(--text-main)] transition-colors duration-200" hx-boost="true">
 
     <!-- HTMX Top Progress Bar -->
     <div id="htmx-progress-bar" class="htmx-progress-bar"></div>
@@ -63,26 +74,28 @@
 
         <!-- SIDEBAR -->
         <aside
-            class="flex-shrink-0 w-64 flex flex-col transition-all duration-300 transform lg:transform-none z-50 absolute lg:relative h-full bg-[#1E293B] shadow-xl"
+            class="flex-shrink-0 w-64 flex flex-col transition-all duration-300 transform lg:transform-none z-50 absolute lg:relative h-full bg-[var(--bg-sidebar)] border-r border-[var(--border-color)] shadow-sm"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
 
             <!-- Logo + Mobile Close Button -->
             <div
-                class="h-16 flex items-center justify-between px-4 border-b border-white/10 bg-gradient-to-r from-[#4F46E5] to-[#4338CA]">
-                <span class="text-lg sm:text-xl font-bold flex items-center gap-2 text-white">
-                    <i class="ph-fill ph-graduation-cap text-xl sm:text-2xl"></i>
-                    <span class="hidden sm:inline">Exclusive Akademiya</span>
-                    <span class="sm:hidden">EA</span>
+                class="h-16 flex items-center justify-between px-4 border-b border-[var(--border-color)] bg-[var(--bg-sidebar)]">
+                <span class="text-lg sm:text-xl font-bold flex items-center gap-2 text-[var(--text-main)]">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--brand)] text-[var(--brand-text)] flex items-center justify-center text-lg">
+                        <i class="ph-fill ph-graduation-cap"></i>
+                    </div>
+                    <span class="hidden sm:inline font-bold tracking-tight text-[var(--text-main)]">Smart EDU</span>
+                    <span class="sm:hidden text-[var(--text-main)] font-bold">SE</span>
                 </span>
                 <!-- Mobile Close Button -->
                 <button @click="closeSidebar()"
-                    class="lg:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition min-w-[40px] min-h-[40px] flex items-center justify-center">
+                    class="lg:hidden p-2 rounded-lg text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)] transition min-w-[40px] min-h-[40px] flex items-center justify-center">
                     <i class="ph ph-x text-xl"></i>
                 </button>
             </div>
 
             <!-- Navigation -->
-            <div id="sidebar-nav" class="flex-1 overflow-y-auto py-4 px-3 space-y-1 bg-[#1E293B]">
+            <div id="sidebar-nav" class="flex-1 overflow-y-auto py-4 px-3 space-y-1 bg-[var(--bg-sidebar)]">
                 {% include 'components/sidebar.html' %}
             </div>
 
@@ -113,130 +126,32 @@
             </script>
 
             <!-- User Profile -->
-            <div class="p-4 border-t border-white/10 bg-[#0F172A]">
-                <div class="flex items-center gap-3">
+            <div class="p-3 border-t border-[var(--border-color)] bg-[var(--bg-sidebar)]">
+                <div class="flex items-center gap-3 p-2 rounded-xl bg-[var(--bg-hover)] border border-[var(--border-color)]">
                     <div
-                        class="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#818CF8] text-white flex items-center justify-center font-bold shadow-md">
-                        <img src="{{ request.user.avatar_url }}" alt="{{ request.user.full_name|default:'User' }}" class="w-full h-full object-cover">
+                        class="w-9 h-9 rounded-lg overflow-hidden bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] flex items-center justify-center font-bold text-xs">
+                        {{ request.user.initials|default:"DV" }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold truncate text-white">{{ request.user.first_name }}</p>
-                        <p class="text-xs truncate text-slate-400">{{ request.user.get_role_display }}</p>
+                        <p class="text-xs font-semibold truncate text-[var(--text-main)]">{{ request.user.first_name|default:"Dilnoza" }} {{ request.user.last_name|default:"V." }}</p>
+                        <p class="text-[10px] truncate text-[var(--text-muted)] font-medium">{{ request.user.get_role_display|default:"Kassir" }}</p>
                     </div>
                     <a href="{% url 'logout' %}" hx-boost="false"
-                        class="transition p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10">
-                        <i class="ph-fill ph-sign-out text-xl"></i>
+                        class="transition p-1.5 rounded-lg text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10">
+                        <i class="ph-fill ph-sign-out text-lg"></i>
                     </a>
                 </div>
             </div>
         </aside>
 
         <!-- MAIN CONTENT -->
-        <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden bg-[#F8FAFC]">
+        <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden bg-[var(--bg-page)]">
 
             <!-- Header -->
-            <header
-                class="h-14 sm:h-16 flex items-center justify-between px-3 sm:px-4 md:px-6 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
-                <div class="flex items-center gap-2 sm:gap-3">
-                    <!-- Mobile Toggle Button - changes icon based on state -->
-                    <button @click="toggleSidebar()"
-                        class="focus:outline-none transition p-2 rounded-lg lg:hidden text-slate-500 hover:text-[#4F46E5] hover:bg-primary-50 min-w-[44px] min-h-[44px] flex items-center justify-center">
-                        <i class="ph text-xl sm:text-2xl" :class="sidebarOpen ? 'ph-x' : 'ph-list'"></i>
-                    </button>
-
-                    <h1
-                        class="text-sm sm:text-base md:text-lg font-bold bg-gradient-to-r from-[#4F46E5] to-[#4338CA] bg-clip-text text-transparent truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
-                        {{ organization.name|default:"Smart Edu Center" }}
-                    </h1>
-                </div>
-
-                <div class="flex items-center gap-1 sm:gap-2" x-data="{ notifOpen: false }">
-
-                    <!-- Notification Dropdown -->
-                    <div class="relative">
-                        <button @click="notifOpen = !notifOpen"
-                            class="relative p-2 sm:p-2.5 rounded-xl transition text-slate-500 hover:text-[#4F46E5] hover:bg-primary-50 min-w-[44px] min-h-[44px] flex items-center justify-center">
-                            <i class="ph ph-bell text-lg sm:text-xl"></i>
-                            {% if unread_notifications_count > 0 %}
-                            <span class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-rose-500 rounded-full text-white text-[10px] flex items-center justify-center font-bold animate-pulse">
-                                {{ unread_notifications_count }}
-                            </span>
-                            {% endif %}
-                        </button>
-
-                        <!-- Dropdown -->
-                        <div x-show="notifOpen" @click.away="notifOpen = false" x-transition
-                            class="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-slate-200 rounded-xl shadow-xl z-50"
-                            x-cloak>
-                            <div
-                                class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-xl">
-                                <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                                    <i class="ph-fill ph-bell text-[#4F46E5]"></i> Bildirishnomalar
-                                </h3>
-                                {% if unread_notifications_count > 0 %}
-                                <span class="text-xs bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full font-medium">
-                                    Yangi: {{ unread_notifications_count }}
-                                </span>
-                                {% endif %}
-                            </div>
-                            <div class="max-h-72 overflow-y-auto">
-                                {% for notification in notifications %}
-                                <a href="{% url 'core:notification_read' notification.pk %}"
-                                   hx-boost="true" hx-push-url="true" hx-target="#main-content" hx-swap="innerHTML"
-                                   @click="notifOpen = false"
-                                   class="flex items-start gap-3 p-4 hover:bg-slate-50 transition border-b border-slate-100 {% if notification.status == 'sent' %}bg-blue-50/30{% endif %}">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
-                                        {% if notification.message_type == 'sms' %}bg-green-100 text-green-600
-                                        {% elif notification.message_type == 'telegram' %}bg-blue-100 text-blue-600
-                                        {% else %}bg-[#EEF2FF] text-[#4F46E5]{% endif %}">
-                                        {% if notification.message_type == 'sms' %}
-                                        <i class="ph-fill ph-chat-circle-text"></i>
-                                        {% elif notification.message_type == 'telegram' %}
-                                        <i class="ph-fill ph-telegram-logo"></i>
-                                        {% else %}
-                                        <i class="ph-fill ph-bell-ringing"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm text-slate-800 font-medium line-clamp-1">
-                                            {{ notification.message|striptags|truncatewords:8 }}
-                                        </p>
-                                        <p class="text-xs text-slate-400 mt-1">{{ notification.created_at|timesince }} oldin</p>
-                                    </div>
-                                    {% if notification.status == 'sent' %}
-                                    <span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></span>
-                                    {% endif %}
-                                </a>
-                                {% empty %}
-                                <div class="p-8 text-center">
-                                    <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="ph ph-bell-slash text-2xl text-slate-400"></i>
-                                    </div>
-                                    <p class="text-slate-500 text-sm">Bildirishnomalar yo'q</p>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% if notifications %}
-                            <a href="{% url 'core:notifications' %}"
-                               hx-boost="true" hx-push-url="true" hx-target="#main-content" hx-swap="innerHTML"
-                               @click="notifOpen = false"
-                                class="block p-3 text-center text-sm text-[#4F46E5] hover:bg-primary-50 transition border-t border-slate-100 rounded-b-xl font-medium">
-                                Barchasini ko'rish →
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Settings -->
-                    <a href="{% url 'core:settings' %}"
-                        class="p-2 sm:p-2.5 text-slate-500 hover:text-[#4F46E5] hover:bg-primary-50 rounded-xl transition min-w-[44px] min-h-[44px] flex items-center justify-center">
-                        <i class="ph ph-gear text-lg sm:text-xl"></i>
-                    </a>
-                </div>
-            </header>
+            {% include 'components/navbar.html' %}
 
             <!-- Main Content -->
-            <main id="main-content" class="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 bg-[#F8FAFC]">
+            <main id="main-content" class="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 bg-[var(--bg-page)] transition-colors duration-200">
                 {% if messages %}
                 <div class="mb-4 sm:mb-6 space-y-2 sm:space-y-3" id="django-messages" role="alert" aria-live="polite">
                     {% for message in messages %}

@@ -1,253 +1,361 @@
 <!-- Dashboard -->
 <a href="{% url 'dashboard' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-    <i class="ph-fill ph-squares-four text-xl"></i>
-    <span>Dashboard</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition {% if request.resolver_match.url_name == 'dashboard' %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-squares-four text-base"></i>
+        <span>Boshqaruv</span>
+    </div>
 </a>
 
 <!-- BOSHQARUV -->
 {% if full_access or 'users' in user_modules %}
-<p class="sidebar-section">Boshqaruv</p>
+<div class="pt-4 pb-1 px-3">
+    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Boshqaruv</p>
+</div>
 
 <a href="{% url 'users:user_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'users' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-users text-xl"></i>
-    <span>Foydalanuvchilar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'users' in request.path and 'debtors' not in request.GET.filter %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-users text-base"></i>
+        <span>Foydalanuvchilar</span>
+    </div>
+    <span class="text-[10px] font-mono text-[var(--text-muted)]">412</span>
 </a>
 
 {% if full_access or 'automation' in user_modules %}
 <a href="{% url 'automation:template_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'automation' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-robot text-xl"></i>
-    <span>Avtomatizatsiya</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'automation' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-robot text-base"></i>
+        <span>Avtomatizatsiya</span>
+    </div>
 </a>
 {% endif %}
 {% endif %}
 
 <!-- CRM -->
 {% if full_access or 'crm' in user_modules %}
-<p class="sidebar-section">Sotuv & CRM</p>
+<div class="pt-4 pb-1 px-3">
+    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Sotuv & CRM</p>
+</div>
 
 <a href="{% url 'crm:pipeline' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'crm' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-funnel text-xl"></i>
-    <span>Sotuv & CRM</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'crm' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-funnel text-base"></i>
+        <span>Lidlar / CRM</span>
+    </div>
+    <span class="text-[10px] font-mono text-[var(--text-muted)]">14</span>
 </a>
 {% endif %}
 
 <!-- EDUCATION -->
 {% if full_access or 'education' in user_modules or request.user.role == 'teacher' %}
-<p class="sidebar-section">O'quv Jarayoni</p>
+<div class="pt-4 pb-1 px-3">
+    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">TA'LIM</p>
+</div>
 
 <a href="{% url 'group_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'groups' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-users-three text-xl"></i>
-    <span>Guruhlar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'groups' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-users-three text-base"></i>
+        <span>Guruhlar</span>
+    </div>
+    <span class="text-[10px] font-mono text-[var(--text-muted)]">28</span>
 </a>
 
 <a href="{% url 'course_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'courses' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-books text-xl"></i>
-    <span>Kurslar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'courses' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-books text-base"></i>
+        <span>Kurslar</span>
+    </div>
 </a>
 
 {% if full_access %}
 <a href="{% url 'room_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'rooms' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-door text-xl"></i>
-    <span>Xonalar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'rooms' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-door text-base"></i>
+        <span>Xonalar</span>
+    </div>
 </a>
 {% endif %}
 
 <a href="{% url 'material_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'materials' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-file-video text-xl"></i>
-    <span>Materiallar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'materials' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-file-video text-base"></i>
+        <span>Materiallar</span>
+    </div>
 </a>
 {% endif %}
 
 <!-- OPERATIONS -->
 {% if full_access or 'operations' in user_modules or request.user.role == 'teacher' %}
-<p class="sidebar-section">Operatsiyalar</p>
+<div class="pt-4 pb-1 px-3">
+    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Operatsiyalar</p>
+</div>
 
 <a href="{% url 'operations:lesson_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'lessons' in request.path or 'schedule' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-chalkboard text-xl"></i>
-    <span>Darslar & Jadval</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'lessons' in request.path or 'schedule' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-chalkboard text-base"></i>
+        <span>Darslar & Jadval (Davomat)</span>
+    </div>
 </a>
 {% endif %}
 
-<!-- RATINGS -->
-<p class="sidebar-section">Reytinglar</p>
+<!-- RATINGS & SHOP -->
+<div class="pt-4 pb-1 px-3">
+    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Reytinglar & Do'kon</p>
+</div>
 
 <a href="{% url 'operations:teacher_ratings' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'ratings' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-trophy text-xl"></i>
-    <span>Reytinglar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'ratings' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-trophy text-base"></i>
+        <span>Reytinglar</span>
+    </div>
 </a>
 
 {% if request.user.role == 'super_admin' %}
 <a href="{% url 'operations:shop' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'shop' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-storefront text-xl"></i>
-    <span>Do'kon</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'shop' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-storefront text-base"></i>
+        <span>Do'kon</span>
+    </div>
 </a>
 {% endif %}
 
 <!-- TO'LOV (O'quvchi va Ota-ona uchun) -->
 {% if request.user.role == 'student' or request.user.role == 'parent' %}
-<p class="sidebar-section">To'lov</p>
+<div class="pt-4 pb-1 px-3">
+    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">To'lov</p>
+</div>
 
 <a href="{% url 'finance:student_payment_page' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if '/finance/pay' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-credit-card text-xl"></i>
-    <span>To'lov qilish</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if '/finance/pay' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-credit-card text-base"></i>
+        <span>To'lov qilish</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:my_payments' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'my-payments' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-receipt text-xl"></i>
-    <span>To'lovlar tarixi</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'my-payments' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-receipt text-base"></i>
+        <span>To'lovlar tarixi</span>
+    </div>
 </a>
 {% endif %}
 
-<!-- ADMIN KASSA (Administrator kirim-chiqim) -->
+<!-- ADMIN KASSA -->
 {% if 'admin_finance' in user_modules %}
-<p class="sidebar-section">Kassa Kirim-Chiqim</p>
+<div class="pt-4 pb-1 px-3">
+    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Kassa Kirim-Chiqim</p>
+</div>
 
 <a href="{% url 'finance:admin_cash_dashboard' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if '/finance/admin-cash' in request.path and 'history' not in request.path and 'submit' not in request.path and 'income' not in request.path and 'expense' not in request.path and 'course-payment' not in request.path and 'student-payments' not in request.path %}active{% endif %}">
-    <i class="ph-fill ph-cash-register text-xl"></i>
-    <span>Kassam</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if '/finance/admin-cash' in request.path and 'history' not in request.path and 'submit' not in request.path and 'income' not in request.path and 'expense' not in request.path and 'course-payment' not in request.path and 'student-payments' not in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-cash-register text-base"></i>
+        <span>Kassam</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:admin_add_income' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'admin-cash/income' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-arrow-circle-down text-xl"></i>
-    <span>Kirim</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'admin-cash/income' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-arrow-circle-down text-base"></i>
+        <span>Kirim</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:admin_add_expense' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'admin-cash/expense' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-arrow-circle-up text-xl"></i>
-    <span>Chiqim</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'admin-cash/expense' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-arrow-circle-up text-base"></i>
+        <span>Chiqim</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:admin_add_course_payment' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'course-payment' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-student text-xl"></i>
-    <span>Kurs To'lovi</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'course-payment' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-student text-base"></i>
+        <span>Kurs To'lovi</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:admin_student_payments' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'student-payments' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-receipt text-xl"></i>
-    <span>Chek Tekshirish</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'student-payments' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-receipt text-base"></i>
+        <span>Chek Tekshirish</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:admin_cash_history' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'admin-cash/history' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-clock-counter-clockwise text-xl"></i>
-    <span>Tarix</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'admin-cash/history' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-clock-counter-clockwise text-base"></i>
+        <span>Tarix</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:admin_submit_cash' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'admin-cash/submit' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-paper-plane-tilt text-xl"></i>
-    <span>Kassa Topshirish</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'admin-cash/submit' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-paper-plane-tilt text-base"></i>
+        <span>Kassa Topshirish</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:cash_submission_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'cash-submissions' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-hand-coins text-xl"></i>
-    <span>Topshirishlar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'cash-submissions' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-hand-coins text-base"></i>
+        <span>Topshirishlar</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:supply_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'supplies' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-package text-xl"></i>
-    <span>Omborxona</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'supplies' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-package text-base"></i>
+        <span>Omborxona</span>
+    </div>
 </a>
 {% endif %}
 
-<!-- FINANCE -->
+<!-- MOLIYA -->
 {% if full_access or 'finance' in user_modules %}
-<p class="sidebar-section">Moliya</p>
+<div class="pt-4 pb-1 px-3">
+    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">MOLIYA</p>
+</div>
+
+<a href="{% url 'finance:kassa' %}" @click="closeSidebar && closeSidebar()"
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if request.resolver_match.url_name == 'kassa' %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-wallet text-base"></i>
+        <span>Kassa</span>
+    </div>
+</a>
+
+<a href="{% url 'users:user_list' %}?filter=debtors" @click="closeSidebar && closeSidebar()"
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'debtors' in request.GET.filter %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-currency-dollar-simple text-base"></i>
+        <span>Qarzdorlik</span>
+    </div>
+    <span class="text-[10px] font-mono text-[var(--text-muted)]">23</span>
+</a>
 
 <a href="{% url 'finance:account_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'accounts' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-vault text-xl"></i>
-    <span>Kassalar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'accounts' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-vault text-base"></i>
+        <span>Kassalar</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:category_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'categories' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-folders text-xl"></i>
-    <span>Kategoriyalar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'categories' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-folders text-base"></i>
+        <span>Kategoriyalar</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:transaction_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'transactions' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-arrows-left-right text-xl"></i>
-    <span>Kirim-Chiqim</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'transactions' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-arrows-left-right text-base"></i>
+        <span>Kirim-Chiqim</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:report' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'report' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-chart-bar text-xl"></i>
-    <span>Hisobotlar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'report' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-chart-bar text-base"></i>
+        <span>Hisobotlar</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:payroll_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'payroll' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-money text-xl"></i>
-    <span>Oyliklar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'payroll' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-money text-base"></i>
+        <span>Oyliklar</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:supply_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'supplies' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-package text-xl"></i>
-    <span>Sklad</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'supplies' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-package text-base"></i>
+        <span>Sklad</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:pending_receipts' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'receipts' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-receipt text-xl"></i>
-    <span>Chek Tekshirish</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'receipts' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-receipt text-base"></i>
+        <span>Chek Tekshirish</span>
+    </div>
 </a>
 
 <a href="{% url 'finance:cash_submission_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'cash-submissions' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-hand-coins text-xl"></i>
-    <span>Kassa Topshirishlar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'cash-submissions' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-hand-coins text-base"></i>
+        <span>Kassa Topshirishlar</span>
+    </div>
 </a>
 {% endif %}
 
-<!-- SETTINGS -->
+<!-- TIZIM / SETTINGS -->
 {% if full_access or 'settings' in user_modules %}
+<div class="pt-4 pb-1 px-3">
+    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">TIZIM</p>
+</div>
+
 <a href="{% url 'core:settings' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'settings' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-gear text-xl"></i>
-    <span>Sozlamalar</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'settings' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-gear text-base"></i>
+        <span>Sozlamalar</span>
+    </div>
 </a>
 
 <a href="{% url 'hardware:face_id_settings' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'face-id' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-fingerprint text-xl"></i>
-    <span>Hikvision Face ID</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'face-id' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-fingerprint text-base"></i>
+        <span>Hikvision Face ID</span>
+    </div>
 </a>
 
 <a href="{% url 'core:history_list' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'history' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-clock-counter-clockwise text-xl"></i>
-    <span>Tarix</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'history' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-clock-counter-clockwise text-base"></i>
+        <span>Tarix</span>
+    </div>
 </a>
 
 {% if request.user.role == 'super_admin' %}
 <a href="{% url 'core:backup_center' %}" @click="closeSidebar && closeSidebar()"
-    class="sidebar-link flex items-center gap-3 min-h-[48px] {% if 'backup-center' in request.path %}active{% endif %}">
-    <i class="ph-fill ph-database text-xl"></i>
-    <span>Backup Center</span>
+   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'backup-center' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
+    <div class="flex items-center gap-2.5">
+        <i class="ph-fill ph-database text-base"></i>
+        <span>Backup Center</span>
+    </div>
 </a>
 {% endif %}
 {% endif %}

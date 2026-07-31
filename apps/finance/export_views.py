@@ -9,6 +9,7 @@ from reportlab.lib.units import cm
 
 from .models import Transaction, Account
 from apps.core.export_utils import export_to_excel, export_to_pdf, format_money
+from apps.core.permissions import permission_required
 
 
 # ========================================
@@ -16,6 +17,7 @@ from apps.core.export_utils import export_to_excel, export_to_pdf, format_money
 # ========================================
 
 @login_required
+@permission_required('finance', 'view')
 def export_transactions_excel(request):
     """Tranzaksiyalarni Excel formatida eksport qilish"""
     org = request.organization
@@ -87,6 +89,7 @@ def export_transactions_excel(request):
 
 
 @login_required
+@permission_required('finance', 'view')
 def export_transactions_pdf(request):
     """Tranzaksiyalarni PDF formatida eksport qilish"""
     org = request.organization
@@ -159,6 +162,7 @@ def export_transactions_pdf(request):
 # ========================================
 
 @login_required
+@permission_required('finance', 'view')
 def export_finance_report_excel(request):
     """Moliyaviy hisobotni Excel formatida eksport qilish"""
     org = request.organization
@@ -215,6 +219,7 @@ def export_finance_report_excel(request):
 
 
 @login_required
+@permission_required('finance', 'view')
 def export_finance_report_pdf(request):
     """Moliyaviy hisobotni PDF formatida eksport qilish"""
     org = request.organization
@@ -267,6 +272,7 @@ def export_finance_report_pdf(request):
 # ========================================
 
 @login_required
+@permission_required('finance', 'view')
 def export_debtors_excel(request):
     """Qarzdorlar ro'yxatini Excel formatida eksport qilish"""
     from apps.users.models import User
@@ -304,6 +310,7 @@ def export_debtors_excel(request):
 
 
 @login_required
+@permission_required('finance', 'view')
 def export_debtors_pdf(request):
     """Qarzdorlar ro'yxatini PDF formatida eksport qilish"""
     from apps.users.models import User

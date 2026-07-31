@@ -384,5 +384,9 @@ function parentManager() {
         },
     };
 }
+window.parentManager = parentManager;
+document.addEventListener('alpine:init', () => {
+    Alpine.data('parentManager', parentManager);
+});
 </script>
 {% endblock %}

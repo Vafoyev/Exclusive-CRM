@@ -376,6 +376,12 @@ def user_detail(request, pk):
 @permission_required('users', 'edit')
 def user_update(request, pk):
     user = get_object_or_404(User, pk=pk)
+
+    # Tashkilot tekshiruvi — admin boshqa tashkilot userini tahrirlay olmaydi
+    if request.user.role != 'super_admin' and request.user.organization:
+        if user.organization and user.organization != request.user.organization:
+            raise Http404
+
     if request.method == 'POST':
         form = UserForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
@@ -391,9 +397,16 @@ def user_update(request, pk):
 @permission_required('users', 'delete')
 def user_delete(request, pk):
     user = get_object_or_404(User, pk=pk)
+
+    # Tashkilot tekshiruvi
+    if request.user.role != 'super_admin' and request.user.organization:
+        if user.organization and user.organization != request.user.organization:
+            raise Http404
+
     if request.method == 'POST':
         user.delete()
         messages.warning(request, "Foydalanuvchi o'chirildi.")
         return redirect('users:user_list')
     return render(request, 'users/user_confirm_delete.html', {'user': user})
+
 

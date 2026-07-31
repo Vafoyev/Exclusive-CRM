@@ -12,116 +12,116 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 relative z-10">
         <div class="flex items-center gap-2 sm:gap-3">
-            <h2 class="text-xl sm:text-2xl font-bold text-[#0F172A] flex items-center gap-2">
-                <i class="ph-fill ph-shield-check text-[#0F172A]"></i> Super Admin
+            <h2 class="text-xl sm:text-2xl font-bold text-[var(--text-main)] flex items-center gap-2">
+                <i class="ph-fill ph-shield-check text-[var(--text-main)]"></i> Super Admin
             </h2>
-            <span class="text-xs text-[#94A3B8] hidden sm:inline">{% now "d F Y" %}</span>
+            <span class="text-xs text-[var(--text-muted)] hidden sm:inline">{% now "d F Y" %}</span>
         </div>
         <div class="flex gap-1.5 sm:gap-2 flex-wrap">
-            <div class="flex gap-0.5 liquid-glass p-0.5 rounded-lg">
+            <div class="flex gap-0.5 bg-[var(--bg-hover)] p-0.5 rounded-lg border border-[var(--border-color)]">
                 <a href="?period=weekly"
-                    class="px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium transition {% if period == 'weekly' %}bg-gradient-to-r from-[#4F46E5] to-[#818CF8] text-white shadow-sm{% else %}text-[#64748B] hover:text-[#0F172A]{% endif %}">Hafta</a>
+                    class="px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium transition {% if period == 'weekly' %}bg-[var(--bg-card)] text-[var(--text-main)] shadow-sm font-bold border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)]{% endif %}">Hafta</a>
                 <a href="?period=monthly"
-                    class="px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium transition {% if period != 'weekly' %}bg-gradient-to-r from-[#4F46E5] to-[#818CF8] text-white shadow-sm{% else %}text-[#64748B] hover:text-[#0F172A]{% endif %}">Oy</a>
+                    class="px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium transition {% if period != 'weekly' %}bg-[var(--bg-card)] text-[var(--text-main)] shadow-sm font-bold border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)]{% endif %}">Oy</a>
             </div>
             <button onclick="openQuickPayment()"
-                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg text-xs font-medium transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/25 min-h-[40px]">
+                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-all hover:-translate-y-0.5 min-h-[40px]">
                 <i class="ph-fill ph-credit-card"></i> <span class="hidden xs:inline">To'lov</span>
             </button>
             <a href="{% url 'users:student_create' %}"
-                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-2 glass-button text-white rounded-lg text-xs font-medium min-h-[40px]"><i
+                class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold min-h-[40px]"><i
                     class="ph-fill ph-plus"></i> <span class="hidden sm:inline">O'quvchi</span></a>
             <a href="{% url 'crm:lead_create' %}"
-                class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 liquid-glass text-[#64748B] rounded-lg text-xs font-medium hover:bg-white/80 transition min-h-[40px]"><i
+                class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)] rounded-lg text-xs font-medium hover:bg-[var(--border-hover)] transition min-h-[40px]"><i
                     class="ph ph-plus"></i> Lid</a>
             <a href="{% url 'operations:lesson_add' %}"
-                class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 liquid-glass text-[#64748B] rounded-lg text-xs font-medium hover:bg-white/80 transition min-h-[40px]"><i
+                class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)] rounded-lg text-xs font-medium hover:bg-[var(--border-hover)] transition min-h-[40px]"><i
                     class="ph ph-plus"></i> Dars</a>
         </div>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-[1.3fr_0.9fr] gap-3 sm:gap-4 relative z-10">
-        <div class="glass-section p-4 sm:p-5">
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4 sm:p-5 shadow-sm">
             <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
                 <div class="space-y-2">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-[#0F172A] text-white rounded-full text-[11px] font-semibold uppercase tracking-[0.18em]">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)] rounded-full text-[11px] font-semibold uppercase tracking-[0.18em]">
                         <i class="ph-fill ph-scan-smiley"></i> Kurs Puli Markazi
                     </div>
                     <div>
-                        <h3 class="text-lg sm:text-xl font-bold text-[#0F172A]">Super admin uchun xavfsiz kurs puli yechish</h3>
-                        <p class="text-sm text-[#64748B] max-w-2xl">
+                        <h3 class="text-lg sm:text-xl font-bold text-[var(--text-main)]">Super admin uchun xavfsiz kurs puli yechish</h3>
+                        <p class="text-sm text-[var(--text-muted)] max-w-2xl">
                             Har safar parol bilan tasdiqlanadi, takroriy yechish bloklanadi va qachon bosilgani tarixda saqlanadi.
                         </p>
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
                     <button onclick="openBalanceResetModal()"
-                        class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-white border border-rose-200 text-rose-600 rounded-xl font-semibold text-sm hover:-translate-y-0.5 transition-all hover:shadow-lg hover:shadow-rose-500/10 min-h-[46px]">
+                        class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-rose-950/60 border border-rose-800/40 text-rose-400 rounded-xl font-semibold text-sm hover:bg-rose-900/80 transition-all min-h-[46px]">
                         <i class="ph-fill ph-eraser"></i> Balanslarni 0 qilish
                     </button>
                     <button onclick="openMonthlyFeeModal()"
-                        class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[#0F172A] to-[#1E293B] text-white rounded-xl font-semibold text-sm hover:-translate-y-0.5 transition-all hover:shadow-lg hover:shadow-slate-900/20 min-h-[46px]">
+                        class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm hover:-translate-y-0.5 transition-all min-h-[46px]">
                         <i class="ph-fill ph-lightning"></i> Kurs pulini qirqish
                     </button>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-                <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                    <p class="text-[11px] uppercase tracking-[0.16em] text-[#94A3B8] font-semibold">Joriy oyda</p>
-                    <p class="text-2xl font-bold text-[#0F172A] mt-2">{{ current_month_fee_amount|floatformat:0|intcomma }}</p>
-                    <p class="text-xs text-[#64748B] mt-1">qirqilgan kurs puli</p>
+                <div class="rounded-2xl bg-[var(--bg-hover)] border border-[var(--border-color)] p-4">
+                    <p class="text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)] font-semibold">Joriy oyda</p>
+                    <p class="text-2xl font-bold text-[var(--text-main)] mt-2">{{ current_month_fee_amount|floatformat:0|intcomma }}</p>
+                    <p class="text-xs text-[var(--text-second)] mt-1">qirqilgan kurs puli</p>
                 </div>
-                <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                    <p class="text-[11px] uppercase tracking-[0.16em] text-[#94A3B8] font-semibold">O'quvchilar</p>
-                    <p class="text-2xl font-bold text-[#0F172A] mt-2">{{ current_month_fee_students }}</p>
-                    <p class="text-xs text-[#64748B] mt-1">kamida bitta kursdan yechilgan</p>
+                <div class="rounded-2xl bg-[var(--bg-hover)] border border-[var(--border-color)] p-4">
+                    <p class="text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)] font-semibold">O'quvchilar</p>
+                    <p class="text-2xl font-bold text-[var(--text-main)] mt-2">{{ current_month_fee_students }}</p>
+                    <p class="text-xs text-[var(--text-second)] mt-1">kamida bitta kursdan yechilgan</p>
                 </div>
-                <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                    <p class="text-[11px] uppercase tracking-[0.16em] text-[#94A3B8] font-semibold">Kurs yozuvlari</p>
-                    <p class="text-2xl font-bold text-[#0F172A] mt-2">{{ current_month_fee_charges }}</p>
-                    <p class="text-xs text-[#64748B] mt-1">student-guruh kesimida jurnal</p>
+                <div class="rounded-2xl bg-[var(--bg-hover)] border border-[var(--border-color)] p-4">
+                    <p class="text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)] font-semibold">Kurs yozuvlari</p>
+                    <p class="text-2xl font-bold text-[var(--text-main)] mt-2">{{ current_month_fee_charges }}</p>
+                    <p class="text-xs text-[var(--text-second)] mt-1">student-guruh kesimida jurnal</p>
                 </div>
             </div>
         </div>
 
-        <div class="glass-section p-4 sm:p-5">
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4 sm:p-5 shadow-sm">
             <div class="flex items-center justify-between gap-3 mb-3">
                 <div>
-                    <h3 class="text-base font-bold text-[#0F172A]">Oxirgi bosilganlar</h3>
-                    <p class="text-xs text-[#64748B]">Qachon bosilgani va natijasi shu yerda ko'rinadi</p>
+                    <h3 class="text-base font-bold text-[var(--text-main)]">Oxirgi bosilganlar</h3>
+                    <p class="text-xs text-[var(--text-muted)]">Qachon bosilgani va natijasi shu yerda ko'rinadi</p>
                 </div>
             </div>
             <div class="space-y-2.5 max-h-[250px] overflow-y-auto" style="scrollbar-width: none;">
                 {% for run in recent_monthly_fee_runs %}
-                <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+                <div class="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-hover)] p-3">
                     <div class="flex items-start justify-between gap-3">
                         <div>
                             <div class="flex items-center gap-2 flex-wrap">
-                                <span class="text-xs font-semibold text-[#0F172A]">
+                                <span class="text-xs font-semibold text-[var(--text-main)]">
                                     {% if run.run_type == 'bulk' %}Barchasi{% else %}Bitta o'quvchi{% endif %}
                                 </span>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {% if run.status == 'completed' %}bg-emerald-50 text-emerald-700{% elif run.status == 'partial' %}bg-amber-50 text-amber-700{% elif run.status == 'skipped' %}bg-slate-100 text-slate-700{% else %}bg-rose-50 text-rose-700{% endif %}">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {% if run.status == 'completed' %}bg-emerald-950/60 text-emerald-400 border border-emerald-800/40{% elif run.status == 'partial' %}bg-amber-950/60 text-amber-400 border border-amber-800/40{% elif run.status == 'skipped' %}bg-slate-800 text-slate-300{% else %}bg-rose-950/60 text-rose-400 border border-rose-800/40{% endif %}">
                                     {{ run.get_status_display }}
                                 </span>
                             </div>
-                            <p class="text-xs text-[#64748B] mt-1">
+                            <p class="text-xs text-[var(--text-second)] mt-1">
                                 {{ run.billing_month|date:"F Y" }} • {{ run.triggered_at|date:"d.m.Y H:i" }}
                             </p>
-                            <p class="text-xs text-[#64748B] mt-1">
+                            <p class="text-xs text-[var(--text-second)] mt-1">
                                 {% if run.target_student %}{{ run.target_student.get_full_name }}{% else %}Barcha faol o'quvchilar{% endif %}
                             </p>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm font-bold text-[#0F172A]">{{ run.total_amount_deducted|floatformat:0|intcomma }}</p>
-                            <p class="text-[10px] text-[#64748B]">{{ run.total_charges_created }} ta kurs</p>
+                            <p class="text-sm font-bold text-[var(--text-main)]">{{ run.total_amount_deducted|floatformat:0|intcomma }}</p>
+                            <p class="text-[10px] text-[var(--text-muted)]">{{ run.total_charges_created }} ta kurs</p>
                         </div>
                     </div>
                 </div>
                 {% empty %}
-                <div class="rounded-2xl border border-dashed border-slate-200 p-5 text-center">
-                    <i class="ph ph-timer text-xl text-[#94A3B8]"></i>
-                    <p class="text-sm font-medium text-[#64748B] mt-2">Hali kurs puli yechish tarixi yo'q</p>
+                <div class="rounded-2xl border border-dashed border-[var(--border-color)] bg-[var(--bg-hover)] p-5 text-center">
+                    <i class="ph ph-timer text-xl text-[var(--text-muted)]"></i>
+                    <p class="text-sm font-medium text-[var(--text-second)] mt-2">Hali kurs puli yechish tarixi yo'q</p>
                 </div>
                 {% endfor %}
             </div>
@@ -148,14 +148,14 @@
     {% endif %}
 
     <!-- Mening Davomatim -->
-    <div class="liquid-glass p-3 sm:p-4 relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-4 rounded-2xl relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
         <div class="flex items-center gap-2 sm:gap-3">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-[#4F46E5]/10 text-[#4F46E5] rounded-xl flex items-center justify-center">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-[var(--bg-hover)] text-indigo-500 rounded-xl border border-[var(--border-color)] flex items-center justify-center">
                 <i class="ph-fill ph-fingerprint text-base sm:text-lg"></i>
             </div>
             <div>
-                <h4 class="text-sm font-bold text-[#0F172A]">Mening Davomatim</h4>
-                <p class="text-xs text-[#64748B]">
+                <h4 class="text-sm font-bold text-[var(--text-main)]">Mening Davomatim</h4>
+                <p class="text-xs text-[var(--text-muted)]">
                     {% if my_attendance and my_attendance.check_in %}
                         Keldi: {{ my_attendance.check_in|time:"H:i" }}
                         {% if my_attendance.check_out %} · Ketdi: {{ my_attendance.check_out|time:"H:i" }}{% endif %}
@@ -166,7 +166,7 @@
             </div>
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
-            <span class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium">
+            <span class="inline-flex items-center gap-1.5 px-4 py-2 bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)] rounded-xl text-xs font-semibold">
                 <i class="ph-fill ph-fingerprint"></i> Face ID orqali avtomatik
             </span>
         </div>
@@ -174,125 +174,133 @@
 
     <!-- Moliya Kartalari -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 relative z-10">
-        <div class="liquid-glass gradient-bar p-3 sm:p-5 stagger-1">
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between">
                 <div class="min-w-0 flex-1">
-                    <p class="text-[10px] sm:text-xs font-semibold text-[#94A3B8] uppercase tracking-wider truncate">Bugungi Kirim</p>
-                    <p class="text-lg sm:text-2xl font-bold text-[#0F172A] mt-1 truncate">{{ today_income|default:0|floatformat:0|intcomma }}</p>
-                    <p class="text-[10px] sm:text-xs text-emerald-600 font-medium mt-0.5"><i class="ph-fill ph-trend-up"></i> so'm
-                    </p>
+                    <p class="text-[10px] sm:text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider truncate">Bugungi Kirim</p>
+                    <p class="text-lg sm:text-2xl font-bold text-[var(--text-main)] mt-1 truncate">{{ today_income|default:0|floatformat:0|intcomma }}</p>
+                    <p class="text-[10px] sm:text-xs text-[var(--money)] font-medium mt-0.5"><i class="ph-fill ph-trend-up"></i> so'm</p>
                 </div>
-                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-2"><i
-                        class="ph-fill ph-arrow-down-left text-sm sm:text-lg"></i></div>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 rounded-xl flex items-center justify-center flex-shrink-0 ml-2">
+                    <i class="ph-fill ph-arrow-down-left text-sm sm:text-lg"></i>
+                </div>
             </div>
         </div>
-        <div class="liquid-glass gradient-bar p-3 sm:p-5 stagger-2">
+
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between">
                 <div class="min-w-0 flex-1">
-                    <p class="text-[10px] sm:text-xs font-semibold text-[#94A3B8] uppercase tracking-wider truncate">Bugungi Chiqim</p>
-                    <p class="text-lg sm:text-2xl font-bold text-[#0F172A] mt-1 truncate">{{ today_expense|default:0|floatformat:0|intcomma }}</p>
-                    <p class="text-[10px] sm:text-xs text-rose-500 font-medium mt-0.5"><i class="ph-fill ph-trend-down"></i> so'm
-                    </p>
+                    <p class="text-[10px] sm:text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider truncate">Bugungi Chiqim</p>
+                    <p class="text-lg sm:text-2xl font-bold text-[var(--text-main)] mt-1 truncate">{{ today_expense|default:0|floatformat:0|intcomma }}</p>
+                    <p class="text-[10px] sm:text-xs text-rose-500 font-medium mt-0.5"><i class="ph-fill ph-trend-down"></i> so'm</p>
                 </div>
-                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-2"><i
-                        class="ph-fill ph-arrow-up-right text-sm sm:text-lg"></i></div>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-rose-950/60 border border-rose-800/40 text-rose-400 rounded-xl flex items-center justify-center flex-shrink-0 ml-2">
+                    <i class="ph-fill ph-arrow-up-right text-sm sm:text-lg"></i>
+                </div>
             </div>
         </div>
-        <div class="liquid-glass gradient-bar p-3 sm:p-5 stagger-3">
+
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between">
                 <div class="min-w-0 flex-1">
-                    <p class="text-[10px] sm:text-xs font-semibold text-[#94A3B8] uppercase tracking-wider truncate">Asosiy Kassa</p>
-                    <p
-                        class="text-lg sm:text-2xl font-bold text-[#0F172A] mt-1 truncate">
-                        {{ main_kassa_balance|default:0|floatformat:0|intcomma }}</p>
-                    <p class="text-[10px] sm:text-xs text-[#64748B] font-medium mt-0.5">Umumiy qoldiq so'm</p>
+                    <p class="text-[10px] sm:text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider truncate">Asosiy Kassa</p>
+                    <p class="text-lg sm:text-2xl font-bold text-[var(--text-main)] mt-1 truncate">{{ main_kassa_balance|default:0|floatformat:0|intcomma }}</p>
+                    <p class="text-[10px] sm:text-xs text-[var(--text-muted)] font-medium mt-0.5">Umumiy qoldiq so'm</p>
                 </div>
-                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-[#4F46E5]/10 text-[#0F172A] rounded-xl flex items-center justify-center flex-shrink-0 ml-2"><i
-                        class="ph-fill ph-wallet text-sm sm:text-lg"></i></div>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-950/60 border border-indigo-800/40 text-indigo-400 rounded-xl flex items-center justify-center flex-shrink-0 ml-2">
+                    <i class="ph-fill ph-wallet text-sm sm:text-lg"></i>
+                </div>
             </div>
         </div>
-        <a href="{% url 'users:user_list' %}?filter=debtors"
-            class="liquid-glass gradient-bar p-3 sm:p-5 stagger-4 group block">
+
+        <a href="{% url 'users:user_list' %}?filter=debtors" class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm group block">
             <div class="flex items-center justify-between">
                 <div class="min-w-0 flex-1">
-                    <p class="text-[10px] sm:text-xs font-semibold text-[#94A3B8] uppercase tracking-wider">Qarzdorlik</p>
-                    <p class="text-lg sm:text-2xl font-bold text-amber-600 mt-1 truncate">{{ total_debt|default:0|floatformat:0|intcomma }}</p>
-                    <p class="text-[10px] sm:text-xs text-amber-600 font-medium mt-0.5"><i class="ph-fill ph-users"></i> {{ debtors_count|default:0 }} nafar</p>
+                    <p class="text-[10px] sm:text-xs font-semibold text-amber-500 uppercase tracking-wider">Qarzdorlik</p>
+                    <p class="text-lg sm:text-2xl font-bold text-amber-500 mt-1 truncate">{{ total_debt|default:0|floatformat:0|intcomma }}</p>
+                    <p class="text-[10px] sm:text-xs text-amber-500 font-medium mt-0.5"><i class="ph-fill ph-users"></i> {{ debtors_count|default:0 }} nafar</p>
                 </div>
-                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center flex-shrink-0 ml-2"><i
-                        class="ph-fill ph-warning-circle text-sm sm:text-lg"></i></div>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-amber-950/60 border border-amber-800/40 text-amber-400 rounded-xl flex items-center justify-center flex-shrink-0 ml-2">
+                    <i class="ph-fill ph-warning-circle text-sm sm:text-lg"></i>
+                </div>
             </div>
         </a>
     </div>
 
-    <!-- Statistika Grid -->
+    <!-- Statistika Grid 2 -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 relative z-10">
-        <div class="liquid-glass p-3 sm:p-5 stagger-5">
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-2 sm:mb-3">
-                <h4 class="text-xs sm:text-sm font-bold text-[#0F172A]">O'quvchilar</h4>
-                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center"><i
-                        class="ph-fill ph-student text-xs sm:text-sm"></i></div>
+                <h4 class="text-xs sm:text-sm font-bold text-[var(--text-main)]">O'quvchilar</h4>
+                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-950/60 border border-purple-800/40 text-purple-400 rounded-lg flex items-center justify-center">
+                    <i class="ph-fill ph-student text-xs sm:text-sm"></i>
+                </div>
             </div>
-            <p class="text-xl sm:text-3xl font-bold text-[#0F172A]">{{ total_students|default:"0" }}</p>
+            <p class="text-xl sm:text-3xl font-bold text-[var(--text-main)]">{{ total_students|default:"0" }}</p>
             <div class="flex gap-1 sm:gap-2 mt-1 sm:mt-2 text-[10px] sm:text-xs flex-wrap">
-                <span class="px-1 sm:px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded">{{ active_students|default:"0" }}
-                    faol</span>
-                <span class="px-1 sm:px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded">{{ frozen_students|default:"0" }}
-                    muz.</span>
+                <span class="px-2 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 rounded-full font-semibold">{{ active_students|default:"0" }} faol</span>
+                <span class="px-2 py-0.5 bg-sky-950/60 text-sky-400 border border-sky-800/40 rounded-full font-semibold">{{ frozen_students|default:"0" }} muz.</span>
             </div>
         </div>
-        <div class="liquid-glass p-3 sm:p-5 stagger-5">
+
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-2 sm:mb-3">
-                <h4 class="text-xs sm:text-sm font-bold text-[#0F172A]">Guruhlar</h4>
-                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-[#4F46E5]/10 text-[#0F172A] rounded-lg flex items-center justify-center"><i
-                        class="ph-fill ph-users-three text-xs sm:text-sm"></i></div>
+                <h4 class="text-xs sm:text-sm font-bold text-[var(--text-main)]">Guruhlar</h4>
+                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 rounded-lg flex items-center justify-center">
+                    <i class="ph-fill ph-users-three text-xs sm:text-sm"></i>
+                </div>
             </div>
-            <p class="text-xl sm:text-3xl font-bold text-[#0F172A]">{{ total_groups|default:"0" }}</p>
-            <span class="text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded mt-1 sm:mt-2 inline-block">{{ active_groups|default:"0" }} faol</span>
+            <p class="text-xl sm:text-3xl font-bold text-[var(--text-main)]">{{ total_groups|default:"0" }}</p>
+            <span class="text-[10px] sm:text-xs px-2 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 font-semibold rounded-full mt-1 sm:mt-2 inline-block">{{ active_groups|default:"0" }} faol</span>
         </div>
-        <div class="liquid-glass p-3 sm:p-5 stagger-6">
+
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-2 sm:mb-3">
-                <h4 class="text-xs sm:text-sm font-bold text-[#0F172A]">Bugungi Davomat</h4>
-                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center"><i
-                        class="ph-fill ph-check-circle text-xs sm:text-sm"></i></div>
+                <h4 class="text-xs sm:text-sm font-bold text-[var(--text-main)]">Bugungi Davomat</h4>
+                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 rounded-lg flex items-center justify-center">
+                    <i class="ph-fill ph-check-circle text-xs sm:text-sm"></i>
+                </div>
             </div>
-            <p class="text-xl sm:text-3xl font-bold text-emerald-600">{{ attendance_rate|default:0|floatformat:0 }}%</p>
-            <p class="text-[10px] sm:text-xs text-[#64748B] mt-1 sm:mt-2">{{ attendance_taken_lessons|default:"0" }}/{{ total_today_lessons|default:"0" }} dars</p>
+            <p class="text-xl sm:text-3xl font-bold text-emerald-400">{{ attendance_rate|default:0|floatformat:0 }}%</p>
+            <p class="text-[10px] sm:text-xs text-[var(--text-muted)] mt-1 sm:mt-2">{{ attendance_taken_lessons|default:"0" }}/{{ total_today_lessons|default:"0" }} dars</p>
         </div>
-        <div class="liquid-glass p-3 sm:p-5 stagger-6">
+
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-2 sm:mb-3">
-                <h4 class="text-xs sm:text-sm font-bold text-[#0F172A]">Tashkilotlar</h4>
-                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-[#E0E7FF] text-[#4F46E5] rounded-lg flex items-center justify-center"><i
-                        class="ph-fill ph-buildings text-xs sm:text-sm"></i></div>
+                <h4 class="text-xs sm:text-sm font-bold text-[var(--text-main)]">Tashkilotlar</h4>
+                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-main)] rounded-lg flex items-center justify-center">
+                    <i class="ph-fill ph-buildings text-xs sm:text-sm"></i>
+                </div>
             </div>
-            <p class="text-xl sm:text-3xl font-bold text-[#0F172A]">{{ total_orgs|default:"0" }}</p>
-            <span class="text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded mt-1 sm:mt-2 inline-block">{{ active_orgs|default:"0" }} faol</span>
+            <p class="text-xl sm:text-3xl font-bold text-[var(--text-main)]">{{ total_orgs|default:"0" }}</p>
+            <span class="text-[10px] sm:text-xs px-2 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 font-semibold rounded-full mt-1 sm:mt-2 inline-block">{{ active_orgs|default:"0" }} faol</span>
         </div>
     </div>
 
     <!-- Bildirishnomalar -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 relative z-10">
         <!-- Tug'ilgan Kunlar -->
-        <div class="glass-section p-3 sm:p-5">
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-3 sm:mb-4">
-                <h3 class="text-sm sm:text-base font-bold text-[#0F172A] flex items-center gap-2"><i
-                        class="ph-fill ph-cake text-rose-500"></i> <span class="hidden xs:inline">Tug'ilgan</span> Kunlar</h3>
-                <span class="px-2 py-0.5 bg-rose-50 text-rose-600 rounded-full text-xs font-bold">{{ today_birthdays|length }}</span>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--text-main)] flex items-center gap-2">
+                    <i class="ph-fill ph-cake text-rose-400"></i> <span>Tug'ilgan Kunlar</span>
+                </h3>
+                <span class="px-2 py-0.5 bg-rose-950/60 text-rose-400 border border-rose-800/40 rounded-full text-xs font-bold">{{ today_birthdays|length }}</span>
             </div>
             <div class="space-y-2 overflow-y-auto max-h-[180px] sm:max-h-[250px]" style="scrollbar-width: none;">
                 {% for person in today_birthdays %}
-                <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-xl hover:bg-white/60 transition">
-                    <div
-                        class="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-rose-400 to-rose-600 rounded-lg text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm flex-shrink-0">
-                        {{ person.first_name|first }}</div>
+                <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-xl hover:bg-[var(--bg-hover)] transition">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 bg-rose-600 rounded-lg text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm flex-shrink-0">
+                        {{ person.first_name|first }}
+                    </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-[#0F172A] text-xs sm:text-sm truncate">{{ person.first_name }} {{ person.last_name|default:"" }}</h4>
-                        <p class="text-[10px] sm:text-xs text-[#64748B] truncate">{{ person.get_role_display }}</p>
+                        <h4 class="font-semibold text-[var(--text-main)] text-xs sm:text-sm truncate">{{ person.first_name }} {{ person.last_name|default:"" }}</h4>
+                        <p class="text-[10px] sm:text-xs text-[var(--text-second)] truncate">{{ person.get_role_display }}</p>
                     </div>
                     <span class="text-base sm:text-lg flex-shrink-0">🎂</span>
                 </div>
                 {% empty %}
-                <div class="flex flex-col items-center justify-center text-[#94A3B8] py-4 sm:py-6">
+                <div class="flex flex-col items-center justify-center text-[var(--text-muted)] py-4 sm:py-6">
                     <i class="ph ph-cake text-xl sm:text-2xl mb-1.5"></i>
                     <p class="text-[10px] sm:text-xs font-medium">Bugun tug'ilgan kun yo'q</p>
                 </div>
@@ -301,69 +309,67 @@
         </div>
 
         <!-- Tasdiqlanmagan Cheklar -->
-        <div class="glass-section p-3 sm:p-5">
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-3 sm:mb-4">
-                <h3 class="text-sm sm:text-base font-bold text-[#0F172A] flex items-center gap-2"><i
-                        class="ph-fill ph-receipt text-amber-500"></i> <span class="hidden xs:inline">Tasdiqlanmagan</span> Cheklar</h3>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--text-main)] flex items-center gap-2">
+                    <i class="ph-fill ph-receipt text-amber-400"></i> <span>Tasdiqlanmagan Cheklar</span>
+                </h3>
                 {% if pending_receipts > 0 %}
-                <span class="px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full text-xs font-bold">{{ pending_receipts }}</span>
+                <span class="px-2 py-0.5 bg-amber-950/60 text-amber-400 border border-amber-800/40 rounded-full text-xs font-bold">{{ pending_receipts }}</span>
                 {% endif %}
             </div>
             <div class="space-y-2 overflow-y-auto max-h-[180px] sm:max-h-[250px]" style="scrollbar-width: none;">
                 {% for receipt in pending_receipts_list %}
-                <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-xl liquid-glass border-l-3 border-l-amber-400">
+                <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-xl bg-[var(--bg-hover)] border border-[var(--border-color)]">
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-[#0F172A] text-xs sm:text-sm truncate">{% if receipt.student %}{{ receipt.student.first_name }} {{ receipt.student.last_name|default:"" }}{% else %}{{ receipt.description|truncatechars:25 }}{% endif %}</h4>
-                        <p class="text-[10px] sm:text-xs text-[#64748B]">{{ receipt.created_at|timesince }} oldin</p>
+                        <h4 class="font-semibold text-[var(--text-main)] text-xs sm:text-sm truncate">{% if receipt.student %}{{ receipt.student.first_name }} {{ receipt.student.last_name|default:"" }}{% else %}{{ receipt.description|truncatechars:25 }}{% endif %}</h4>
+                        <p class="text-[10px] sm:text-xs text-[var(--text-muted)]">{{ receipt.created_at|timesince }} oldin</p>
                     </div>
-                    <span class="text-xs sm:text-sm font-bold text-amber-600 flex-shrink-0">{{ receipt.amount|floatformat:0|intcomma }}</span>
+                    <span class="text-xs sm:text-sm font-bold text-amber-400 flex-shrink-0">{{ receipt.amount|floatformat:0|intcomma }}</span>
                 </div>
                 {% empty %}
-                <div class="flex flex-col items-center justify-center text-[#94A3B8] py-4 sm:py-6">
-                    <i class="ph-fill ph-check-circle text-xl sm:text-2xl text-emerald-500 mb-1.5"></i>
-                    <p class="text-[10px] sm:text-xs font-medium text-emerald-600">Barchasi tasdiqlangan</p>
+                <div class="flex flex-col items-center justify-center text-[var(--text-muted)] py-4 sm:py-6">
+                    <i class="ph-fill ph-check-circle text-xl sm:text-2xl text-emerald-400 mb-1.5"></i>
+                    <p class="text-[10px] sm:text-xs font-medium text-emerald-400">Barchasi tasdiqlangan</p>
                 </div>
                 {% endfor %}
             </div>
             {% if pending_receipts_sum > 0 %}
-            <div class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-[#94A3B8]/20 flex items-center justify-between">
-                <span class="text-[10px] sm:text-xs text-[#94A3B8] uppercase font-semibold">Jami kutilmoqda</span>
-                <span class="text-xs sm:text-sm font-bold text-amber-600">{{ pending_receipts_sum|floatformat:0|intcomma }}
-                    so'm</span>
+            <div class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-[var(--border-color)] flex items-center justify-between">
+                <span class="text-[10px] sm:text-xs text-[var(--text-muted)] uppercase font-semibold">Jami kutilmoqda</span>
+                <span class="text-xs sm:text-sm font-bold text-amber-400">{{ pending_receipts_sum|floatformat:0|intcomma }} so'm</span>
             </div>
             {% endif %}
         </div>
 
         <!-- Kam Qolgan Mahsulotlar -->
-        <div class="glass-section p-3 sm:p-5">
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-3 sm:mb-4">
-                <h3 class="text-sm sm:text-base font-bold text-[#0F172A] flex items-center gap-2"><i
-                        class="ph-fill ph-package text-purple-500"></i> Kam Qolgan</h3>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--text-main)] flex items-center gap-2">
+                    <i class="ph-fill ph-package text-purple-400"></i> Kam Qolgan
+                </h3>
                 {% if low_stock_count > 0 %}
-                <span class="px-2 py-0.5 bg-rose-50 text-rose-600 rounded-full text-xs font-bold">{{ low_stock_count
-                    }}</span>
+                <span class="px-2 py-0.5 bg-rose-950/60 text-rose-400 border border-rose-800/40 rounded-full text-xs font-bold">{{ low_stock_count }}</span>
                 {% endif %}
             </div>
             <div class="space-y-2 overflow-y-auto max-h-[180px] sm:max-h-[250px]" style="scrollbar-width: none;">
                 {% for item in low_stock_items %}
-                <div class="flex items-center justify-between p-2 sm:p-2.5 rounded-xl liquid-glass">
+                <div class="flex items-center justify-between p-2 sm:p-2.5 rounded-xl bg-[var(--bg-hover)] border border-[var(--border-color)]">
                     <div class="flex items-center gap-2 min-w-0">
-                        <div
-                            class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-950/60 border border-purple-800/40 text-purple-400 rounded-lg flex items-center justify-center flex-shrink-0">
                             <i class="ph-fill ph-cube text-xs sm:text-sm"></i>
                         </div>
                         <div class="min-w-0">
-                            <h4 class="font-semibold text-[#0F172A] text-[10px] sm:text-xs truncate">{{ item.name }}</h4>
-                            <p class="text-[10px] sm:text-xs text-[#64748B]">Min: {{ item.min_quantity }}</p>
+                            <h4 class="font-semibold text-[var(--text-main)] text-[10px] sm:text-xs truncate">{{ item.name }}</h4>
+                            <p class="text-[10px] sm:text-xs text-[var(--text-muted)]">Min: {{ item.min_quantity }}</p>
                         </div>
                     </div>
-                    <span
-                        class="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-lg flex-shrink-0 {% if item.quantity == 0 %}bg-rose-50 text-rose-600{% else %}bg-amber-50 text-amber-600{% endif %}">{{ item.quantity }}</span>
+                    <span class="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-lg flex-shrink-0 {% if item.quantity == 0 %}bg-rose-950/60 text-rose-400 border border-rose-800/40{% else %}bg-amber-950/60 text-amber-400 border border-amber-800/40{% endif %}">{{ item.quantity }}</span>
                 </div>
                 {% empty %}
-                <div class="flex flex-col items-center justify-center text-[#94A3B8] py-4 sm:py-6">
-                    <i class="ph-fill ph-check-circle text-xl sm:text-2xl text-emerald-500 mb-1.5"></i>
-                    <p class="text-[10px] sm:text-xs font-medium text-emerald-600">Sklad to'liq</p>
+                <div class="flex flex-col items-center justify-center text-[var(--text-muted)] py-4 sm:py-6">
+                    <i class="ph-fill ph-check-circle text-xl sm:text-2xl text-emerald-400 mb-1.5"></i>
+                    <p class="text-[10px] sm:text-xs font-medium text-emerald-400">Sklad to'liq</p>
                 </div>
                 {% endfor %}
             </div>
@@ -372,59 +378,57 @@
 
     <!-- So'nggi Harakatlar -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 relative z-10">
-        <div class="glass-section p-3 sm:p-5">
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-3 sm:mb-4">
-                <h3 class="text-sm sm:text-base font-bold text-[#0F172A] flex items-center gap-2"><i
-                        class="ph-fill ph-users text-[#0F172A]"></i> So'nggi Foydalanuvchilar</h3>
-                <a href="{% url 'users:user_list' %}"
-                    class="text-[10px] sm:text-xs text-[#64748B] hover:text-[#0F172A] font-medium">Barchasi →</a>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--text-main)] flex items-center gap-2">
+                    <i class="ph-fill ph-users text-[var(--text-main)]"></i> So'nggi Foydalanuvchilar
+                </h3>
+                <a href="{% url 'users:user_list' %}" class="text-[10px] sm:text-xs text-[var(--text-second)] hover:text-[var(--text-main)] font-medium">Barchasi →</a>
             </div>
             <div class="space-y-2 overflow-y-auto max-h-[200px] sm:max-h-[280px]" style="scrollbar-width: none;">
                 {% for user in recent_users|slice:":5" %}
-                <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-xl hover:bg-white/60 transition">
-                    <div
-                        class="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-[#4F46E5] to-[#818CF8] rounded-lg text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm flex-shrink-0">
-                        {{ user.first_name|first }}</div>
+                <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-xl hover:bg-[var(--bg-hover)] transition">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-600 rounded-lg text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm flex-shrink-0">
+                        {{ user.first_name|first }}
+                    </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-[#0F172A] text-xs sm:text-sm truncate">{{ user.first_name }} {{ user.last_name|default:"User" }}</h4>
-                        <p class="text-[10px] sm:text-xs text-[#64748B]">{{ user.get_role_display }} · {{ user.date_joined|timesince }}</p>
+                        <h4 class="font-semibold text-[var(--text-main)] text-xs sm:text-sm truncate">{{ user.first_name }} {{ user.last_name|default:"User" }}</h4>
+                        <p class="text-[10px] sm:text-xs text-[var(--text-second)]">{{ user.get_role_display }} · {{ user.date_joined|timesince }}</p>
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-[#94A3B8] text-xs sm:text-sm text-center py-4">Ma'lumot yo'q</p>
+                <p class="text-[var(--text-muted)] text-xs sm:text-sm text-center py-4">Ma'lumot yo'q</p>
                 {% endfor %}
             </div>
         </div>
 
-        <div class="glass-section p-3 sm:p-5">
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] p-3 sm:p-5 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between mb-3 sm:mb-4">
-                <h3 class="text-sm sm:text-base font-bold text-[#0F172A] flex items-center gap-2"><i
-                        class="ph-fill ph-receipt text-emerald-600"></i> So'nggi Tranzaksiyalar</h3>
+                <h3 class="text-sm sm:text-base font-bold text-[var(--text-main)] flex items-center gap-2">
+                    <i class="ph-fill ph-receipt text-emerald-400"></i> So'nggi Tranzaksiyalar
+                </h3>
                 {% if pending_payments > 0 %}
-                <span
-                    class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-[10px] sm:text-xs font-bold flex items-center gap-1"><i
-                        class="ph-fill ph-clock"></i> {{ pending_payments }}</span>
+                <span class="px-2 py-1 bg-amber-950/60 text-amber-400 border border-amber-800/40 rounded-lg text-[10px] sm:text-xs font-bold flex items-center gap-1">
+                    <i class="ph-fill ph-clock"></i> {{ pending_payments }}
+                </span>
                 {% endif %}
             </div>
             <div class="space-y-2 overflow-y-auto max-h-[200px] sm:max-h-[280px]" style="scrollbar-width: none;">
                 {% for tx in recent_transactions %}
-                <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-xl hover:bg-white/60 transition">
-                    <div
-                        class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center text-xs sm:text-sm {% if tx.transaction_type == 'income' %}bg-emerald-100 text-emerald-600{% else %}bg-rose-100 text-rose-600{% endif %}">
-                        <i
-                            class="ph-fill {% if tx.transaction_type == 'income' %}ph-arrow-down-left{% else %}ph-arrow-up-right{% endif %}"></i>
+                <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-xl hover:bg-[var(--bg-hover)] transition">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center text-xs sm:text-sm {% if tx.transaction_type == 'income' %}bg-emerald-950/60 text-emerald-400 border border-emerald-800/40{% else %}bg-rose-950/60 text-rose-400 border border-rose-800/40{% endif %}">
+                        <i class="ph-fill {% if tx.transaction_type == 'income' %}ph-arrow-down-left{% else %}ph-arrow-up-right{% endif %}"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-[#0F172A] text-xs sm:text-sm truncate">{{ tx.description|truncatechars:25 }}</h4>
-                        <p class="text-[10px] sm:text-xs text-[#64748B]">{{ tx.created_at|timesince }} oldin</p>
+                        <h4 class="font-semibold text-[var(--text-main)] text-xs sm:text-sm truncate">{{ tx.description|truncatechars:25 }}</h4>
+                        <p class="text-[10px] sm:text-xs text-[var(--text-second)]">{{ tx.created_at|timesince }} oldin</p>
                     </div>
-                    <span
-                        class="text-xs sm:text-sm font-bold {% if tx.transaction_type == 'income' %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                    <span class="text-xs sm:text-sm font-bold {% if tx.transaction_type == 'income' %}text-emerald-400{% else %}text-rose-400{% endif %}">
                         {% if tx.transaction_type == 'income' %}+{% else %}-{% endif %}{{ tx.amount|floatformat:0|intcomma }}
                     </span>
                 </div>
                 {% empty %}
-                <p class="text-[#94A3B8] text-xs sm:text-sm text-center py-4">Ma'lumot yo'q</p>
+                <p class="text-[var(--text-muted)] text-xs sm:text-sm text-center py-4">Ma'lumot yo'q</p>
                 {% endfor %}
             </div>
         </div>
@@ -433,17 +437,17 @@
 </div>
 
 <div id="monthlyFeeOverlay" class="fixed inset-0 z-[110] hidden items-center justify-center p-3 sm:p-4">
-    <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onclick="closeMonthlyFeeModal()"></div>
-    <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fadeIn max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-2rem)] flex flex-col">
-        <div class="bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#334155] px-5 sm:px-6 py-5 flex-shrink-0">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeMonthlyFeeModal()"></div>
+    <div class="relative bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fadeIn max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-2rem)] flex flex-col">
+        <div class="bg-[var(--brand)] text-[var(--brand-text)] px-5 sm:px-6 py-5 flex-shrink-0">
             <div class="flex items-start justify-between gap-3">
                 <div>
-                    <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                    <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2">
                         <i class="ph-fill ph-lightning text-xl"></i> Kurs puli yechish
                     </h2>
-                    <p class="text-slate-300 text-sm mt-1">Tasdiqlash uchun super admin paroli so'raladi. Oldin qirqilgan kurslar qayta qirqilmaydi.</p>
+                    <p class="opacity-80 text-sm mt-1">Tasdiqlash uchun super admin paroli so'raladi. Oldin qirqilgan kurslar qayta qirqilmaydi.</p>
                 </div>
-                <button onclick="closeMonthlyFeeModal()" class="text-white/70 hover:text-white transition p-2 rounded-xl hover:bg-white/10 min-w-[42px] min-h-[42px] flex items-center justify-center">
+                <button onclick="closeMonthlyFeeModal()" class="opacity-70 hover:opacity-100 transition p-2 rounded-xl hover:bg-white/10 min-w-[42px] min-h-[42px] flex items-center justify-center">
                     <i class="ph ph-x text-lg"></i>
                 </button>
             </div>
@@ -452,67 +456,67 @@
         <div class="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button type="button" id="mfModeSingleBtn" onclick="setMonthlyFeeMode('single')"
-                    class="rounded-2xl border border-slate-200 p-4 text-left transition">
-                    <p class="text-sm font-bold text-[#0F172A]">Bitta o'quvchi</p>
-                    <p class="text-xs text-[#64748B] mt-1">Tanlangan studentning barcha faol kurslaridan yechadi</p>
+                    class="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-hover)] p-4 text-left transition">
+                    <p class="text-sm font-bold text-[var(--text-main)]">Bitta o'quvchi</p>
+                    <p class="text-xs text-[var(--text-second)] mt-1">Tanlangan studentning barcha faol kurslaridan yechadi</p>
                 </button>
                 <button type="button" id="mfModeBulkBtn" onclick="setMonthlyFeeMode('bulk')"
-                    class="rounded-2xl border border-slate-200 p-4 text-left transition">
-                    <p class="text-sm font-bold text-[#0F172A]">Barcha o'quvchilar</p>
-                    <p class="text-xs text-[#64748B] mt-1">Barcha faol studentlarni tekshiradi va kerakli kurslarni yechadi</p>
+                    class="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-hover)] p-4 text-left transition">
+                    <p class="text-sm font-bold text-[var(--text-main)]">Barcha o'quvchilar</p>
+                    <p class="text-xs text-[var(--text-second)] mt-1">Barcha faol studentlarni tekshiradi va kerakli kurslarni yechadi</p>
                 </button>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-semibold text-[#334155] mb-1.5">Billing oy</label>
+                    <label class="block text-sm font-semibold text-[var(--text-second)] mb-1.5">Billing oy</label>
                     <input type="month" id="mfBillingMonth" value="{{ monthly_fee_default_month }}"
-                        class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A] transition bg-slate-50">
+                        class="w-full px-4 py-3 border border-[var(--border-color)] rounded-2xl text-sm focus:outline-none focus:border-[var(--border-hover)] transition bg-[var(--bg-page)] text-[var(--text-main)]">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-[#334155] mb-1.5">Super admin paroli</label>
+                    <label class="block text-sm font-semibold text-[var(--text-second)] mb-1.5">Super admin paroli</label>
                     <input type="password" id="mfPassword" placeholder="Joriy parolingiz"
-                        class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A] transition bg-slate-50">
+                        class="w-full px-4 py-3 border border-[var(--border-color)] rounded-2xl text-sm focus:outline-none focus:border-[var(--border-hover)] transition bg-[var(--bg-page)] text-[var(--text-main)]">
                 </div>
             </div>
 
             <div id="mfStudentSection">
-                <label class="block text-sm font-semibold text-[#334155] mb-1.5">O'quvchi</label>
+                <label class="block text-sm font-semibold text-[var(--text-second)] mb-1.5">O'quvchi</label>
                 <div class="relative">
                     <input type="text" id="mfStudentSearch" autocomplete="off" placeholder="Ism yoki telefon raqami..."
-                        class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A] transition bg-slate-50"
+                        class="w-full px-4 py-3 border border-[var(--border-color)] rounded-2xl text-sm focus:outline-none focus:border-[var(--border-hover)] transition bg-[var(--bg-page)] text-[var(--text-main)]"
                         oninput="filterMonthlyFeeStudents(this.value)">
                     <input type="hidden" id="mfStudentId">
-                    <div id="mfStudentDropdown" class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-48 overflow-y-auto z-10 hidden"></div>
+                    <div id="mfStudentDropdown" class="absolute left-0 right-0 top-full mt-1 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-xl max-h-48 overflow-y-auto z-10 hidden"></div>
                 </div>
-                <div id="mfSelectedStudent" class="hidden mt-2 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                <div id="mfSelectedStudent" class="hidden mt-2 p-3 rounded-2xl bg-[var(--bg-hover)] border border-[var(--border-color)]">
                     <div class="flex items-center justify-between gap-3">
                         <div>
-                            <p class="text-sm font-semibold text-[#0F172A]" id="mfSelectedStudentName"></p>
-                            <p class="text-xs text-[#64748B]" id="mfSelectedStudentPhone"></p>
+                            <p class="text-sm font-semibold text-[var(--text-main)]" id="mfSelectedStudentName"></p>
+                            <p class="text-xs text-[var(--text-second)]" id="mfSelectedStudentPhone"></p>
                         </div>
-                        <button type="button" onclick="clearMonthlyFeeStudent()" class="text-[#64748B] hover:text-rose-500 transition">
+                        <button type="button" onclick="clearMonthlyFeeStudent()" class="text-[var(--text-second)] hover:text-rose-500 transition">
                             <i class="ph ph-x text-lg"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-2xl bg-amber-50 border border-amber-200 p-4">
+            <div class="rounded-2xl bg-amber-950/60 border border-amber-800/40 p-4">
                 <div class="flex items-start gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                    <div class="w-9 h-9 rounded-xl bg-amber-900/60 text-amber-400 flex items-center justify-center flex-shrink-0">
                         <i class="ph-fill ph-shield-check"></i>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-amber-800">Xavfsiz va optimal ishlash</p>
-                        <p class="text-xs text-amber-700 mt-1">
+                        <p class="text-sm font-semibold text-amber-400">Xavfsiz va optimal ishlash</p>
+                        <p class="text-xs text-amber-300 mt-1">
                             Tizim shu oy uchun student-guruh kesimida oldin qirqilgan summani tekshiradi. Agar oy o'rtasida qisman qirqilgan bo'lsa, faqat yetmagan qismi yechiladi.
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div id="mfError" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-sm flex items-center gap-2">
+            <div id="mfError" class="hidden p-3 bg-rose-950/60 border border-rose-800/40 rounded-2xl text-rose-400 text-sm flex items-center gap-2">
                 <i class="ph-fill ph-warning-circle"></i>
                 <span id="mfErrorText"></span>
             </div>
@@ -520,11 +524,11 @@
 
         <div class="px-5 sm:px-6 pb-5 sm:pb-6 flex flex-col sm:flex-row gap-3 flex-shrink-0">
             <button type="button" onclick="closeMonthlyFeeModal()"
-                class="flex-1 px-4 py-3 bg-slate-100 text-slate-700 rounded-2xl font-medium text-sm hover:bg-slate-200 transition">
+                class="flex-1 px-4 py-3 bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)] rounded-2xl font-medium text-sm hover:bg-[var(--border-hover)] transition">
                 Bekor qilish
             </button>
             <button type="button" id="mfSubmitBtn" onclick="submitMonthlyFeeRun()"
-                class="flex-1 px-4 py-3 bg-gradient-to-r from-[#0F172A] to-[#1E293B] text-white rounded-2xl font-bold text-sm hover:shadow-lg hover:shadow-slate-900/20 transition-all flex items-center justify-center gap-2">
+                class="flex-1 px-4 py-3 bg-[var(--brand)] text-[var(--brand-text)] rounded-2xl font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2">
                 <i class="ph-fill ph-lightning"></i> Tasdiqlab yechish
             </button>
         </div>
@@ -532,9 +536,9 @@
 </div>
 
 <div id="balanceResetOverlay" class="fixed inset-0 z-[112] hidden items-center justify-center p-3 sm:p-4">
-    <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onclick="closeBalanceResetModal()"></div>
-    <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-fadeIn">
-        <div class="bg-gradient-to-r from-rose-600 to-rose-500 px-5 sm:px-6 py-5">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeBalanceResetModal()"></div>
+    <div class="relative bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-fadeIn">
+        <div class="bg-gradient-to-r from-rose-600 to-rose-500 px-5 sm:px-6 py-5 text-white">
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
@@ -549,14 +553,14 @@
         </div>
 
         <div class="p-5 sm:p-6 space-y-4">
-            <div class="rounded-2xl bg-rose-50 border border-rose-200 p-4">
+            <div class="rounded-2xl bg-rose-950/60 border border-rose-800/40 p-4">
                 <div class="flex items-start gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center flex-shrink-0">
+                    <div class="w-9 h-9 rounded-xl bg-rose-900/60 text-rose-400 flex items-center justify-center flex-shrink-0">
                         <i class="ph-fill ph-warning-circle"></i>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-rose-800">Tasdiqlangandan keyin amal darhol bajariladi</p>
-                        <p class="text-xs text-rose-700 mt-1">
+                        <p class="text-sm font-semibold text-rose-400">Tasdiqlangandan keyin amal darhol bajariladi</p>
+                        <p class="text-xs text-rose-300 mt-1">
                             Hozir qarzdorlikda {{ debtors_count|default:0 }} ta student bor. Umumiy qarzdorlik: {{ total_debt|default:0|floatformat:0|intcomma }} so'm.
                         </p>
                     </div>
@@ -564,12 +568,12 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-[#334155] mb-1.5">Super admin paroli</label>
+                <label class="block text-sm font-semibold text-[var(--text-second)] mb-1.5">Super admin paroli</label>
                 <input type="password" id="brPassword" placeholder="Joriy parolingiz"
-                    class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-500 transition bg-slate-50">
+                    class="w-full px-4 py-3 border border-[var(--border-color)] rounded-2xl text-sm focus:outline-none focus:border-rose-500 transition bg-[var(--bg-page)] text-[var(--text-main)]">
             </div>
 
-            <div id="brError" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 text-sm flex items-center gap-2">
+            <div id="brError" class="hidden p-3 bg-rose-950/60 border border-rose-800/40 rounded-2xl text-rose-400 text-sm flex items-center gap-2">
                 <i class="ph-fill ph-warning-circle"></i>
                 <span id="brErrorText"></span>
             </div>
@@ -577,11 +581,11 @@
 
         <div class="px-5 sm:px-6 pb-5 sm:pb-6 flex flex-col sm:flex-row gap-3">
             <button type="button" onclick="closeBalanceResetModal()"
-                class="flex-1 px-4 py-3 bg-slate-100 text-slate-700 rounded-2xl font-medium text-sm hover:bg-slate-200 transition">
+                class="flex-1 px-4 py-3 bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)] rounded-2xl font-medium text-sm hover:bg-[var(--border-hover)] transition">
                 Bekor qilish
             </button>
             <button type="button" id="brSubmitBtn" onclick="submitBalanceReset()"
-                class="flex-1 px-4 py-3 bg-gradient-to-r from-rose-600 to-rose-500 text-white rounded-2xl font-bold text-sm hover:shadow-lg hover:shadow-rose-500/20 transition-all flex items-center justify-center gap-2">
+                class="flex-1 px-4 py-3 bg-rose-600 text-white rounded-2xl font-bold text-sm hover:bg-rose-700 transition-all flex items-center justify-center gap-2">
                 <i class="ph-fill ph-eraser"></i> Tasdiqlab 0 qilish
             </button>
         </div>

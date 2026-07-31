@@ -11,6 +11,7 @@ from apps.finance.models import TransactionCategory, Account
 from apps.hardware.models import FaceIDEvent, FaceIDUserBinding
 from apps.users.models import User
 from apps.organizations.models import Organization
+from apps.core.permissions import permission_required
 
 SETTINGS_STATS_CACHE_TIMEOUT = 300
 
@@ -38,6 +39,7 @@ def _get_face_id_stats(org):
 
 
 @login_required
+@permission_required('settings', 'view')
 def settings_index(request):
     """Asosiy sozlamalar sahifasi"""
     org = request.user.organization

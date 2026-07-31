@@ -21,6 +21,7 @@ from apps.finance.models import Transaction
 from apps.hardware.services import build_student_presence_map
 
 from .permissions import IsParent, IsStudent
+from apps.core.permissions import IsOwnerOrAdmin
 from .serializers import (
     UserSerializer,
     TransactionSerializer,
@@ -60,7 +61,7 @@ class CustomObtainAuthToken(ObtainAuthToken):
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def get_queryset(self):
         user = self.request.user
@@ -80,7 +81,13 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'super_admin':
+            return Transaction.objects.all()
+        return Transaction.objects.filter(organization=user.organization)
 
     def perform_create(self, serializer):
         serializer.save(

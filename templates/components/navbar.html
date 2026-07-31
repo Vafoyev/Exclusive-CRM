@@ -1,25 +1,39 @@
-<header class="flex items-center justify-between px-6 py-3 bg-white border-b border-slate-200 shadow-sm sticky top-0 z-20">
+<header class="flex items-center justify-between px-6 py-3.5 bg-[var(--bg-card)] border-b border-[var(--border-color)] sticky top-0 z-20 transition-colors duration-200">
 
-    <!-- Sidebar Toggle (Mobil uchun) -->
-    <button @click="sidebarOpen = !sidebarOpen" class="text-slate-500 focus:outline-none lg:hidden">
-        <i class="ph ph-list text-2xl"></i>
-    </button>
-
-    <!-- Filial nomi -->
-    <div class="hidden md:flex items-center gap-2">
-        <i class="ph ph-buildings text-slate-400 text-lg"></i>
-        <span class="font-medium text-slate-600">{{ request.user.branch.name|default:"Bosh Filial" }}</span>
+    <!-- Left: Breadcrumb & Branch & Mobile Toggle -->
+    <div class="flex items-center gap-3">
+        <button @click="sidebarOpen = !sidebarOpen" class="text-[var(--text-second)] focus:outline-none lg:hidden">
+            <i class="ph ph-list text-2xl"></i>
+        </button>
+        <div class="flex items-center gap-2 text-sm text-[var(--text-second)]">
+            <i class="ph ph-buildings text-[var(--text-muted)] text-base"></i>
+            <span class="text-[var(--text-main)] font-medium hidden sm:inline">{{ request.user.branch.name|default:"Bosh Filial" }}</span>
+            <span class="text-[var(--text-muted)] hidden sm:inline">/</span>
+            <span class="text-[var(--text-main)] font-semibold">Moliya / Kassa</span>
+        </div>
     </div>
 
-    <!-- O'ng tomon (Bildirishnomalar) -->
-    <div class="flex items-center gap-4">
+    <!-- Right Actions -->
+    <div class="flex items-center gap-3">
+
+        <!-- Quick Search Field with Shortcut -->
+        <div class="relative hidden md:block w-64">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-sm">
+                <i class="ph ph-magnifying-glass"></i>
+            </span>
+            <input type="text" placeholder="Qidirish"
+                   class="w-full pl-9 pr-12 py-1.5 bg-[var(--bg-page)] border border-[var(--border-color)] rounded-lg text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--border-hover)] transition">
+            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 bg-[var(--bg-hover)] border border-[var(--border-color)] rounded text-[10px] text-[var(--text-second)] font-mono">
+                ⌘K
+            </span>
+        </div>
 
         <!-- Bildirishnoma Dropdown -->
         <div class="relative" x-data="{ open: false }">
-            <button @click="open = !open" class="relative p-2 text-slate-400 hover:text-primary transition-colors">
-                <i class="ph ph-bell text-xl"></i>
+            <button @click="open = !open" class="relative p-2 text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)] rounded-lg border border-[var(--border-color)] transition text-sm">
+                <i class="ph ph-bell text-base"></i>
                 {% if unread_notifications_count > 0 %}
-                <span class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-white text-white text-xs flex items-center justify-center font-bold">
+                <span class="absolute top-1 right-1 min-w-[16px] h-[16px] bg-[var(--danger)] rounded-full text-white text-[10px] flex items-center justify-center font-bold">
                     {{ unread_notifications_count }}
                 </span>
                 {% endif %}
@@ -34,87 +48,76 @@
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100 scale-100"
                  x-transition:leave-end="opacity-0 scale-95"
-                 class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden"
+                 class="absolute right-0 mt-2 w-80 bg-[var(--bg-card)] rounded-xl shadow-2xl border border-[var(--border-color)] z-50 overflow-hidden text-[var(--text-main)]"
                  x-cloak>
 
                 <!-- Header -->
-                <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                    <h3 class="font-semibold text-slate-800 flex items-center gap-2">
-                        <i class="ph-fill ph-bell text-[#64748B]"></i> Bildirishnomalar
+                <div class="px-4 py-3 bg-[var(--bg-hover)] border-b border-[var(--border-color)] flex items-center justify-between">
+                    <h3 class="font-semibold text-xs text-[var(--text-main)] flex items-center gap-2">
+                        <i class="ph-fill ph-bell text-indigo-500"></i> Bildirishnomalar
                     </h3>
                     {% if unread_notifications_count > 0 %}
-                    <span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
+                    <span class="text-[10px] bg-[var(--danger-bg)] text-[var(--danger)] px-2 py-0.5 rounded-full font-medium">
                         {{ unread_notifications_count }} yangi
                     </span>
                     {% endif %}
                 </div>
 
                 <!-- Notifications List -->
-                <div class="max-h-80 overflow-y-auto">
+                <div class="max-h-80 overflow-y-auto divide-y divide-[var(--border-color)]">
                     {% for notification in notifications %}
                     <a href="{% url 'core:notification_read' notification.pk %}"
                        hx-boost="true" hx-push-url="true" hx-target="#main-content" hx-swap="innerHTML"
                        @click="open = false"
-                       class="flex items-start gap-3 p-4 hover:bg-slate-50 transition border-b border-slate-100 {% if notification.status == 'sent' %}bg-blue-50/50{% endif %}">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
-                            {% if notification.message_type == 'sms' %}bg-green-100 text-green-600
-                            {% elif notification.message_type == 'telegram' %}bg-blue-100 text-blue-600
-                            {% else %}bg-[#4F46E5]/10 text-[#64748B]{% endif %}">
-                            {% if notification.message_type == 'sms' %}
-                            <i class="ph-fill ph-chat-circle-text"></i>
-                            {% elif notification.message_type == 'telegram' %}
-                            <i class="ph-fill ph-telegram-logo"></i>
-                            {% else %}
+                       class="flex items-start gap-3 p-3.5 hover:bg-[var(--bg-hover)] transition {% if notification.status == 'sent' %}bg-[var(--bg-hover)]{% endif %}">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs bg-[var(--bg-hover)] text-[var(--text-main)]">
                             <i class="ph-fill ph-bell-ringing"></i>
-                            {% endif %}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm text-slate-800 line-clamp-2">{{ notification.message|striptags|truncatewords:12 }}</p>
-                            <span class="text-xs text-slate-400">{{ notification.created_at|timesince }} oldin</span>
+                            <p class="text-xs text-[var(--text-main)] line-clamp-2">{{ notification.message|striptags|truncatewords:12 }}</p>
+                            <span class="text-[10px] text-[var(--text-muted)] mt-1 block">{{ notification.created_at|timesince }} oldin</span>
                         </div>
-                        {% if notification.status == 'sent' %}
-                        <span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></span>
-                        {% endif %}
                     </a>
                     {% empty %}
-                    <div class="p-8 text-center">
-                        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <i class="ph ph-bell-slash text-2xl text-slate-400"></i>
+                    <div class="p-6 text-center">
+                        <div class="w-12 h-12 bg-[var(--bg-hover)] rounded-full flex items-center justify-center mx-auto mb-2 text-[var(--text-muted)]">
+                            <i class="ph ph-bell-slash text-xl"></i>
                         </div>
-                        <p class="text-slate-500 text-sm">Bildirishnomalar yo'q</p>
+                        <p class="text-[var(--text-second)] text-xs">Bildirishnomalar yo'q</p>
                     </div>
                     {% endfor %}
                 </div>
-
-                <!-- Footer -->
-                {% if notifications %}
-                <div class="px-4 py-3 bg-slate-50 border-t border-slate-200">
-                    <a href="{% url 'core:notifications' %}"
-                       hx-boost="true" hx-push-url="true" hx-target="#main-content" hx-swap="innerHTML"
-                       @click="open = false"
-                       class="text-sm text-[#64748B] hover:underline font-medium flex items-center justify-center gap-1">
-                        Barchasini ko'rish <i class="ph ph-arrow-right"></i>
-                    </a>
-                </div>
-                {% endif %}
             </div>
         </div>
 
+        <!-- Theme Toggle (Moon / Sun) -->
+        <button type="button"
+                x-data="{ isDark: localStorage.getItem('theme') === 'dark' }"
+                x-init="if (localStorage.getItem('theme') === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); isDark = true; } else { document.documentElement.removeAttribute('data-theme'); isDark = false; }"
+                @click="isDark = !isDark; if(isDark){ document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }"
+                class="px-2.5 py-1.5 text-[var(--text-second)] hover:text-amber-500 hover:bg-[var(--bg-hover)] rounded-lg border border-[var(--border-color)] transition text-sm flex items-center gap-1.5"
+                title="Kunduzgi / Tungi rejim">
+            <i class="ph text-base" :class="isDark ? 'ph-moon-stars text-indigo-400' : 'ph-sun-dim text-amber-500'"></i>
+            <span class="text-xs font-semibold" x-text="isDark ? 'Tungi' : 'Kunduzgi'"></span>
+        </button>
+
         <!-- Sozlamalar -->
-        <a href="{% url 'core:settings' %}" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Sozlamalar">
-            <i class="ph ph-gear text-xl"></i>
+        <a href="{% url 'core:settings' %}" class="p-2 text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)] rounded-lg border border-[var(--border-color)] transition text-sm" title="Sozlamalar">
+            <i class="ph ph-gear text-base"></i>
         </a>
 
-        <!-- Admin Panel (faqat super_admin uchun) -->
+        <!-- Admin Panel -->
         {% if request.user.role == 'super_admin' or request.user.is_superuser %}
-        <a href="/admin/" class="p-2 text-slate-400 hover:text-[#4F46E5] transition-colors" title="Admin Panel">
-            <i class="ph ph-arrow-square-out text-xl"></i>
+        <a href="/admin/" class="p-2 text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)] rounded-lg border border-[var(--border-color)] transition text-sm" title="Admin Panel">
+            <i class="ph ph-arrow-square-out text-base"></i>
         </a>
         {% endif %}
 
-        <!-- Chiqish -->
-        <a href="{% url 'logout' %}" hx-boost="false" class="p-2 text-slate-400 hover:text-red-500 transition-colors" title="Chiqish">
-            <i class="ph ph-sign-out text-xl"></i>
+        <!-- Primary CTA: + To'lov qabul qilish -->
+        <a href="{% url 'finance:add_income' %}"
+           class="px-3.5 py-1.5 bg-[var(--brand)] hover:opacity-90 text-[var(--brand-text)] font-semibold text-xs rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+            <i class="ph ph-plus text-sm font-bold"></i>
+            <span>To'lov qabul qilish</span>
         </a>
 
     </div>

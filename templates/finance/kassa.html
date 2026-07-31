@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Moliya / Kassa{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6 bg-[var(--bg-page)] min-h-screen text-[var(--text-main)] transition-colors duration-200">
+
+    <!-- TOP KPI STAT CARDS (4 grid items) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- Card 1: Bugungi tushum -->
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius)] p-5 shadow-sm hover:border-[var(--border-hover)] transition-all duration-[var(--dur-fast)]">
+            <p class="text-[12px] font-medium text-[var(--text-second)] uppercase tracking-wider">Bugungi tushum</p>
+            <div class="flex items-baseline gap-1.5 mt-2">
+                <span class="text-[23px] font-semibold text-[var(--money)] tabular-nums tracking-tight">4 850 000</span>
+                <span class="text-[11px] text-[var(--text-muted)] font-normal">so'm</span>
+            </div>
+            <p class="text-[11px] text-[var(--text-muted)] mt-2">Kecha: <span class="text-[var(--text-second)] tabular-nums">3 920 000</span></p>
+        </div>
+
+        <!-- Card 2: Qarzdorlik -->
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius)] p-5 shadow-sm hover:border-[var(--border-hover)] transition-all duration-[var(--dur-fast)]">
+            <p class="text-[12px] font-medium text-[var(--text-second)] uppercase tracking-wider">Qarzdorlik</p>
+            <div class="flex items-baseline gap-1.5 mt-2">
+                <span class="text-[23px] font-semibold text-[var(--danger)] tabular-nums tracking-tight">−12 400 000</span>
+                <span class="text-[11px] text-[var(--text-muted)] font-normal">so'm</span>
+            </div>
+            <p class="text-[11px] text-[var(--text-muted)] mt-2"><span class="text-[var(--text-second)] font-medium tabular-nums">23</span> o'quvchi</p>
+        </div>
+
+        <!-- Card 3: Faol o'quvchilar -->
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius)] p-5 shadow-sm hover:border-[var(--border-hover)] transition-all duration-[var(--dur-fast)]">
+            <p class="text-[12px] font-medium text-[var(--text-second)] uppercase tracking-wider">Faol o'quvchilar</p>
+            <div class="mt-2">
+                <span class="text-[23px] font-semibold text-[var(--text-main)] tabular-nums tracking-tight">412</span>
+            </div>
+            <p class="text-[11px] text-[var(--text-muted)] mt-2">Shu oyda <span class="text-[var(--money)] font-medium tabular-nums">+18</span></p>
+        </div>
+
+        <!-- Card 4: Bugungi darslar -->
+        <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius)] p-5 shadow-sm hover:border-[var(--border-hover)] transition-all duration-[var(--dur-fast)]">
+            <p class="text-[12px] font-medium text-[var(--text-second)] uppercase tracking-wider">Bugungi darslar</p>
+            <div class="mt-2">
+                <span class="text-[23px] font-semibold text-[var(--text-main)] tabular-nums tracking-tight">17</span>
+            </div>
+            <p class="text-[11px] text-[var(--text-muted)] mt-2"><span class="text-[var(--text-second)] font-medium tabular-nums">6 tasi</span> tugadi</p>
+        </div>
+
+    </div>
+
+    <!-- MAIN GRID (Split: 8/12 Table + 4/12 Right Widgets) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- LEFT SECTION: Bugungi to'lovlar Table (8 cols) -->
+        <div class="lg:col-span-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius)] p-5 flex flex-col justify-between shadow-sm" x-data="{ activeTab: 'all' }">
+            <div>
+                <!-- Header: Title + Download button -->
+                <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-sm font-bold text-[var(--text-main)]">Bugungi to'lovlar</h2>
+                        <span class="text-xs text-[var(--text-muted)] font-normal">8 ta yozuv</span>
+                    </div>
+                    <button class="px-3 py-1.5 bg-[var(--bg-card)] hover:bg-[var(--bg-hover)] text-[var(--text-second)] text-xs font-medium rounded-lg border border-[var(--border-color)] transition flex items-center gap-1.5 shadow-sm">
+                        <i class="ph ph-download-simple text-sm"></i>
+                        <span>Yuklab olish</span>
+                    </button>
+                </div>
+
+                <!-- Tabs: Barchasi, To'landi, Kechikkan, Qarz -->
+                <div class="flex items-center gap-2 mb-4 border-b border-[var(--border-color)] pb-3">
+                    <button @click="activeTab = 'all'"
+                            :class="activeTab === 'all' ? 'bg-[var(--bg-hover)] text-[var(--text-main)] font-semibold border border-[var(--border-color)]' : 'text-[var(--text-second)] hover:text-[var(--text-main)]'"
+                            class="px-3 py-1 rounded-lg text-xs transition">
+                        Barchasi
+                    </button>
+                    <button @click="activeTab = 'paid'"
+                            :class="activeTab === 'paid' ? 'bg-[var(--bg-hover)] text-[var(--text-main)] font-semibold border border-[var(--border-color)]' : 'text-[var(--text-second)] hover:text-[var(--text-main)]'"
+                            class="px-3 py-1 rounded-lg text-xs transition">
+                        To'landi
+                    </button>
+                    <button @click="activeTab = 'late'"
+                            :class="activeTab === 'late' ? 'bg-[var(--bg-hover)] text-[var(--text-main)] font-semibold border border-[var(--border-color)]' : 'text-[var(--text-second)] hover:text-[var(--text-main)]'"
+                            class="px-3 py-1 rounded-lg text-xs transition">
+                        Kechikkan
+                    </button>
+                    <button @click="activeTab = 'debt'"
+                            :class="activeTab === 'debt' ? 'bg-[var(--bg-hover)] text-[var(--text-main)] font-semibold border border-[var(--border-color)]' : 'text-[var(--text-second)] hover:text-[var(--text-main)]'"
+                            class="px-3 py-1 rounded-lg text-xs transition">
+                        Qarz
+                    </button>
+                </div>
+
+                <!-- Data Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="text-[10px] font-semibold tracking-wider text-[var(--text-muted)] uppercase border-b border-[var(--border-color)]">
+                                <th class="py-3 px-3">O'QUVCHI</th>
+                                <th class="py-3 px-3">GURUH</th>
+                                <th class="py-3 px-3">HOLAT</th>
+                                <th class="py-3 px-3 text-right">SUMMA</th>
+                                <th class="py-3 px-3 text-right">VAQT</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[var(--border-color)] text-[var(--text-main)] font-medium">
+
+                            <!-- Row 1 -->
+                            <tr x-show="activeTab === 'all' || activeTab === 'paid'" class="hover:bg-[var(--bg-hover)] transition">
+                                <td class="py-3 px-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-full bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-second)] font-bold text-[10px] flex items-center justify-center">
+                                        SA
+                                    </div>
+                                    <span class="font-semibold text-[var(--text-main)]">Sardor Aliyev</span>
+                                </td>
+                                <td class="py-3 px-3 text-[var(--text-second)]">IELTS Intensive B2</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-[var(--success-bg)] text-[var(--success)]">
+                                        To'landi
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right font-bold text-[var(--money)]">650 000</td>
+                                <td class="py-3 px-3 text-right text-[var(--text-muted)] font-mono">14:32</td>
+                            </tr>
+
+                            <!-- Row 2 -->
+                            <tr x-show="activeTab === 'all' || activeTab === 'late'" class="hover:bg-[var(--bg-hover)] transition">
+                                <td class="py-3 px-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-full bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-second)] font-bold text-[10px] flex items-center justify-center">
+                                        MT
+                                    </div>
+                                    <span class="font-semibold text-[var(--text-main)]">Malika Toshpulatova</span>
+                                </td>
+                                <td class="py-3 px-3 text-[var(--text-second)]">General English A2</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-[var(--warning-bg)] text-[var(--warning)]">
+                                        Kechikkan
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right font-bold text-[var(--money)]">480 000</td>
+                                <td class="py-3 px-3 text-right text-[var(--text-muted)] font-mono">13:57</td>
+                            </tr>
+
+                            <!-- Row 3 -->
+                            <tr x-show="activeTab === 'all' || activeTab === 'debt'" class="hover:bg-[var(--bg-hover)] transition">
+                                <td class="py-3 px-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-full bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-second)] font-bold text-[10px] flex items-center justify-center">
+                                        JR
+                                    </div>
+                                    <span class="font-semibold text-[var(--text-main)]">Jasur Rahimov</span>
+                                </td>
+                                <td class="py-3 px-3 text-[var(--text-second)]">Frontend asoslari</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-[var(--danger-bg)] text-[var(--danger)]">
+                                        Qarz
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right font-bold text-[var(--danger)]">-900 000</td>
+                                <td class="py-3 px-3 text-right text-[var(--text-muted)] font-mono">-</td>
+                            </tr>
+
+                            <!-- Row 4 -->
+                            <tr x-show="activeTab === 'all' || activeTab === 'paid'" class="hover:bg-[var(--bg-hover)] transition">
+                                <td class="py-3 px-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-full bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-second)] font-bold text-[10px] flex items-center justify-center">
+                                        NK
+                                    </div>
+                                    <span class="font-semibold text-[var(--text-main)]">Nilufar Karimova</span>
+                                </td>
+                                <td class="py-3 px-3 text-[var(--text-second)]">Matematika 9-sinf</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-[var(--success-bg)] text-[var(--success)]">
+                                        To'landi
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right font-bold text-[var(--money)]">400 000</td>
+                                <td class="py-3 px-3 text-right text-[var(--text-muted)] font-mono">12:15</td>
+                            </tr>
+
+                            <!-- Row 5 -->
+                            <tr x-show="activeTab === 'all' || activeTab === 'paid'" class="hover:bg-[var(--bg-hover)] transition">
+                                <td class="py-3 px-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-full bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-second)] font-bold text-[10px] flex items-center justify-center">
+                                        BY
+                                    </div>
+                                    <span class="font-semibold text-[var(--text-main)]">Bekzod Yusupov</span>
+                                </td>
+                                <td class="py-3 px-3 text-[var(--text-second)]">IELTS Intensive B2</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-[var(--success-bg)] text-[var(--success)]">
+                                        To'landi
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right font-bold text-[var(--money)]">650 000</td>
+                                <td class="py-3 px-3 text-right text-[var(--text-muted)] font-mono">11:48</td>
+                            </tr>
+
+                            <!-- Row 6 -->
+                            <tr x-show="activeTab === 'all' || activeTab === 'late'" class="hover:bg-[var(--bg-hover)] transition">
+                                <td class="py-3 px-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-full bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-second)] font-bold text-[10px] flex items-center justify-center">
+                                        ZE
+                                    </div>
+                                    <span class="font-semibold text-[var(--text-main)]">Zilola Ergasheva</span>
+                                </td>
+                                <td class="py-3 px-3 text-[var(--text-second)]">General English A2</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-[var(--warning-bg)] text-[var(--warning)]">
+                                        Kechikkan
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right font-bold text-[var(--money)]">480 000</td>
+                                <td class="py-3 px-3 text-right text-[var(--text-muted)] font-mono">10:22</td>
+                            </tr>
+
+                            <!-- Row 7 -->
+                            <tr x-show="activeTab === 'all' || activeTab === 'paid'" class="hover:bg-[var(--bg-hover)] transition">
+                                <td class="py-3 px-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-full bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-second)] font-bold text-[10px] flex items-center justify-center">
+                                        ON
+                                    </div>
+                                    <span class="font-semibold text-[var(--text-main)]">Otabek Nazarov</span>
+                                </td>
+                                <td class="py-3 px-3 text-[var(--text-second)]">Frontend asoslari</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-[var(--success-bg)] text-[var(--success)]">
+                                        To'landi
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right font-bold text-[var(--money)]">900 000</td>
+                                <td class="py-3 px-3 text-right text-[var(--text-muted)] font-mono">09:40</td>
+                            </tr>
+
+                            <!-- Row 8 -->
+                            <tr x-show="activeTab === 'all' || activeTab === 'debt'" class="hover:bg-[var(--bg-hover)] transition">
+                                <td class="py-3 px-3 flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-full bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-second)] font-bold text-[10px] flex items-center justify-center">
+                                        DQ
+                                    </div>
+                                    <span class="font-semibold text-[var(--text-main)]">Dilshod Qodirov</span>
+                                </td>
+                                <td class="py-3 px-3 text-[var(--text-second)]">Matematika 9-sinf</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-[var(--danger-bg)] text-[var(--danger)]">
+                                        Qarz
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right font-bold text-[var(--danger)]">-400 000</td>
+                                <td class="py-3 px-3 text-right text-[var(--text-muted)] font-mono">-</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Table Footer Summary + Pagination -->
+            <div class="flex items-center justify-between pt-4 mt-4 border-t border-[var(--border-color)]">
+                <p class="text-xs text-[var(--text-second)]">Jami tushum: <span class="font-bold text-[var(--money)]">3 560 000 so'm</span></p>
+                <div class="flex items-center gap-2">
+                    <button class="px-3 py-1 bg-[var(--bg-card)] hover:bg-[var(--bg-hover)] text-[var(--text-second)] text-xs rounded border border-[var(--border-color)] transition shadow-sm">
+                        Oldingi
+                    </button>
+                    <button class="px-3 py-1 bg-[var(--bg-hover)] text-[var(--text-main)] font-semibold text-xs rounded border border-[var(--border-hover)] transition">
+                        Keyingi
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SECTION: Voronka + Bugungi darslar Widgets (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+
+            <!-- Card 1: Voronka (shu oy) -->
+            <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-bold text-[var(--text-main)]">Voronka</h3>
+                    <span class="text-[11px] text-[var(--text-muted)]">shu oy</span>
+                </div>
+
+                <div class="space-y-3.5 text-xs">
+                    <!-- Stage 1 -->
+                    <div>
+                        <div class="flex items-center justify-between text-[var(--text-second)] mb-1 font-medium">
+                            <span>Yangi lid</span>
+                            <span class="font-bold text-[var(--text-main)]">42</span>
+                        </div>
+                        <div class="w-full bg-[var(--bg-hover)] h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-[var(--text-second)] h-full rounded-full w-[85%]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Stage 2 -->
+                    <div>
+                        <div class="flex items-center justify-between text-[var(--text-second)] mb-1 font-medium">
+                            <span>Aloqada</span>
+                            <span class="font-bold text-[var(--text-main)]">31</span>
+                        </div>
+                        <div class="w-full bg-[var(--bg-hover)] h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-[var(--text-second)] h-full rounded-full w-[65%]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Stage 3 -->
+                    <div>
+                        <div class="flex items-center justify-between text-[var(--text-second)] mb-1 font-medium">
+                            <span>Qiziqdi</span>
+                            <span class="font-bold text-[var(--text-main)]">19</span>
+                        </div>
+                        <div class="w-full bg-[var(--bg-hover)] h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-[var(--text-second)] h-full rounded-full w-[45%]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Stage 4 -->
+                    <div>
+                        <div class="flex items-center justify-between text-[var(--text-second)] mb-1 font-medium">
+                            <span>Ro'yxatdan o'tdi</span>
+                            <span class="font-bold text-[var(--text-main)]">11</span>
+                        </div>
+                        <div class="w-full bg-[var(--bg-hover)] h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-[var(--kanban-registered)] text-[var(--kanban-registered-text)] h-full rounded-full w-[25%]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Bugungi darslar Timetable -->
+            <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5 shadow-sm">
+                <h3 class="text-xs font-bold text-[var(--text-main)] mb-4">Bugungi darslar</h3>
+
+                <div class="space-y-4 text-xs">
+
+                    <!-- Item 1 -->
+                    <div class="flex items-start gap-3">
+                        <span class="text-[11px] font-mono text-[var(--text-muted)] pt-0.5 w-9">08:00</span>
+                        <div class="flex-1">
+                            <p class="font-semibold text-[var(--text-main)]">IELTS Intensive B2</p>
+                            <p class="text-[11px] text-[var(--text-muted)] mt-0.5">Nodira K. • 214-xona</p>
+                        </div>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="flex items-start gap-3">
+                        <span class="text-[11px] font-mono text-[var(--text-muted)] pt-0.5 w-9">11:00</span>
+                        <div class="flex-1">
+                            <p class="font-semibold text-[var(--text-main)]">Frontend asoslari</p>
+                            <p class="text-[11px] text-[var(--text-muted)] mt-0.5">Sardor T. • Kompyuter zali</p>
+                        </div>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="flex items-start gap-3">
+                        <span class="text-[11px] font-mono text-[var(--text-muted)] pt-0.5 w-9">14:30</span>
+                        <div class="flex-1">
+                            <p class="font-semibold text-[var(--text-main)]">Matematika 9-sinf</p>
+                            <p class="text-[11px] text-[var(--text-muted)] mt-0.5">Gulnora A. • 108-xona</p>
+                        </div>
+                    </div>
+
+                    <!-- Item 4 -->
+                    <div class="flex items-start gap-3">
+                        <span class="text-[11px] font-mono text-[var(--text-muted)] pt-0.5 w-9">16:00</span>
+                        <div class="flex-1">
+                            <p class="font-semibold text-[var(--text-main)]">General English A2</p>
+                            <p class="text-[11px] text-[var(--text-muted)] mt-0.5">Malika R. • 205-xona</p>
+                        </div>
+                    </div>
+
+                    <!-- Item 5 Skeleton slot -->
+                    <div class="flex items-center gap-3 pt-1">
+                        <span class="text-[11px] font-mono text-[var(--text-muted)] w-9">18:00</span>
+                        <div class="flex-1 h-2 bg-[var(--bg-hover)] rounded-full w-2/3"></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

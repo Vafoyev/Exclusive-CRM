@@ -8,9 +8,11 @@ from reportlab.lib.units import cm
 
 from .models import User
 from apps.core.export_utils import export_to_excel, export_to_pdf
+from apps.core.permissions import permission_required
 
 
 @login_required
+@permission_required('users', 'view')
 def export_users_excel(request):
     """Foydalanuvchilar ro'yxatini Excel formatida eksport qilish"""
     org = request.organization
@@ -58,6 +60,7 @@ def export_users_excel(request):
 
 
 @login_required
+@permission_required('users', 'view')
 def export_users_pdf(request):
     """Foydalanuvchilar ro'yxatini PDF formatida eksport qilish"""
     org = request.organization
@@ -100,6 +103,7 @@ def export_users_pdf(request):
 
 
 @login_required
+@permission_required('users', 'view')
 def export_students_excel(request):
     """O'quvchilar ro'yxatini Excel formatida eksport qilish"""
     org = request.organization
@@ -143,6 +147,7 @@ def export_students_excel(request):
 
 
 @login_required
+@permission_required('users', 'view')
 def export_teachers_excel(request):
     """O'qituvchilar ro'yxatini Excel formatida eksport qilish"""
     org = request.organization
