@@ -45,18 +45,33 @@ systemctl enable postgresql
 
 DB_NAME="exclusive_crm_db"
 DB_USER="crm_admin"
-DB_PASS="CrmExclusivePass2026_Secure!"
+DB_PASS="CrmExclusivePass2026Secure"
 
-# Foydalanuvchi va bazani yaratish (agar mavjud bo'lmasa)
+# Agar .env fayli allaqachon mavjud bo'lsa, undagi parolni olamiz
+if [ -f ".env" ]; then
+    ENV_USER=$(grep -E '^DB_USER=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d ' ' || true)
+    ENV_PASS=$(grep -E '^DB_PASSWORD=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d ' ' || true)
+    ENV_NAME=$(grep -E '^DB_NAME=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d ' ' || true)
+    [ -n "$ENV_USER" ] && DB_USER="$ENV_USER"
+    [ -n "$ENV_PASS" ] && DB_PASS="$ENV_PASS"
+    [ -n "$ENV_NAME" ] && DB_NAME="$ENV_NAME"
+fi
+
+# Foydalanuvchi va bazani yaratish / parolini majburiy yangilash
 sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname = '$DB_USER'" | grep -q 1 || \
 sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';"
+
+# Parolni har doim yangilash (authentication failed xatosi bo'lmasligi uchun)
+sudo -u postgres psql -c "ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';"
+sudo -u postgres psql -c "ALTER USER $DB_USER CREATEDB SUPERUSER;"
 
 sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'" | grep -q 1 || \
 sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
 
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
-sudo -u postgres psql -c "ALTER USER $DB_USER CREATEDB;"
-echo -e "${GREEN}[OK] PostgreSQL bazasi tayyor: $DB_NAME${NC}"
+sudo -u postgres psql -d "$DB_NAME" -c "GRANT ALL ON SCHEMA public TO $DB_USER;" || true
+
+echo -e "${GREEN}[OK] PostgreSQL bazasi ($DB_NAME) va foydalanuvchisi ($DB_USER) tayyor.${NC}"
 
 # 4. Redis sozlash
 echo -e "\n${BLUE}>>> 3/8. Redis xizmatini ishga tushirish...${NC}"
@@ -110,7 +125,7 @@ USE_S3=False
 EOF
     echo -e "${GREEN}[OK] Yangi .env fayli yaratildi.${NC}"
 else
-    echo -e "${YELLOW}[INFO] Mavjud .env fayli saqlab qolindi.${NC}"
+    echo -e "${YELLOW}[INFO] Mavjud .env fayli tekshirildi va bazaga ulandi.${NC}"
 fi
 
 # 7. Papkalar va huquqlar
