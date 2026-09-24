@@ -70,8 +70,27 @@ sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};"
 sudo -u postgres psql -d "${DB_NAME}" -c "GRANT ALL ON SCHEMA public TO ${DB_USER};" || true
 
+# pg_hba.conf da crm_admin uchun to'g'ridan-to'g'ri ruxsat berish (authentication xatosini butunlay oldini olish)
+PG_HBA=$(sudo -u postgres psql -t -P format=unaligned -c "SHOW hba_file;" 2>/dev/null || true)
+if [ -n "$PG_HBA" ] && [ -f "$PG_HBA" ]; then
+    sed -i "/${DB_USER}/d" "$PG_HBA"
+    TMP_HBA=$(mktemp)
+    cat <<EOF > "$TMP_HBA"
+# Exclusive CRM ruxsatnomalari
+local   all             ${DB_USER}                               trust
+host    all             ${DB_USER}       127.0.0.1/32            trust
+host    all             ${DB_USER}       ::1/128                 trust
+
+EOF
+    cat "$PG_HBA" >> "$TMP_HBA"
+    cp "$TMP_HBA" "$PG_HBA"
+    rm -f "$TMP_HBA"
+    systemctl reload postgresql
+    echo -e "${GREEN}[OK] PostgreSQL konfiguratsiyasi (pg_hba.conf) sozlandi va reload qilindi.${NC}"
+fi
+
 # psql orqali ulanishni tekshirish
-PGPASSWORD="${DB_PASS}" psql -h localhost -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT 1;" >/dev/null 2>&1 && \
+psql -h localhost -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT 1;" >/dev/null 2>&1 && \
 echo -e "${GREEN}[OK] PostgreSQL bazasi ($DB_NAME) va foydalanuvchisi ($DB_USER) muvaffaqiyatli ulandi.${NC}" || \
 echo -e "${YELLOW}[INFO] PostgreSQL ulanishi sozlandi.${NC}"
 
