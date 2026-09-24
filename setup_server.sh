@@ -43,35 +43,37 @@ echo -e "\n${BLUE}>>> 2/8. PostgreSQL ma'lumotlar bazasini sozlash...${NC}"
 systemctl start postgresql
 systemctl enable postgresql
 
+# Windows CRLF (\r) belgilarini tozalash
+sed -i 's/\r$//' .env 2>/dev/null || true
+sed -i 's/\r$//' setup_server.sh 2>/dev/null || true
+sed -i 's/\r$//' deploy.sh 2>/dev/null || true
+
 DB_NAME="exclusive_crm_db"
 DB_USER="crm_admin"
-DB_PASS="CrmExclusivePass2026Secure"
+DB_PASS="Exclusive2026CRM"
 
-# Agar .env fayli allaqachon mavjud bo'lsa, undagi parolni olamiz
-if [ -f ".env" ]; then
-    ENV_USER=$(grep -E '^DB_USER=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d ' ' || true)
-    ENV_PASS=$(grep -E '^DB_PASSWORD=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d ' ' || true)
-    ENV_NAME=$(grep -E '^DB_NAME=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d ' ' || true)
-    [ -n "$ENV_USER" ] && DB_USER="$ENV_USER"
-    [ -n "$ENV_PASS" ] && DB_PASS="$ENV_PASS"
-    [ -n "$ENV_NAME" ] && DB_NAME="$ENV_NAME"
-fi
+# PostgreSQL foydalanuvchisi va bazasini yaratish hamda parolni yangilash
+sudo -u postgres psql -c "DO \$\$
+BEGIN
+   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${DB_USER}') THEN
+      CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';
+   END IF;
+END
+\$\$;"
 
-# Foydalanuvchi va bazani yaratish / parolini majburiy yangilash
-sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname = '$DB_USER'" | grep -q 1 || \
-sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';"
+sudo -u postgres psql -c "ALTER USER ${DB_USER} WITH PASSWORD '${DB_PASS}';"
+sudo -u postgres psql -c "ALTER USER ${DB_USER} CREATEDB SUPERUSER;"
 
-# Parolni har doim yangilash (authentication failed xatosi bo'lmasligi uchun)
-sudo -u postgres psql -c "ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';"
-sudo -u postgres psql -c "ALTER USER $DB_USER CREATEDB SUPERUSER;"
+sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}'" | grep -q 1 || \
+sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};"
 
-sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'" | grep -q 1 || \
-sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};"
+sudo -u postgres psql -d "${DB_NAME}" -c "GRANT ALL ON SCHEMA public TO ${DB_USER};" || true
 
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
-sudo -u postgres psql -d "$DB_NAME" -c "GRANT ALL ON SCHEMA public TO $DB_USER;" || true
-
-echo -e "${GREEN}[OK] PostgreSQL bazasi ($DB_NAME) va foydalanuvchisi ($DB_USER) tayyor.${NC}"
+# psql orqali ulanishni tekshirish
+PGPASSWORD="${DB_PASS}" psql -h localhost -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT 1;" >/dev/null 2>&1 && \
+echo -e "${GREEN}[OK] PostgreSQL bazasi ($DB_NAME) va foydalanuvchisi ($DB_USER) muvaffaqiyatli ulandi.${NC}" || \
+echo -e "${YELLOW}[INFO] PostgreSQL ulanishi sozlandi.${NC}"
 
 # 4. Redis sozlash
 echo -e "\n${BLUE}>>> 3/8. Redis xizmatini ishga tushirish...${NC}"
@@ -89,44 +91,81 @@ pip install -r requirements/production.txt
 
 # 6. .env faylini yaratish yoki yangilash
 echo -e "\n${BLUE}>>> 5/8. .env konfiguratsiya faylini tayyorlash...${NC}"
-if [ ! -f ".env" ]; then
-    RANDOM_SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(50))")
-    cat <<EOF > .env
-# ========================================
-# EXCLUSIVE CRM - PRODUCTION ENVIRONMENT
-# ========================================
-SECRET_KEY=${RANDOM_SECRET}
-DEBUG=False
-ALLOWED_HOSTS=crm.e-exclusive.uz,3.208.22.250,localhost,127.0.0.1
-CSRF_TRUSTED_ORIGINS=https://crm.e-exclusive.uz,http://crm.e-exclusive.uz,http://3.208.22.250
 
-# HTTPS (Cloudflare orqali SSL yoqilganda True qiling)
-SECURE_SSL_REDIRECT=False
-SESSION_COOKIE_SECURE=False
-CSRF_COOKIE_SECURE=False
+# .env faylini to'g'rilash (Python orqali xavfsiz va to'liq sinxronlash)
+python3 - << 'PYEOF'
+import os, secrets
 
-# Database
-USE_POSTGRES=True
-DB_NAME=${DB_NAME}
-DB_USER=${DB_USER}
-DB_PASSWORD=${DB_PASS}
-DB_HOST=localhost
-DB_PORT=5432
-PG_DUMP_PATH=/usr/bin/pg_dump
+env_file = ".env"
+db_settings = {
+    "DB_NAME": "exclusive_crm_db",
+    "DB_USER": "crm_admin",
+    "DB_PASSWORD": "Exclusive2026CRM",
+    "DB_HOST": "localhost",
+    "DB_PORT": "5432",
+    "USE_POSTGRES": "True",
+    "ALLOWED_HOSTS": "crm.e-exclusive.uz,3.208.22.250,localhost,127.0.0.1",
+    "CSRF_TRUSTED_ORIGINS": "https://crm.e-exclusive.uz,http://crm.e-exclusive.uz,http://3.208.22.250",
+    "DEBUG": "False",
+    "SECURE_SSL_REDIRECT": "False",
+    "SESSION_COOKIE_SECURE": "False",
+    "CSRF_COOKIE_SECURE": "False",
+    "REDIS_URL": "redis://localhost:6379/0",
+    "CELERY_BROKER_URL": "redis://localhost:6379/0",
+    "CELERY_RESULT_BACKEND": "redis://localhost:6379/0",
+    "USE_REDIS": "True",
+    "USE_S3": "False"
+}
 
-# Redis & Celery
-REDIS_URL=redis://localhost:6379/0
-CELERY_BROKER_URL=redis://localhost:6379/0
-CELERY_RESULT_BACKEND=redis://localhost:6379/0
-USE_REDIS=True
+lines = []
+if os.path.exists(env_file):
+    with open(env_file, "r", encoding="utf-8", errors="ignore") as f:
+        lines = [line.strip("\r\n") for line in f]
 
-# Static & Media
-USE_S3=False
-EOF
-    echo -e "${GREEN}[OK] Yangi .env fayli yaratildi.${NC}"
-else
-    echo -e "${YELLOW}[INFO] Mavjud .env fayli tekshirildi va bazaga ulandi.${NC}"
-fi
+new_lines = []
+seen = set()
+for line in lines:
+    if "=" in line and not line.strip().startswith("#"):
+        k = line.split("=")[0].strip()
+        if k in db_settings:
+            new_lines.append(f"{k}={db_settings[k]}")
+            seen.add(k)
+            continue
+        elif k == "SECRET_KEY":
+            seen.add("SECRET_KEY")
+    new_lines.append(line)
+
+if "SECRET_KEY" not in seen:
+    new_lines.insert(0, f"SECRET_KEY={secrets.token_urlsafe(50)}")
+
+for k, v in db_settings.items():
+    if k not in seen:
+        new_lines.append(f"{k}={v}")
+
+with open(env_file, "w", encoding="utf-8") as f:
+    f.write("\n".join(new_lines) + "\n")
+print("[OK] .env fayli muvaffaqiyatli yangilandi va bazaga ulandi.")
+PYEOF
+
+# Python orqali PostgreSQL ga ulanishni tekshirish
+echo -e "PostgreSQL ulanishini tekshirish..."
+python3 - << 'PYEOF'
+import psycopg2, sys
+from decouple import config
+try:
+    conn = psycopg2.connect(
+        dbname=config('DB_NAME'),
+        user=config('DB_USER'),
+        password=config('DB_PASSWORD'),
+        host=config('DB_HOST', default='localhost'),
+        port=config('DB_PORT', default=5432)
+    )
+    conn.close()
+    print("[OK] Python orqali ma'lumotlar bazasiga ulanish tekshirildi: MUVAFFAQITYATLI!")
+except Exception as e:
+    print("[XATO] Bazaga ulanishda xatolik:", e)
+    sys.exit(1)
+PYEOF
 
 # 7. Papkalar va huquqlar
 mkdir -p "$APP_DIR/staticfiles"
