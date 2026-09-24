@@ -50,7 +50,7 @@ sed -i 's/\r$//' deploy.sh 2>/dev/null || true
 
 DB_NAME="exclusive_crm_db"
 DB_USER="crm_admin"
-DB_PASS="Exclusive2026CRM"
+DB_PASS="SalomDunyo1"
 
 # PostgreSQL foydalanuvchisi va bazasini yaratish hamda parolni yangilash
 sudo -u postgres psql -c "DO \$\$
@@ -63,6 +63,7 @@ END
 
 sudo -u postgres psql -c "ALTER USER ${DB_USER} WITH PASSWORD '${DB_PASS}';"
 sudo -u postgres psql -c "ALTER USER ${DB_USER} CREATEDB SUPERUSER;"
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '${DB_PASS}';" || true
 
 sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}'" | grep -q 1 || \
 sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};"
@@ -70,7 +71,7 @@ sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};"
 sudo -u postgres psql -d "${DB_NAME}" -c "GRANT ALL ON SCHEMA public TO ${DB_USER};" || true
 
-# pg_hba.conf da crm_admin uchun to'g'ridan-to'g'ri ruxsat berish (authentication xatosini butunlay oldini olish)
+# pg_hba.conf da localhost uchun to'liq trust berish
 PG_HBA=$(sudo -u postgres psql -t -P format=unaligned -c "SHOW hba_file;" 2>/dev/null || true)
 if [ -n "$PG_HBA" ] && [ -f "$PG_HBA" ]; then
     sed -i "/${DB_USER}/d" "$PG_HBA"
@@ -80,13 +81,17 @@ if [ -n "$PG_HBA" ] && [ -f "$PG_HBA" ]; then
 local   all             ${DB_USER}                               trust
 host    all             ${DB_USER}       127.0.0.1/32            trust
 host    all             ${DB_USER}       ::1/128                 trust
+local   all             all                                     trust
+host    all             all             127.0.0.1/32            trust
+host    all             all             ::1/128                 trust
 
 EOF
     cat "$PG_HBA" >> "$TMP_HBA"
     cp "$TMP_HBA" "$PG_HBA"
     rm -f "$TMP_HBA"
-    systemctl reload postgresql
-    echo -e "${GREEN}[OK] PostgreSQL konfiguratsiyasi (pg_hba.conf) sozlandi va reload qilindi.${NC}"
+    systemctl restart postgresql
+    sudo -u postgres psql -c "SELECT pg_reload_conf();" || true
+    echo -e "${GREEN}[OK] PostgreSQL konfiguratsiyasi (pg_hba.conf) yangilandi va restart qilindi.${NC}"
 fi
 
 # psql orqali ulanishni tekshirish
@@ -119,7 +124,7 @@ env_file = ".env"
 db_settings = {
     "DB_NAME": "exclusive_crm_db",
     "DB_USER": "crm_admin",
-    "DB_PASSWORD": "Exclusive2026CRM",
+    "DB_PASSWORD": "SalomDunyo1",
     "DB_HOST": "localhost",
     "DB_PORT": "5432",
     "USE_POSTGRES": "True",
