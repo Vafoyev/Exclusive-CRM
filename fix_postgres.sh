@@ -178,17 +178,17 @@ EOF
 cat <<EOF > /etc/systemd/system/exclusive_celery.service
 [Unit]
 Description=Exclusive CRM Celery Worker
-After=network.target redis-server.service
+After=network.target redis-server.service redis.service
 
 [Service]
-Type=forking
+Type=simple
 User=www-data
 Group=www-data
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${APP_DIR}/.env
-ExecStart=${APP_DIR}/venv/bin/celery -A config worker --loglevel=info --detach --logfile=/var/log/celery/exclusive_worker.log
+ExecStart=${APP_DIR}/venv/bin/celery -A config worker --loglevel=info
 Restart=always
-RestartSec=5
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
@@ -197,7 +197,7 @@ EOF
 cat <<EOF > /etc/systemd/system/exclusive_celery_beat.service
 [Unit]
 Description=Exclusive CRM Celery Beat
-After=network.target redis-server.service
+After=network.target redis-server.service redis.service
 
 [Service]
 Type=simple
@@ -205,9 +205,9 @@ User=www-data
 Group=www-data
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${APP_DIR}/.env
-ExecStart=${APP_DIR}/venv/bin/celery -A config beat --loglevel=info --logfile=/var/log/celery/exclusive_beat.log
+ExecStart=${APP_DIR}/venv/bin/celery -A config beat --loglevel=info
 Restart=always
-RestartSec=5
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
@@ -263,9 +263,18 @@ mkdir -p /var/log/gunicorn /var/log/celery "${APP_DIR}/media" "${APP_DIR}/static
 chown -R www-data:www-data /var/log/gunicorn /var/log/celery "${APP_DIR}/media" "${APP_DIR}/staticfiles"
 chmod -R 775 "${APP_DIR}/media" "${APP_DIR}/staticfiles"
 
+# Redis
+systemctl enable --now redis-server 2>/dev/null || systemctl enable --now redis 2>/dev/null || true
+
+# Servislarni ishga tushirish
 systemctl daemon-reload
 systemctl enable exclusive_crm exclusive_celery exclusive_celery_beat
-systemctl restart exclusive_crm exclusive_celery exclusive_celery_beat nginx
+systemctl restart exclusive_crm
+systemctl restart exclusive_celery 2>/dev/null || true
+systemctl restart exclusive_celery_beat 2>/dev/null || true
+
+# Nginx ni yangilash
+systemctl reload nginx 2>/dev/null || systemctl restart nginx || true
 
 # Mock AI xizmatini qayta yoqib qo'yish (agar gunicorn xizmati Mock AI ga tegishli bo'lsa)
 systemctl start gunicorn 2>/dev/null || true
