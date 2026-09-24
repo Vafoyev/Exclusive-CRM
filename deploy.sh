@@ -33,15 +33,14 @@ echo ">>> 5. Statik fayllarni yig'ish..."
 python manage.py collectstatic --noinput --settings=config.settings.production
 
 echo ">>> 6. Xizmatlarni qayta ishga tushirish (Restart)..."
-sudo systemctl restart gunicorn
+sudo systemctl restart exclusive_crm
 
-# Agar celery xizmatlari mavjud bo'lsa ularni ham restart qilamiz
-if systemctl list-unit-files | grep -q "celery.service"; then
-    sudo systemctl restart celery
+if systemctl list-unit-files | grep -q "exclusive_celery.service"; then
+    sudo systemctl restart exclusive_celery
 fi
 
-if systemctl list-unit-files | grep -q "celery-beat.service"; then
-    sudo systemctl restart celery-beat
+if systemctl list-unit-files | grep -q "exclusive_celery_beat.service"; then
+    sudo systemctl restart exclusive_celery_beat
 fi
 
 sudo systemctl restart nginx

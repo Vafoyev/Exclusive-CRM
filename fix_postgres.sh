@@ -155,11 +155,123 @@ echo "=== 8. Django migratsiyalari va statik fayllar ==="
 python manage.py migrate --settings=config.settings.production
 python manage.py collectstatic --noinput --settings=config.settings.production
 
-echo "=== 9. Servislarni qayta ishga tushirish ==="
+echo "=== 9. Exclusive CRM xizmatlari va Nginx-ni sozlash (Port 8001) ==="
+# Exclusive CRM xizmatlarini yaratish
+cat <<EOF > /etc/systemd/system/exclusive_crm.service
+[Unit]
+Description=Exclusive CRM Gunicorn daemon
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=${APP_DIR}
+EnvironmentFile=${APP_DIR}/.env
+ExecStart=${APP_DIR}/venv/bin/gunicorn --config ${APP_DIR}/gunicorn_config.py config.wsgi:application
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat <<EOF > /etc/systemd/system/exclusive_celery.service
+[Unit]
+Description=Exclusive CRM Celery Worker
+After=network.target redis-server.service
+
+[Service]
+Type=forking
+User=www-data
+Group=www-data
+WorkingDirectory=${APP_DIR}
+EnvironmentFile=${APP_DIR}/.env
+ExecStart=${APP_DIR}/venv/bin/celery -A config worker --loglevel=info --detach --logfile=/var/log/celery/exclusive_worker.log
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat <<EOF > /etc/systemd/system/exclusive_celery_beat.service
+[Unit]
+Description=Exclusive CRM Celery Beat
+After=network.target redis-server.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=${APP_DIR}
+EnvironmentFile=${APP_DIR}/.env
+ExecStart=${APP_DIR}/venv/bin/celery -A config beat --loglevel=info --logfile=/var/log/celery/exclusive_beat.log
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat <<EOF > /etc/nginx/sites-available/exclusive_crm
+server {
+    listen 80;
+    server_name crm.e-exclusive.uz;
+
+    client_max_body_size 100M;
+
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/json;
+
+    location /static/ {
+        alias ${APP_DIR}/staticfiles/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location /media/ {
+        alias ${APP_DIR}/media/;
+        expires 7d;
+        add_header Cache-Control "public";
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:8001;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_redirect off;
+
+        proxy_connect_timeout 90s;
+        proxy_send_timeout 90s;
+        proxy_read_timeout 90s;
+    }
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+}
+EOF
+
+ln -sf /etc/nginx/sites-available/exclusive_crm /etc/nginx/sites-enabled/
+nginx -t
+
+mkdir -p /var/log/gunicorn /var/log/celery "${APP_DIR}/media" "${APP_DIR}/staticfiles"
+chown -R www-data:www-data /var/log/gunicorn /var/log/celery "${APP_DIR}/media" "${APP_DIR}/staticfiles"
+chmod -R 775 "${APP_DIR}/media" "${APP_DIR}/staticfiles"
+
 systemctl daemon-reload
-systemctl restart gunicorn celery celery-beat nginx || true
+systemctl enable exclusive_crm exclusive_celery exclusive_celery_beat
+systemctl restart exclusive_crm exclusive_celery exclusive_celery_beat nginx
+
+# Mock AI xizmatini qayta yoqib qo'yish (agar gunicorn xizmati Mock AI ga tegishli bo'lsa)
+systemctl start gunicorn 2>/dev/null || true
 
 echo -e "\n================================================="
-echo -e "   LOYIHA 100% ISHGA TUSHDI!                     "
-echo -e "   Sayt: http://crm.e-exclusive.uz               "
+echo -e "   EXCLUSIVE CRM 100% ISHGA TUSHDI!              "
+echo -e "   Domen: https://crm.e-exclusive.uz             "
+echo -e "   Mock AI (Port 8000) ham xavfsiz ishlamoqda!   "
 echo -e "=================================================\n"

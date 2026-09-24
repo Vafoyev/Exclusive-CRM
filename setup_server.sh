@@ -195,10 +195,10 @@ chown -R www-data:www-data "$APP_DIR/media" "$APP_DIR/staticfiles" /var/log/guni
 chmod -R 775 "$APP_DIR/media" "$APP_DIR/staticfiles"
 
 # 9. Systemd servislarni sozlash
-echo -e "\n${BLUE}>>> 7/8. Systemd servislarni (Gunicorn, Celery) sozlash...${NC}"
+echo -e "\n${BLUE}>>> 7/8. Systemd servislarni (Exclusive CRM) sozlash...${NC}"
 
-# Gunicorn service
-cat <<EOF > /etc/systemd/system/gunicorn.service
+# Exclusive CRM Gunicorn service (Port 8001 da ishlaydi, boshqa loyihalarga xalaqit bermaydi)
+cat <<EOF > /etc/systemd/system/exclusive_crm.service
 [Unit]
 Description=Exclusive CRM Gunicorn daemon
 After=network.target
@@ -216,8 +216,8 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# Celery service
-cat <<EOF > /etc/systemd/system/celery.service
+# Exclusive CRM Celery service
+cat <<EOF > /etc/systemd/system/exclusive_celery.service
 [Unit]
 Description=Exclusive CRM Celery Worker
 After=network.target redis-server.service
@@ -228,7 +228,7 @@ User=www-data
 Group=www-data
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${APP_DIR}/.env
-ExecStart=${APP_DIR}/venv/bin/celery -A config worker --loglevel=info --detach --logfile=/var/log/celery/worker.log
+ExecStart=${APP_DIR}/venv/bin/celery -A config worker --loglevel=info --detach --logfile=/var/log/celery/exclusive_worker.log
 Restart=always
 RestartSec=5
 
@@ -236,8 +236,8 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# Celery Beat service
-cat <<EOF > /etc/systemd/system/celery-beat.service
+# Exclusive CRM Celery Beat service
+cat <<EOF > /etc/systemd/system/exclusive_celery_beat.service
 [Unit]
 Description=Exclusive CRM Celery Beat
 After=network.target redis-server.service
@@ -248,7 +248,7 @@ User=www-data
 Group=www-data
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${APP_DIR}/.env
-ExecStart=${APP_DIR}/venv/bin/celery -A config beat --loglevel=info --logfile=/var/log/celery/beat.log
+ExecStart=${APP_DIR}/venv/bin/celery -A config beat --loglevel=info --logfile=/var/log/celery/exclusive_beat.log
 Restart=always
 RestartSec=5
 
@@ -262,7 +262,7 @@ echo -e "\n${BLUE}>>> 8/8. Nginx veb-serverini sozlash...${NC}"
 cat <<EOF > /etc/nginx/sites-available/exclusive_crm
 server {
     listen 80;
-    server_name crm.e-exclusive.uz 3.208.22.250;
+    server_name crm.e-exclusive.uz;
 
     client_max_body_size 100M;
 
@@ -286,9 +286,9 @@ server {
         add_header Cache-Control "public";
     }
 
-    # Django application
+    # Django application (Port 8001)
     location / {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://127.0.0.1:8001;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -308,7 +308,6 @@ server {
 EOF
 
 ln -sf /etc/nginx/sites-available/exclusive_crm /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
 
 # Nginx tekshirish
 nginx -t
@@ -320,10 +319,10 @@ if command -v ufw >/dev/null 2>&1; then
     ufw --force enable || true
 fi
 
-# Xizmatlarni ishga tushirish
+# Xizmatlarni ishga tushirish (Faqat Exclusive CRM xizmatlari)
 systemctl daemon-reload
-systemctl enable gunicorn celery celery-beat nginx
-systemctl restart gunicorn celery celery-beat nginx
+systemctl enable exclusive_crm exclusive_celery exclusive_celery_beat nginx
+systemctl restart exclusive_crm exclusive_celery exclusive_celery_beat nginx
 
 echo -e "\n${GREEN}=====================================================${NC}"
 echo -e "${GREEN}   TABRIKLAYMIZ! O'RNATISH MUVAFFAQIYATLI YAKUNLANDI!${NC}"
