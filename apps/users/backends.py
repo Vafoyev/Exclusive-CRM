@@ -16,15 +16,15 @@ class PhoneBackend(ModelBackend):
         if username is None:
             return None
 
-        # Telefon raqamni tozalash (faqat raqamlar)
-        phone = ''.join(filter(str.isdigit, str(username)))
+        # Telefon raqam yoki matnli login
+        clean_input = str(username).strip()
+        phone_digits = ''.join(filter(str.isdigit, clean_input))
 
-        try:
-            user = UserModel.objects.get(phone=phone)
-        except UserModel.DoesNotExist:
-            UserModel().set_password(password)
-            return None
+        user = UserModel.objects.filter(phone=clean_input).first()
+        if not user and phone_digits:
+            user = UserModel.objects.filter(phone=phone_digits).first()
 
-        if user.check_password(password) and self.user_can_authenticate(user):
+        if user and user.check_password(password) and self.user_can_authenticate(user):
             return user
+        UserModel().set_password(password)
         return None
