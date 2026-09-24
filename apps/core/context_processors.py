@@ -54,9 +54,13 @@ def user_permissions_context(request):
     # Admin, staff va boshqa rollar uchun permissions dan tekshirish
     allowed_modules = ['dashboard']  # Hammaga dashboard
 
-    # Agar permissions bo'sh bo'lsa va admin bo'lsa - hamma narsaga ruxsat
-    if user.role == 'admin' and not user.permissions:
+    # Agar admin bo'lsa - barcha boshqaruv modullariga to'liq ruxsat
+    if user.role == 'admin':
         allowed_modules = ['dashboard', 'users', 'education', 'finance', 'crm', 'operations', 'reports', 'settings', 'automation', 'admin_finance']
+        if user.permissions:
+            for module, perms in user.permissions.items():
+                if isinstance(perms, dict) and perms.get('view', False) and module not in allowed_modules:
+                    allowed_modules.append(module)
         context = {
             'user_modules': allowed_modules,
             'full_access': True,

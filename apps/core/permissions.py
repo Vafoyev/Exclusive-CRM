@@ -70,8 +70,13 @@ def check_permission(user, module: str, action: str = 'view') -> bool:
     if user.role in ['super_admin', 'owner']:
         return True
 
-    # Admin - agar permissions bo'sh bo'lsa, ruxsat bor
-    if user.role == 'admin' and not user.permissions:
+    # Admin - barcha operatsion modullarga to'liq ruxsat berish
+    if user.role == 'admin':
+        if not user.permissions:
+            return True
+        module_perms = user.permissions.get(module, {})
+        if isinstance(module_perms, dict) and action in module_perms:
+            return bool(module_perms[action])
         return True
 
     # O'qituvchi - operations va education modullariga default ruxsat
