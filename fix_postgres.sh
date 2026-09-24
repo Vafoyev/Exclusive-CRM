@@ -3,58 +3,104 @@
 # Exclusive CRM - PostgreSQL Ruxsatnomalarini Tezkor To'g'rilash Skripti
 # ==============================================================================
 
-set -euo pipefail
+set -e
 
-echo ">>> PostgreSQL xavfsizlik qoidalarini (pg_hba.conf) yangilash..."
+echo "=== 1. Mavjud PostgreSQL klasterlarini tekshirish ==="
+if command -v pg_lsclusters >/dev/null 2>&1; then
+    pg_lsclusters || true
+fi
+
+echo "=== 2. Barcha pg_hba.conf fayllarida trust rejimini yoqish ==="
 for hba in $(find /etc/postgresql/ -name "pg_hba.conf" 2>/dev/null); do
-    echo "Fayl tozalanmoqda: $hba"
+    echo "Sozlanmoqda: $hba"
+    sed -i '/crm_admin/d' "$hba"
     sed -i 's/scram-sha-256/trust/g' "$hba"
     sed -i 's/md5/trust/g' "$hba"
     sed -i 's/peer/trust/g' "$hba"
+    # Eng tepasiga aniq trust qoidalarini qo'shamiz
+    sed -i '1i local all all trust\nhost all all 127.0.0.1/32 trust\nhost all all ::1/128 trust' "$hba"
 done
 
-echo ">>> PostgreSQL ni qayta ishga tushirish..."
-systemctl restart postgresql
-sleep 1
+echo "=== 3. Barcha PostgreSQL xizmatlarini to'liq qayta ishga tushirish ==="
+if command -v pg_ctlcluster >/dev/null 2>&1; then
+    pg_lsclusters --no-header 2>/dev/null | while read -r ver cluster port rest; do
+        if [ -n "$ver" ] && [ -n "$cluster" ]; then
+            echo "Klaster qayta ishga tushirilmoqda: $ver $cluster (Port: $port)"
+            pg_ctlcluster "$ver" "$cluster" restart || true
+        fi
+    done
+fi
+systemctl restart "postgresql*" 2>/dev/null || systemctl restart postgresql || true
+sleep 2
 
 DB_NAME="exclusive_crm_db"
 DB_USER="crm_admin"
 DB_PASS="SalomDunyo1"
 
-echo ">>> Foydalanuvchi ($DB_USER) va bazani sozlash..."
-sudo -u postgres psql -c "DO \$\$
-BEGIN
-   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${DB_USER}') THEN
-      CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';
-   END IF;
-END
-\$\$;"
+echo "=== 4. Barcha portlarda (5432, 5433, 5434) foydalanuvchi va bazani sozlash ==="
+for PORT in 5432 5433 5434; do
+    if sudo -u postgres psql -p "$PORT" -c "SELECT 1;" >/dev/null 2>&1; then
+        echo "Port $PORT da PostgreSQL topildi! Foydalanuvchi va baza sozlanmoqda..."
+        sudo -u postgres psql -p "$PORT" -c "DO \$\$
+        BEGIN
+           IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${DB_USER}') THEN
+              CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';
+           END IF;
+        END
+        \$\$;" || true
 
-sudo -u postgres psql -c "ALTER USER ${DB_USER} WITH PASSWORD '${DB_PASS}';"
-sudo -u postgres psql -c "ALTER USER ${DB_USER} CREATEDB SUPERUSER;"
-sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '${DB_PASS}';" || true
+        sudo -u postgres psql -p "$PORT" -c "ALTER USER ${DB_USER} WITH PASSWORD '${DB_PASS}';" || true
+        sudo -u postgres psql -p "$PORT" -c "ALTER USER ${DB_USER} CREATEDB SUPERUSER;" || true
+        sudo -u postgres psql -p "$PORT" -c "ALTER USER postgres WITH PASSWORD '${DB_PASS}';" || true
 
-sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}'" | grep -q 1 || \
-sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};"
+        sudo -u postgres psql -p "$PORT" -tc "SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}'" | grep -q 1 || \
+        sudo -u postgres psql -p "$PORT" -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};" || true
 
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};"
-sudo -u postgres psql -d "${DB_NAME}" -c "GRANT ALL ON SCHEMA public TO ${DB_USER};" || true
+        sudo -u postgres psql -p "$PORT" -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" || true
+        sudo -u postgres psql -p "$PORT" -d "${DB_NAME}" -c "GRANT ALL ON SCHEMA public TO ${DB_USER};" || true
+        sudo -u postgres psql -p "$PORT" -c "SELECT pg_reload_conf();" || true
+    fi
+done
 
-echo ">>> .env faylidagi parolni yangilash..."
+echo "=== 5. To'g'ri ishlaydigan portni aniqlash ==="
+WORKING_PORT=""
+for PORT in 5432 5433 5434; do
+    if PGPASSWORD="${DB_PASS}" psql -h localhost -p "$PORT" -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT 1;" >/dev/null 2>&1; then
+        WORKING_PORT="$PORT"
+        echo "Muvaffaqiyatli ulanish topildi: Port $WORKING_PORT"
+        break
+    fi
+done
+
+if [ -z "$WORKING_PORT" ]; then
+    for PORT in 5432 5433 5434; do
+        if psql -h localhost -p "$PORT" -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT 1;" >/dev/null 2>&1; then
+            WORKING_PORT="$PORT"
+            echo "Trust orqali muvaffaqiyatli ulanish topildi: Port $WORKING_PORT"
+            break
+        fi
+    done
+fi
+
+if [ -z "$WORKING_PORT" ]; then
+    WORKING_PORT="5432"
+fi
+
+echo "=== 6. .env faylini to'g'ri port ($WORKING_PORT) va parol bilan yangilash ==="
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$APP_DIR"
 sed -i 's/\r$//' .env 2>/dev/null || true
 
-python3 - << 'PYEOF'
+python3 - << PYEOF
 import os
 
 env_file = ".env"
 db_settings = {
     "DB_NAME": "exclusive_crm_db",
     "DB_USER": "crm_admin",
-    "DB_PASSWORD": "SalomDunyo1",
+    "DB_PASSWORD": "${DB_PASS}",
     "DB_HOST": "localhost",
-    "DB_PORT": "5432",
+    "DB_PORT": "${WORKING_PORT}",
     "USE_POSTGRES": "True"
 }
 
@@ -80,36 +126,40 @@ for k, v in db_settings.items():
 
 with open(env_file, "w", encoding="utf-8") as f:
     f.write("\n".join(new_lines) + "\n")
-print("[OK] .env yangilandi!")
+print("[OK] .env fayli port ${WORKING_PORT} bilan yangilandi!")
 PYEOF
 
-echo ">>> PostgreSQL ulanishini tekshirish..."
+echo "=== 7. Python orqali ulanishni tekshirish ==="
 if [ -d "venv" ]; then
     source venv/bin/activate
 fi
 
-python3 - << 'PYEOF'
+python3 - << PYEOF
 import psycopg2
 try:
     conn = psycopg2.connect(
         dbname="exclusive_crm_db",
         user="crm_admin",
-        password="SalomDunyo1",
+        password="${DB_PASS}",
         host="localhost",
-        port=5432
+        port=${WORKING_PORT}
     )
     conn.close()
     print(">>> TABRIKLAYMIZ: BAZAGA ULANISH 100% MUVAFFAQITYATLI BO'LDI! <<<")
 except Exception as e:
-    print("Xatolik:", e)
+    print("Ulanish xatosi:", e)
     exit(1)
 PYEOF
 
-echo ">>> Django migratsiyalarini qo'llash..."
+echo "=== 8. Django migratsiyalari va statik fayllar ==="
 python manage.py migrate --settings=config.settings.production
 python manage.py collectstatic --noinput --settings=config.settings.production
 
-echo ">>> Servislarni qayta ishga tushirish..."
+echo "=== 9. Servislarni qayta ishga tushirish ==="
+systemctl daemon-reload
 systemctl restart gunicorn celery celery-beat nginx || true
 
-echo ">>> HAMMASI TAYYOR! <<<"
+echo -e "\n================================================="
+echo -e "   LOYIHA 100% ISHGA TUSHDI!                     "
+echo -e "   Sayt: http://crm.e-exclusive.uz               "
+echo -e "=================================================\n"
