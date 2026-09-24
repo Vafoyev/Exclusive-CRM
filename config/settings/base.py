@@ -30,7 +30,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # .env faylidan o'qiladi
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-only-for-local-testing-change-this')
 DEBUG = config_bool('DEBUG', default=True)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='13.39.83.160,localhost,127.0.0.1', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='crm.e-exclusive.uz,3.208.22.250,localhost,127.0.0.1', cast=Csv())
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='https://crm.e-exclusive.uz,http://crm.e-exclusive.uz,http://3.208.22.250', cast=Csv())
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
 
 # Development uchun async ORM ruxsat berish
 if DEBUG:

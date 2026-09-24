@@ -7,10 +7,10 @@ from .base import *
 DEBUG = False
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
-# HTTPS settings
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# HTTPS settings (can be enabled via .env when SSL is configured)
+SECURE_SSL_REDIRECT = config_bool('SECURE_SSL_REDIRECT', default=False)
+SESSION_COOKIE_SECURE = config_bool('SESSION_COOKIE_SECURE', default=False)
+CSRF_COOKIE_SECURE = config_bool('CSRF_COOKIE_SECURE', default=False)
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
