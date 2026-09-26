@@ -168,26 +168,36 @@
         <!-- RIGHT SECTION: Voronka + Bugungi darslar Widgets (4 cols) -->
         <div class="lg:col-span-4 space-y-6">
 
-            <!-- Card 1: Voronka (shu oy) -->
+            <!-- Card 1: Kassalar Balansi -->
             <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xs font-bold text-[var(--text-main)]">CRM Voronka</h3>
-                    <span class="text-[11px] text-[var(--text-muted)]">shu oy</span>
+                    <h3 class="text-xs font-bold text-[var(--text-main)]">Kassalar Balansi</h3>
+                    <a href="{% url 'finance:account_list' %}" class="text-[11px] text-[var(--primary)] hover:underline">Barchasi</a>
                 </div>
 
-                <div class="space-y-3.5 text-xs">
-                    {% for stage in lead_stages %}
-                    <div>
-                        <div class="flex items-center justify-between text-[var(--text-second)] mb-1 font-medium">
-                            <span>{{ stage.name }}</span>
-                            <span class="font-bold text-[var(--text-main)]">{{ stage.count }}</span>
+                <div class="space-y-3 text-xs">
+                    {% for acc in accounts %}
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-[var(--bg-hover)] border border-[var(--border-color)]">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-7 h-7 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-second)] shrink-0">
+                                {% if acc.account_type == 'cash' %}
+                                <i class="ph ph-money text-sm"></i>
+                                {% elif acc.account_type == 'bank' %}
+                                <i class="ph ph-bank text-sm"></i>
+                                {% elif acc.account_type == 'card' %}
+                                <i class="ph ph-credit-card text-sm"></i>
+                                {% else %}
+                                <i class="ph ph-wallet text-sm"></i>
+                                {% endif %}
+                            </div>
+                            <span class="font-medium text-[var(--text-main)] truncate">{{ acc.name }}</span>
                         </div>
-                        <div class="w-full bg-[var(--bg-hover)] h-1.5 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full transition-all duration-300" style="width: {{ stage.percent }}%; background-color: {{ stage.color }};"></div>
-                        </div>
+                        <span class="font-bold tabular-nums shrink-0 ml-2 {% if acc.balance >= 0 %}text-[var(--money)]{% else %}text-[var(--danger)]{% endif %}">
+                            {{ acc.balance|intcomma }} so'm
+                        </span>
                     </div>
                     {% empty %}
-                    <p class="text-xs text-[var(--text-muted)] py-4 text-center">Voronka bosqichlari mavjud emas</p>
+                    <p class="text-xs text-[var(--text-muted)] py-4 text-center">Kassalar mavjud emas</p>
                     {% endfor %}
                 </div>
             </div>

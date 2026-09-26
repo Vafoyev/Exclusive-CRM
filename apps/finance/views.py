@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 @permission_required('finance', 'view')
 def kassa_dashboard(request):
     """Moliya / Kassa Dashboard View - Dinamik real ma'lumotlar bilan"""
-    from apps.crm.models import Stage, Lead
     from apps.operations.models import Lesson
 
     org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
@@ -112,33 +111,11 @@ def kassa_dashboard(request):
 
     recent_payments_total = sum(p['amount'] for p in recent_payments if p['status'] == 'confirmed')
 
-    # 6. Voronka (shu oy)
-    stages_qs = Stage.objects.filter(is_deleted=False)
+    # 6. Kassalar balansi
+    accounts_qs = Account.objects.filter(is_deleted=False)
     if org:
-        stages_qs = stages_qs.filter(organization=org)
-    stages_list = list(stages_qs.order_by('order'))
-
-    lead_stages = []
-    max_leads_count = 1
-    for stage in stages_list:
-        l_qs = Lead.objects.filter(
-            stage=stage,
-            is_deleted=False,
-            created_at__date__gte=start_of_month
-        )
-        if org:
-            l_qs = l_qs.filter(organization=org)
-        c = l_qs.count()
-        if c > max_leads_count:
-            max_leads_count = c
-        lead_stages.append({
-            'name': stage.name,
-            'count': c,
-            'color': stage.color or '#3B82F6',
-        })
-
-    for s in lead_stages:
-        s['percent'] = min(100, max(5, int((s['count'] / max_leads_count) * 100))) if max_leads_count > 0 else 0
+        accounts_qs = accounts_qs.filter(organization=org)
+    accounts_list = list(accounts_qs.order_by('name'))
 
     context = {
         'today_income': today_income,
@@ -151,7 +128,7 @@ def kassa_dashboard(request):
         'today_finished_lessons_count': today_finished_lessons_count,
         'recent_payments': recent_payments,
         'recent_payments_total': recent_payments_total,
-        'lead_stages': lead_stages,
+        'accounts': accounts_list,
         'today_lessons': today_lessons,
     }
 

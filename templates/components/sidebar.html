@@ -33,21 +33,6 @@
 {% endif %}
 {% endif %}
 
-<!-- CRM -->
-{% if full_access or 'crm' in user_modules %}
-<div class="pt-4 pb-1 px-3">
-    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Sotuv & CRM</p>
-</div>
-
-<a href="{% url 'crm:pipeline' %}" @click="closeSidebar && closeSidebar()"
-   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'crm' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
-    <div class="flex items-center gap-2.5">
-        <i class="ph-fill ph-funnel text-base"></i>
-        <span>Lidlar / CRM</span>
-    </div>
-    <span class="text-[10px] font-mono text-[var(--text-muted)]">{{ sidebar_leads_count|default:0 }}</span>
-</a>
-{% endif %}
 
 <!-- EDUCATION -->
 {% if full_access or 'education' in user_modules or request.user.role == 'teacher' %}
