@@ -138,13 +138,19 @@ def export_to_excel(data, columns, filename, title=None, sheet_name="Ma'lumotlar
     # Freeze header
     ws.freeze_panes = f'A{3 if title else 2}'
 
-    # Response
+    # Response via BytesIO buffer
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    content = output.getvalue()
+
     response = HttpResponse(
+        content,
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     response['Content-Disposition'] = f'attachment; filename="{filename}.xlsx"'
+    response['Content-Length'] = len(content)
 
-    wb.save(response)
     return response
 
 
@@ -306,8 +312,10 @@ def export_to_pdf(data, columns, filename, title=None, subtitle=None, landscape_
 
     # Response
     buffer.seek(0)
-    response = HttpResponse(buffer.read(), content_type='application/pdf')
+    content = buffer.getvalue()
+    response = HttpResponse(content, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{filename}.pdf"'
+    response['Content-Length'] = len(content)
 
     return response
 

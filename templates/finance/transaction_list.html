@@ -124,10 +124,14 @@
             <!-- Export tugmalari -->
             <div class="flex gap-2 sm:ml-auto">
                 <a href="{% url 'finance:export_transactions_excel' %}?{{ request.GET.urlencode }}"
+                   hx-boost="false"
+                   download
                    class="px-3 py-2 rounded-xl text-xs font-medium transition bg-emerald-600/90 hover:bg-emerald-600 text-white flex items-center gap-1.5 shadow-sm">
                     <i class="ph ph-file-xls text-sm"></i> Excel
                 </a>
                 <a href="{% url 'finance:export_transactions_pdf' %}?{{ request.GET.urlencode }}"
+                   hx-boost="false"
+                   download
                    class="px-3 py-2 rounded-xl text-xs font-medium transition bg-rose-600/90 hover:bg-rose-600 text-white flex items-center gap-1.5 shadow-sm">
                     <i class="ph ph-file-pdf text-sm"></i> PDF
                 </a>

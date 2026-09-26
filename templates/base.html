@@ -32,6 +32,18 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"
             integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
             crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.addEventListener('htmx:configRequest', function(evt) {
+                var path = evt.detail.path || '';
+                var elt = evt.detail.elt;
+                if ((elt && (elt.hasAttribute('download') || elt.getAttribute('hx-boost') === 'false')) || path.indexOf('/export/') !== -1) {
+                    evt.preventDefault();
+                    window.location.href = path;
+                }
+            });
+        });
+    </script>
 
     <!-- CUSTOM PREMIUM CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">

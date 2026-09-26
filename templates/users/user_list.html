@@ -113,6 +113,8 @@
             {% has_permission 'users' 'export_excel' as can_export_excel %}
             {% if can_export_excel %}
             <a href="{% url 'users:export_users_excel' %}?{{ request.GET.urlencode }}"
+                hx-boost="false"
+                download
                 class="px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition flex items-center gap-2">
                 <i class="ph ph-file-xls"></i> Excel
             </a>
@@ -120,6 +122,8 @@
             {% has_permission 'users' 'export_pdf' as can_export_pdf %}
             {% if can_export_pdf %}
             <a href="{% url 'users:export_users_pdf' %}?{{ request.GET.urlencode }}"
+                hx-boost="false"
+                download
                 class="px-4 py-2.5 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition flex items-center gap-2">
                 <i class="ph ph-file-pdf"></i> PDF
             </a>
