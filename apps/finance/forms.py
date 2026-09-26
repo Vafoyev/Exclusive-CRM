@@ -49,21 +49,25 @@ class TransactionForm(forms.ModelForm):
         transaction_type = kwargs.pop('transaction_type', None)
         super().__init__(*args, **kwargs)
 
+        if organization:
+            from .services import ensure_default_finance_data
+            ensure_default_finance_data(organization)
+
         self.fields['category'].required = False
         self.fields['category'].empty_label = "- Tanlang (ixtiyoriy) -"
         self.fields['description'].required = False
 
+        acc_qs = Account.objects.filter(is_deleted=False)
         if organization:
-            self.fields['account'].queryset = Account.objects.filter(
-                organization=organization, is_deleted=False
-            )
+            acc_qs = acc_qs.filter(organization=organization)
+        self.fields['account'].queryset = acc_qs
 
-            if transaction_type:
-                self.fields['category'].queryset = TransactionCategory.objects.filter(
-                    organization=organization,
-                    transaction_type=transaction_type,
-                    is_deleted=False
-                )
+        cat_qs = TransactionCategory.objects.filter(is_deleted=False)
+        if organization:
+            cat_qs = cat_qs.filter(organization=organization)
+        if transaction_type:
+            cat_qs = cat_qs.filter(transaction_type=transaction_type)
+        self.fields['category'].queryset = cat_qs
 
         if not self.fields['category'].queryset.exists():
             self.fields['category'].help_text = "Hozircha kategoriya yo'q (ixtiyoriy)."
@@ -85,13 +89,48 @@ class StudentPaymentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         organization = kwargs.pop('organization', None)
         super().__init__(*args, **kwargs)
+
         if organization:
-            self.fields['account'].queryset = Account.objects.filter(organization=organization, is_deleted=False)
-            self.fields['category'].queryset = TransactionCategory.objects.filter(organization=organization, transaction_type='income', is_deleted=False)
+            from .services import ensure_default_finance_data
+            ensure_default_finance_data(organization)
+
+        # 1. Kassalar
+        acc_qs = Account.objects.filter(is_deleted=False)
+        if organization:
+            acc_qs = acc_qs.filter(organization=organization)
+        if not acc_qs.exists() and organization:
+            Account.objects.create(organization=organization, name="Asosiy Kassa (Naqd)", account_type='cash', balance=0)
+            acc_qs = Account.objects.filter(organization=organization, is_deleted=False)
+
+        self.fields['account'].queryset = acc_qs
+        if acc_qs.exists():
+            first_acc = acc_qs.first()
+            self.fields['account'].initial = first_acc.pk
+
+        # 2. To'lov turi (Kategoriya)
+        cat_qs = TransactionCategory.objects.filter(is_deleted=False, transaction_type='income')
+        if organization:
+            cat_qs = cat_qs.filter(organization=organization)
+        if not cat_qs.exists() and organization:
+            TransactionCategory.objects.create(organization=organization, name="Kurs to'lovi", transaction_type='income')
+            cat_qs = TransactionCategory.objects.filter(organization=organization, is_deleted=False, transaction_type='income')
+
+        self.fields['category'].queryset = cat_qs
+        self.fields['category'].required = False
+        self.fields['category'].empty_label = "- To'lov turi (ixtiyoriy) -"
+        if cat_qs.exists():
+            self.fields['category'].initial = cat_qs.first().pk
 
         self.fields['receipt_image'].required = False
         self.fields['receipt_file'].required = False
         self.fields['description'].required = False
+        self.fields['payment_method'].initial = 'cash'
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if not amount or amount <= 0:
+            raise forms.ValidationError("Summa 0 dan katta bo'lishi kerak!")
+        return amount
 
 
 class AdminCashTransactionForm(forms.ModelForm):

@@ -283,21 +283,32 @@ def student_payments(request, student_id):
 @permission_required('finance', 'create')
 def add_student_payment(request, student_id):
     from .forms import StudentPaymentForm
+    from .services import confirm_transaction as confirm_service
     student = get_object_or_404(User, pk=student_id)
+    org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None) or getattr(student, 'organization', None)
+
     if request.method == 'POST':
-        form = StudentPaymentForm(request.POST, request.FILES, organization=request.organization)
+        form = StudentPaymentForm(request.POST, request.FILES, organization=org)
         if form.is_valid():
-            t = form.save(commit=False)
-            t.organization = request.organization
-            t.student = student
-            t.transaction_type = 'income'
-            t.created_by = request.user
-            t.status = 'pending'
-            t.save()
-            messages.success(request, "To'lov qabul qilindi")
-            return redirect('finance:student_payments', student_id=student.id)
+            try:
+                with transaction.atomic():
+                    t = form.save(commit=False)
+                    t.organization = org
+                    t.student = student
+                    t.transaction_type = 'income'
+                    t.created_by = request.user
+                    t.status = 'pending'
+                    t.save()
+                    confirm_service(t.id, request.user)
+
+                messages.success(request, f"To'lov qabul qilindi: {t.amount:,.0f} UZS ({t.get_payment_method_display()})")
+                return redirect('finance:student_payments', student_id=student.id)
+            except Exception as e:
+                form.add_error(None, f"Xatolik: {e}")
+        else:
+            messages.error(request, "Iltimos, kiritilgan ma'lumotlarni tekshiring.")
     else:
-        form = StudentPaymentForm(organization=request.organization)
+        form = StudentPaymentForm(organization=org)
     return render(request, 'finance/student_payment_form.html', {'form': form, 'student': student})
 
 @login_required

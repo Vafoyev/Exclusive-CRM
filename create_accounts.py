@@ -131,6 +131,11 @@ for admin_username in ['admin', 'exclusive_admin']:
     u_admin.user_permissions.set(all_perms)
     print(f"3. [OK] {admin_username} -> Parol: SalomDunyo1 (Administrator - Barcha vazifalar va ruxsatlar bilan)")
 
+# 4. Standart Kassalar va Kategoriyalarni yaratish
+from apps.finance.services import ensure_default_finance_data
+ensure_default_finance_data(org)
+print("4. [OK] Standart kassalar (Asosiy kassa, Bank, Karta) va kategoriyalar (Kurs to'lovi...) yaratildi!")
+
 print("==========================================================")
-print("  Barcha hisoblar va ruxsatlar 100% tayyor!               ")
+print("  Barcha hisoblar, kassalar va ruxsatlar 100% tayyor!      ")
 print("==========================================================")

@@ -33,6 +33,68 @@ MONTHLY_FEE_RUN_STATUS_FIELDS = [
 ]
 
 
+def ensure_default_finance_data(org):
+    """
+    Tashkilot uchun standart kassa va to'lov kategoriyalarini yaratish
+    (agar ular mavjud bo'lmasa).
+    """
+    if not org:
+        return
+
+    # 1. Standart kassalar
+    if not Account.objects.filter(organization=org, is_deleted=False).exists():
+        Account.objects.create(
+            organization=org,
+            name="Asosiy Kassa (Naqd)",
+            account_type='cash',
+            balance=Decimal('0.00'),
+        )
+        Account.objects.create(
+            organization=org,
+            name="Bank Hisob Raqami",
+            account_type='bank',
+            balance=Decimal('0.00'),
+        )
+        Account.objects.create(
+            organization=org,
+            name="Karta / Click",
+            account_type='card',
+            balance=Decimal('0.00'),
+        )
+
+    # 2. Standart kirim kategoriyalari
+    default_income_categories = [
+        "Kurs to'lovi",
+        "O'quv qo'llanmalar",
+        "Boshqa kirim",
+    ]
+    for cat_name in default_income_categories:
+        TransactionCategory.objects.get_or_create(
+            organization=org,
+            name=cat_name,
+            transaction_type='income',
+            is_deleted=False,
+        )
+
+    # 3. Standart chiqim kategoriyalari
+    default_expense_categories = [
+        "Arenda / Bino ijarasi",
+        "O'qituvchilar oyligi",
+        "Xodimlar oyligi",
+        "Marketing va reklama",
+        "Kantselyariya va jihozlar",
+        "Kommunal to'lovlar",
+        "Boshqa chiqim",
+    ]
+    for cat_name in default_expense_categories:
+        TransactionCategory.objects.get_or_create(
+            organization=org,
+            name=cat_name,
+            transaction_type='expense',
+            is_deleted=False,
+        )
+
+
 def calculate_price_with_bonus(base_price, student):
     """
     Kurs narxidan bonusni ayirib, yakuniy narxni qaytaradi.
