@@ -304,13 +304,4 @@
     </div>
 </a>
 
-{% if request.user.role == 'super_admin' %}
-<a href="{% url 'core:backup_center' %}" @click="closeSidebar && closeSidebar()"
-   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'backup-center' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
-    <div class="flex items-center gap-2.5">
-        <i class="ph-fill ph-database text-base"></i>
-        <span>Backup Center</span>
-    </div>
-</a>
-{% endif %}
 {% endif %}

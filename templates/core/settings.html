@@ -256,32 +256,7 @@
         </div>
         {% endif %}
 
-        {% if request.user.role == 'super_admin' %}
-        <!-- Backup Center -->
-        <div class="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-5 sm:p-6 hover:border-[var(--border-hover)] shadow-sm transition">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-11 h-11 rounded-xl bg-slate-500/15 text-slate-300 flex items-center justify-center">
-                    <i class="ph-bold ph-database text-2xl"></i>
-                </div>
-                <span class="px-2.5 py-0.5 bg-slate-500/15 text-slate-300 text-[10px] font-bold rounded-full">
-                    Super Admin
-                </span>
-            </div>
-            <h3 class="text-base font-bold text-[var(--text-main)] mb-1">Backup Center</h3>
-            <p class="text-xs text-[var(--text-muted)] mb-4">
-                Ma'lumotlar bazasi zaxira nusxalari va avtomatik backup
-            </p>
-            <div class="space-y-2">
-                <a href="{% url 'core:backup_center' %}"
-                    class="flex items-center justify-between px-3.5 py-2.5 bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-xl hover:border-[var(--border-hover)] transition">
-                    <span class="text-xs sm:text-sm font-medium text-[var(--text-main)] flex items-center gap-2">
-                        <i class="ph ph-database text-cyan-400 text-base"></i> Backup boshqaruvi
-                    </span>
-                    <i class="ph ph-caret-right text-[var(--text-muted)] text-sm"></i>
-                </a>
-            </div>
-        </div>
-        {% endif %}
+
 
     </div>
 
