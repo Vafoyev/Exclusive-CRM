@@ -107,6 +107,7 @@ TEMPLATES = [
                 'apps.core.context_processors.tenant_context',
                 'apps.core.context_processors.user_permissions_context',
                 'apps.core.context_processors.notifications_context',
+                'apps.core.context_processors.sidebar_stats_context',
             ],
         },
     },

@@ -130,11 +130,11 @@
                 <div class="flex items-center gap-3 p-2 rounded-xl bg-[var(--bg-hover)] border border-[var(--border-color)]">
                     <div
                         class="w-9 h-9 rounded-lg overflow-hidden bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] flex items-center justify-center font-bold text-xs">
-                        {{ request.user.initials|default:"DV" }}
+                        {% if request.user.first_name %}{{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}{% else %}{{ request.user.phone|slice:":2"|upper }}{% endif %}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs font-semibold truncate text-[var(--text-main)]">{{ request.user.first_name|default:"Dilnoza" }} {{ request.user.last_name|default:"V." }}</p>
-                        <p class="text-[10px] truncate text-[var(--text-muted)] font-medium">{{ request.user.get_role_display|default:"Kassir" }}</p>
+                        <p class="text-xs font-semibold truncate text-[var(--text-main)]">{{ request.user.get_full_name|default:request.user.phone }}</p>
+                        <p class="text-[10px] truncate text-[var(--text-muted)] font-medium">{{ request.user.get_role_display|default:request.user.role|default:"Xodim" }}</p>
                     </div>
                     <a href="{% url 'logout' %}" hx-boost="false"
                         class="transition p-1.5 rounded-lg text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10">

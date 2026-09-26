@@ -19,9 +19,142 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
+@permission_required('finance', 'view')
 def kassa_dashboard(request):
-    """Moliya / Kassa Dashboard View"""
-    return render(request, 'finance/kassa.html')
+    """Moliya / Kassa Dashboard View - Dinamik real ma'lumotlar bilan"""
+    from apps.crm.models import Stage, Lead
+    from apps.operations.models import Lesson
+
+    org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
+    today = timezone.now().date()
+    yesterday = today - timedelta(days=1)
+    start_of_month = today.replace(day=1)
+
+    # 1. Bugungi va kechagi tushum
+    tx_qs = Transaction.objects.filter(is_deleted=False)
+    if org:
+        tx_qs = tx_qs.filter(organization=org)
+
+    today_income = tx_qs.filter(
+        transaction_type__in=['income', 'monthly_fee'],
+        status='confirmed',
+        created_at__date=today
+    ).aggregate(s=Sum('amount'))['s'] or 0
+
+    yesterday_income = tx_qs.filter(
+        transaction_type__in=['income', 'monthly_fee'],
+        status='confirmed',
+        created_at__date=yesterday
+    ).aggregate(s=Sum('amount'))['s'] or 0
+
+    # 2. Qarzdorlik
+    students_qs = User.objects.filter(role='student', is_deleted=False)
+    if org:
+        students_qs = students_qs.filter(organization=org)
+
+    debt_agg = students_qs.filter(balance__lt=0).aggregate(
+        total=Sum('balance'),
+        count=Count('id')
+    )
+    total_debt = abs(debt_agg['total'] or 0)
+    debtors_count = debt_agg['count'] or 0
+
+    # 3. Faol o'quvchilar va yangi qo'shilganlar
+    active_students_count = students_qs.filter(is_active=True).count()
+    new_students_this_month = students_qs.filter(date_joined__date__gte=start_of_month).count()
+
+    # 4. Bugungi darslar
+    lessons_qs = Lesson.objects.filter(date=today, is_deleted=False)
+    if org:
+        lessons_qs = lessons_qs.filter(organization=org)
+
+    today_lessons = list(lessons_qs.select_related('group', 'teacher', 'room').order_by('start_time'))
+    today_lessons_count = len(today_lessons)
+    today_finished_lessons_count = sum(1 for l in today_lessons if l.status == 'finished')
+
+    # 5. So'nggi to'lovlar (oxirgi 25 ta)
+    recent_payments_qs = tx_qs.filter(
+        transaction_type__in=['income', 'monthly_fee']
+    ).select_related('student', 'account', 'category').prefetch_related(
+        'student__enrolled_groups__group'
+    ).order_by('-created_at')[:25]
+
+    recent_payments = []
+    for tx in recent_payments_qs:
+        group_name = "-"
+        if tx.student:
+            active_enrollment = tx.student.enrolled_groups.filter(status='active').first()
+            if active_enrollment and active_enrollment.group:
+                group_name = active_enrollment.group.name
+        if group_name == "-" and tx.category:
+            group_name = tx.category.name
+
+        student_name = ""
+        student_initials = "TL"
+        if tx.student:
+            student_name = tx.student.get_full_name() or tx.student.phone
+            f_init = tx.student.first_name[:1].upper() if tx.student.first_name else ""
+            l_init = tx.student.last_name[:1].upper() if tx.student.last_name else ""
+            student_initials = (f_init + l_init) or tx.student.phone[:2].upper()
+        else:
+            student_name = tx.description or "Noma'lum"
+
+        recent_payments.append({
+            'transaction': tx,
+            'student_name': student_name,
+            'student_initials': student_initials,
+            'group_name': group_name,
+            'status': tx.status,
+            'amount': tx.amount,
+            'created_at': tx.created_at,
+        })
+
+    recent_payments_total = sum(p['amount'] for p in recent_payments if p['status'] == 'confirmed')
+
+    # 6. Voronka (shu oy)
+    stages_qs = Stage.objects.filter(is_deleted=False)
+    if org:
+        stages_qs = stages_qs.filter(organization=org)
+    stages_list = list(stages_qs.order_by('order'))
+
+    lead_stages = []
+    max_leads_count = 1
+    for stage in stages_list:
+        l_qs = Lead.objects.filter(
+            stage=stage,
+            is_deleted=False,
+            created_at__date__gte=start_of_month
+        )
+        if org:
+            l_qs = l_qs.filter(organization=org)
+        c = l_qs.count()
+        if c > max_leads_count:
+            max_leads_count = c
+        lead_stages.append({
+            'name': stage.name,
+            'count': c,
+            'color': stage.color or '#3B82F6',
+        })
+
+    for s in lead_stages:
+        s['percent'] = min(100, max(5, int((s['count'] / max_leads_count) * 100))) if max_leads_count > 0 else 0
+
+    context = {
+        'today_income': today_income,
+        'yesterday_income': yesterday_income,
+        'total_debt': total_debt,
+        'debtors_count': debtors_count,
+        'active_students_count': active_students_count,
+        'new_students_this_month': new_students_this_month,
+        'today_lessons_count': today_lessons_count,
+        'today_finished_lessons_count': today_finished_lessons_count,
+        'recent_payments': recent_payments,
+        'recent_payments_total': recent_payments_total,
+        'lead_stages': lead_stages,
+        'today_lessons': today_lessons,
+    }
+
+    return render(request, 'finance/kassa.html', context)
 
 
 

@@ -19,7 +19,7 @@
         <i class="ph-fill ph-users text-base"></i>
         <span>Foydalanuvchilar</span>
     </div>
-    <span class="text-[10px] font-mono text-[var(--text-muted)]">412</span>
+    <span class="text-[10px] font-mono text-[var(--text-muted)]">{{ sidebar_users_count|default:0 }}</span>
 </a>
 
 {% if full_access or 'automation' in user_modules %}
@@ -45,7 +45,7 @@
         <i class="ph-fill ph-funnel text-base"></i>
         <span>Lidlar / CRM</span>
     </div>
-    <span class="text-[10px] font-mono text-[var(--text-muted)]">14</span>
+    <span class="text-[10px] font-mono text-[var(--text-muted)]">{{ sidebar_leads_count|default:0 }}</span>
 </a>
 {% endif %}
 
@@ -61,7 +61,7 @@
         <i class="ph-fill ph-users-three text-base"></i>
         <span>Guruhlar</span>
     </div>
-    <span class="text-[10px] font-mono text-[var(--text-muted)]">28</span>
+    <span class="text-[10px] font-mono text-[var(--text-muted)]">{{ sidebar_groups_count|default:0 }}</span>
 </a>
 
 <a href="{% url 'course_list' %}" @click="closeSidebar && closeSidebar()"
@@ -251,7 +251,7 @@
         <i class="ph-fill ph-currency-dollar-simple text-base"></i>
         <span>Qarzdorlik</span>
     </div>
-    <span class="text-[10px] font-mono text-[var(--text-muted)]">23</span>
+    <span class="text-[10px] font-mono text-[var(--text-muted)]">{{ sidebar_debtors_count|default:0 }}</span>
 </a>
 
 <a href="{% url 'finance:account_list' %}" @click="closeSidebar && closeSidebar()"

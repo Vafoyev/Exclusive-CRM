@@ -136,3 +136,50 @@ def notifications_context(request):
             'notifications': [],
             'unread_notifications_count': 0
         }
+
+
+def sidebar_stats_context(request):
+    """
+    Sidebar menyusi uchun dinamik real statistik ko'rsatkichlar.
+    """
+    if not request.user.is_authenticated:
+        return {}
+
+    org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
+    org_id = org.pk if org else 'all'
+    cache_key = f"core:sidebar_stats:{org_id}"
+    cached_stats = cache.get(cache_key)
+    if cached_stats is not None:
+        return cached_stats
+
+    try:
+        from apps.users.models import User
+        from apps.crm.models import Lead
+        from apps.education.models import Group
+
+        users_qs = User.objects.filter(is_deleted=False)
+        leads_qs = Lead.objects.filter(is_deleted=False)
+        groups_qs = Group.objects.filter(is_deleted=False)
+        debtors_qs = User.objects.filter(role='student', balance__lt=0, is_deleted=False)
+
+        if org:
+            users_qs = users_qs.filter(organization=org)
+            leads_qs = leads_qs.filter(organization=org)
+            groups_qs = groups_qs.filter(organization=org)
+            debtors_qs = debtors_qs.filter(organization=org)
+
+        stats = {
+            'sidebar_users_count': users_qs.count(),
+            'sidebar_leads_count': leads_qs.count(),
+            'sidebar_groups_count': groups_qs.count(),
+            'sidebar_debtors_count': debtors_qs.count(),
+        }
+        cache.set(cache_key, stats, 60)
+        return stats
+    except Exception:
+        return {
+            'sidebar_users_count': 0,
+            'sidebar_leads_count': 0,
+            'sidebar_groups_count': 0,
+            'sidebar_debtors_count': 0,
+        }
