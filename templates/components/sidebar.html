@@ -82,28 +82,7 @@
 </a>
 {% endif %}
 
-<!-- RATINGS & SHOP -->
-<div class="pt-4 pb-1 px-3">
-    <p class="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Reytinglar & Do'kon</p>
-</div>
 
-<a href="{% url 'operations:teacher_ratings' %}" @click="closeSidebar && closeSidebar()"
-   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'ratings' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
-    <div class="flex items-center gap-2.5">
-        <i class="ph-fill ph-trophy text-base"></i>
-        <span>Reytinglar</span>
-    </div>
-</a>
-
-{% if request.user.role in 'super_admin,owner,admin' %}
-<a href="{% url 'operations:shop' %}" @click="closeSidebar && closeSidebar()"
-   class="sidebar-link flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition {% if 'shop' in request.path %}bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]{% endif %}">
-    <div class="flex items-center gap-2.5">
-        <i class="ph-fill ph-storefront text-base"></i>
-        <span>Do'kon</span>
-    </div>
-</a>
-{% endif %}
 
 <!-- TO'LOV (O'quvchi va Ota-ona uchun) -->
 {% if request.user.role == 'student' or request.user.role == 'parent' %}
