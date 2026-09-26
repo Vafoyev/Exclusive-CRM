@@ -27,7 +27,7 @@
                 <i class="ph ph-clock-counter-clockwise mr-1"></i> Xaridlar tarixi
             </a>
             {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' %}
-            <a href="{% url 'operations:shop_item_list' %}" class="px-4 py-2.5 bg-gradient-to-r from-[#818CF8] to-violet-600 text-slate-800 rounded-xl">
+            <a href="{% url 'operations:shop_item_list' %}" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium shadow-sm transition">
                 <i class="ph ph-gear mr-1"></i> Boshqarish
             </a>
             {% endif %}

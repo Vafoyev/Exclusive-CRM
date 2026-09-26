@@ -18,7 +18,7 @@
             </a>
             {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' or request.user.role == 'teacher' %}
             <a href="{% url 'operations:lesson_add' %}"
-                class="px-4 py-2.5 bg-gradient-to-r from-[#818CF8] to-violet-600 text-slate-800 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition flex items-center gap-2 font-medium">
+                class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition flex items-center gap-2 font-medium shadow-sm">
                 <i class="ph ph-plus"></i> Yangi dars
             </a>
             {% endif %}
