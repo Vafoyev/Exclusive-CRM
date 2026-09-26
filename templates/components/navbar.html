@@ -106,12 +106,7 @@
             <i class="ph ph-gear text-base"></i>
         </a>
 
-        <!-- Admin Panel -->
-        {% if request.user.role == 'super_admin' or request.user.is_superuser %}
-        <a href="/admin/" class="p-2 text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)] rounded-lg border border-[var(--border-color)] transition text-sm" title="Admin Panel">
-            <i class="ph ph-arrow-square-out text-base"></i>
-        </a>
-        {% endif %}
+
 
         <!-- Primary CTA: + To'lov qabul qilish -->
         <a href="{% url 'finance:add_income' %}"
