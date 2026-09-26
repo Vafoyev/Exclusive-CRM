@@ -9,52 +9,52 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-slate-800">Kassalar va Hisoblar 💰</h1>
-            <p class="text-slate-400">Tashkilot kassalari va hisob raqamlari</p>
+            <h1 class="text-2xl font-bold text-[var(--text-main)]">Kassalar va Hisoblar 💰</h1>
+            <p class="text-[var(--text-muted)] text-sm">Tashkilot kassalari va hisob raqamlari</p>
         </div>
         {% has_permission 'finance' 'create' as can_create_account %}
         {% if can_create_account %}
         <a href="{% url 'finance:account_create' %}"
-            class="px-4 py-2 bg-gradient-to-r from-[#818CF8] to-violet-600 text-slate-800 rounded-lg hover:shadow-lg hover:shadow-indigo-500/25 transition flex items-center gap-2">
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition flex items-center gap-2 shadow-sm">
             <i class="ph ph-plus"></i> Yangi kassa
         </a>
         {% endif %}
     </div>
 
     <!-- Total Balance -->
-    <div class="bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl p-8 text-slate-800">
-        <p class="text-emerald-100 text-sm">Jami balans</p>
-        <p class="text-4xl font-bold mt-2">{{ total_balance|floatformat:0 }} <span class="text-xl font-normal text-emerald-200">UZS</span></p>
+    <div class="bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl p-6 sm:p-8 text-white shadow-sm">
+        <p class="text-emerald-100 text-sm font-medium">Jami balans</p>
+        <p class="text-3xl sm:text-4xl font-bold mt-2 text-white">{{ total_balance|floatformat:0 }} <span class="text-xl font-normal text-emerald-200">UZS</span></p>
     </div>
 
     <!-- Accounts Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for account in accounts %}
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 hover:border-primary-300 transition">
+        <div class="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 hover:border-[var(--border-hover)] transition shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <div class="p-3 rounded-xl
-                    {% if account.account_type == 'cash' %}bg-emerald-500/20 text-emerald-600
-                    {% elif account.account_type == 'bank' %}bg-[#4F46E5]/15 text-[#64748B]
-                    {% elif account.account_type == 'card' %}bg-purple-500/20 text-purple-400
-                    {% else %}bg-orange-500/20 text-orange-400{% endif %}">
+                    {% if account.account_type == 'cash' %}bg-emerald-500/15 text-emerald-400
+                    {% elif account.account_type == 'bank' %}bg-indigo-500/15 text-indigo-400
+                    {% elif account.account_type == 'card' %}bg-purple-500/15 text-purple-400
+                    {% else %}bg-amber-500/15 text-amber-400{% endif %}">
                     {% if account.account_type == 'cash' %}<i class="ph ph-money text-2xl"></i>
                     {% elif account.account_type == 'bank' %}<i class="ph ph-bank text-2xl"></i>
                     {% elif account.account_type == 'card' %}<i class="ph ph-credit-card text-2xl"></i>
                     {% else %}<i class="ph ph-wallet text-2xl"></i>{% endif %}
                 </div>
-                <span class="px-2 py-1 text-xs bg-slate-100 text-slate-400 rounded-full font-medium">
+                <span class="px-2.5 py-1 text-xs bg-[var(--bg-hover)] text-[var(--text-second)] border border-[var(--border-color)] rounded-full font-medium">
                     {{ account.get_account_type_display }}
                 </span>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-1">{{ account.name }}</h3>
-            <p class="text-2xl font-bold {% if account.balance < 0 %}text-rose-600{% else %}text-slate-800{% endif %}">
-                {{ account.balance|floatformat:0 }} <span class="text-sm font-normal text-slate-500">UZS</span>
+            <h3 class="text-lg font-bold text-[var(--text-main)] mb-1">{{ account.name }}</h3>
+            <p class="text-2xl font-bold {% if account.balance < 0 %}text-rose-400{% else %}text-[var(--text-main)]{% endif %}">
+                {{ account.balance|floatformat:0 }} <span class="text-sm font-normal text-[var(--text-muted)]">UZS</span>
             </p>
-            <div class="mt-4 pt-4 border-t border-slate-100 flex gap-2">
+            <div class="mt-4 pt-4 border-t border-[var(--border-color)] flex gap-2">
                 {% has_permission 'finance' 'edit' as can_edit_account %}
                 {% if can_edit_account %}
                 <a href="{% url 'finance:account_edit' account.pk %}"
-                    class="flex-1 py-2 text-center text-sm font-medium text-slate-600 bg-slate-50 rounded-lg hover:bg-slate-100 transition flex items-center justify-center gap-1">
+                    class="flex-1 py-2 text-center text-sm font-medium text-[var(--text-main)] bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-xl hover:border-[var(--border-hover)] transition flex items-center justify-center gap-1">
                     <i class="ph ph-pencil-simple"></i> Tahrirlash
                 </a>
                 {% endif %}
@@ -64,7 +64,7 @@
                     onsubmit="return confirm('Bu kassani o\'chirishni tasdiqlaysizmi?')">
                     {% csrf_token %}
                     <button type="submit"
-                        class="w-full py-2 text-center text-sm font-medium text-red-500 bg-red-50 rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-1">
+                        class="w-full py-2 text-center text-sm font-medium text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition flex items-center justify-center gap-1">
                         <i class="ph ph-trash"></i> O'chirish
                     </button>
                 </form>
@@ -72,10 +72,10 @@
             </div>
         </div>
         {% empty %}
-        <div class="col-span-3 rounded-2xl border border-slate-200 bg-white p-12 text-center">
-            <i class="ph ph-vault text-5xl text-slate-600 mb-4"></i>
-            <h3 class="text-lg font-bold text-slate-800 mb-2">Kassalar topilmadi</h3>
-            <p class="text-slate-500">Yangi kassa yaratish uchun tugmani bosing</p>
+        <div class="col-span-1 md:col-span-2 lg:col-span-3 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-12 text-center shadow-sm">
+            <i class="ph ph-vault text-5xl text-[var(--text-muted)] mb-4"></i>
+            <h3 class="text-lg font-bold text-[var(--text-main)] mb-2">Kassalar topilmadi</h3>
+            <p class="text-sm text-[var(--text-muted)]">Yangi kassa yaratish uchun tugmani bosing</p>
         </div>
         {% endfor %}
     </div>

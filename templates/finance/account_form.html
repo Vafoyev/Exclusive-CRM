@@ -7,64 +7,64 @@
 
     <!-- Header -->
     <div class="flex items-center gap-4">
-        <a href="{% url 'finance:account_list' %}" class="p-2.5 bg-slate-100 rounded-xl hover:bg-slate-200 text-slate-700 transition">
-            <i class="ph ph-arrow-left text-xl text-slate-700"></i>
+        <a href="{% url 'finance:account_list' %}" class="p-2.5 bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl hover:border-[var(--border-hover)] transition">
+            <i class="ph ph-arrow-left text-xl"></i>
         </a>
-        <h1 class="text-2xl font-bold text-slate-800">{{ title }}</h1>
+        <h1 class="text-2xl font-bold text-[var(--text-main)]">{{ title }}</h1>
     </div>
 
     <!-- Xatoliklar paneli -->
     {% if form.errors %}
-    <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm space-y-1.5 shadow-sm">
-        <div class="flex items-center gap-2 font-bold text-rose-800">
+    <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm space-y-1.5 shadow-sm">
+        <div class="flex items-center gap-2 font-bold">
             <i class="ph-fill ph-warning-circle text-lg"></i>
             <span>Iltimos, quyidagi xatoliklarni to'g'rilang:</span>
         </div>
         {% for error in form.non_field_errors %}
-        <p class="text-xs pl-6 text-rose-700 font-medium">• {{ error }}</p>
+        <p class="text-xs pl-6 font-medium">• {{ error }}</p>
         {% endfor %}
         {% for field in form %}
             {% for error in field.errors %}
-            <p class="text-xs pl-6 text-rose-700">• <strong>{{ field.label }}:</strong> {{ error }}</p>
+            <p class="text-xs pl-6">• <strong>{{ field.label }}:</strong> {{ error }}</p>
             {% endfor %}
         {% endfor %}
     </div>
     {% endif %}
 
     <!-- Form -->
-    <form method="POST" hx-boost="false" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5">
+    <form method="POST" hx-boost="false" class="bg-[var(--bg-card)] rounded-2xl shadow-sm border border-[var(--border-color)] p-6 space-y-5 [&_input]:w-full [&_input]:px-4 [&_input]:py-2.5 [&_input]:rounded-xl [&_input]:border [&_input]:border-[var(--border-color)] [&_input]:bg-[var(--bg-hover)] [&_input]:text-[var(--text-main)] [&_select]:w-full [&_select]:px-4 [&_select]:py-2.5 [&_select]:rounded-xl [&_select]:border [&_select]:border-[var(--border-color)] [&_select]:bg-[var(--bg-hover)] [&_select]:text-[var(--text-main)]">
         {% csrf_token %}
 
         <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Kassa nomi <span class="text-rose-500">*</span></label>
+            <label class="block text-xs font-bold uppercase tracking-wider text-[var(--text-second)] mb-1.5">Kassa nomi <span class="text-rose-500">*</span></label>
             {{ form.name }}
             {% if form.name.errors %}
-            <p class="text-xs text-rose-600 mt-1 font-medium">{{ form.name.errors.0 }}</p>
+            <p class="text-xs text-rose-400 mt-1 font-medium">{{ form.name.errors.0 }}</p>
             {% endif %}
         </div>
 
         <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Turi <span class="text-rose-500">*</span></label>
+            <label class="block text-xs font-bold uppercase tracking-wider text-[var(--text-second)] mb-1.5">Turi <span class="text-rose-500">*</span></label>
             {{ form.account_type }}
             {% if form.account_type.errors %}
-            <p class="text-xs text-rose-600 mt-1 font-medium">{{ form.account_type.errors.0 }}</p>
+            <p class="text-xs text-rose-400 mt-1 font-medium">{{ form.account_type.errors.0 }}</p>
             {% endif %}
         </div>
 
         <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Boshlang'ich Balans (UZS)</label>
+            <label class="block text-xs font-bold uppercase tracking-wider text-[var(--text-second)] mb-1.5">Boshlang'ich Balans (UZS)</label>
             {{ form.balance }}
             {% if form.balance.errors %}
-            <p class="text-xs text-rose-600 mt-1 font-medium">{{ form.balance.errors.0 }}</p>
+            <p class="text-xs text-rose-400 mt-1 font-medium">{{ form.balance.errors.0 }}</p>
             {% endif %}
         </div>
 
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border-color)]">
             <a href="{% url 'finance:account_list' %}"
-                class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition">
+                class="px-5 py-2.5 bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-second)] hover:text-[var(--text-main)] text-sm font-semibold rounded-xl hover:border-[var(--border-hover)] transition">
                 Bekor qilish
             </a>
-            <button type="submit" class="px-6 py-2.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm font-bold rounded-xl transition flex items-center gap-2 shadow-lg shadow-indigo-500/25">
+            <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl transition flex items-center gap-2 shadow-sm">
                 <i class="ph-bold ph-check text-base"></i>
                 <span>Saqlash</span>
             </button>
