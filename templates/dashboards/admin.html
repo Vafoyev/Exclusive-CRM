@@ -147,18 +147,18 @@
         {% endif %}
 
         <!-- Moliyaviy Grafik -->
-        <div class="glass-section p-5">
+        <div class="glass-section p-5 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)]">
             <div class="flex items-center justify-between mb-3">
-                <h3 class="text-base font-bold text-[#0F172A] flex items-center gap-2">
-                    <i class="ph-fill ph-chart-line text-emerald-600"></i> Moliyaviy O'sish
+                <h3 class="text-base font-bold text-[var(--text-main)] flex items-center gap-2">
+                    <i class="ph-fill ph-chart-bar text-emerald-500 text-lg"></i> Moliyaviy O'sish
                 </h3>
-                <div class="flex gap-1">
-                    <button onclick="loadChartData(7)"
-                        class="px-2 py-0.5 text-xs rounded-md text-[#94A3B8] hover:bg-[#E0E7FF] hover:text-[#4F46E5] transition">7K</button>
-                    <button onclick="loadChartData(30)"
-                        class="px-2 py-0.5 text-xs rounded-md bg-[#E0E7FF] text-[#64748B] font-bold">30K</button>
-                    <button onclick="loadChartData(90)"
-                        class="px-2 py-0.5 text-xs rounded-md text-[#94A3B8] hover:bg-[#E0E7FF] hover:text-[#4F46E5] transition">90K</button>
+                <div class="flex gap-1 bg-[var(--bg-hover)] p-1 rounded-xl border border-[var(--border-color)]">
+                    <button onclick="changeChartDays(7, this)"
+                        class="chart-day-btn px-2.5 py-1 text-xs rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] transition">7K</button>
+                    <button onclick="changeChartDays(30, this)"
+                        class="chart-day-btn px-2.5 py-1 text-xs rounded-lg bg-[var(--primary)] text-white font-bold transition">30K</button>
+                    <button onclick="changeChartDays(90, this)"
+                        class="chart-day-btn px-2.5 py-1 text-xs rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] transition">90K</button>
                 </div>
             </div>
             <div class="h-44">
@@ -311,30 +311,84 @@
 <script>
     let financeChart = null;
 
-    async function loadChartData(days = 30) {
-        const response = await fetch(`/api/chart-data/?days=${days}`);
-        const data = await response.json();
-        if (financeChart) financeChart.destroy();
-        const ctx = document.getElementById('financeChart').getContext('2d');
-        financeChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.labels,
-                datasets: [
-                    { label: 'Kirim', data: data.income, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
-                    { label: 'Chiqim', data: data.expense, borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.05)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                interaction: { intersect: false, mode: 'index' },
-                plugins: { legend: { position: 'top', labels: { usePointStyle: true, color: '#64748b', font: { size: 10 }, padding: 8 } } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9 } } },
-                    y: { grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { color: '#94a3b8', font: { size: 9 }, callback: v => v.toLocaleString('uz-UZ') } }
-                }
-            }
+    function changeChartDays(days, btn) {
+        document.querySelectorAll('.chart-day-btn').forEach(b => {
+            b.className = 'chart-day-btn px-2.5 py-1 text-xs rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] transition';
         });
+        if (btn) {
+            btn.className = 'chart-day-btn px-2.5 py-1 text-xs rounded-lg bg-[var(--primary)] text-white font-bold transition';
+        }
+        loadChartData(days);
+    }
+
+    async function loadChartData(days = 30) {
+        try {
+            const response = await fetch(`/api/chart-data/?days=${days}`);
+            const data = await response.json();
+            if (financeChart) financeChart.destroy();
+            const ctx = document.getElementById('financeChart').getContext('2d');
+            financeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: 'Kirim',
+                            data: data.income,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4,
+                            borderSkipped: false
+                        },
+                        {
+                            label: 'Chiqim',
+                            data: data.expense,
+                            backgroundColor: '#f43f5e',
+                            borderRadius: 4,
+                            borderSkipped: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                color: '#a1a1aa',
+                                font: { size: 10, weight: '500' },
+                                padding: 8
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + Number(context.raw || 0).toLocaleString('uz-UZ') + " so'm";
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#71717a', font: { size: 9 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.06)' },
+                            ticks: {
+                                color: '#71717a',
+                                font: { size: 9 },
+                                callback: v => Number(v).toLocaleString('uz-UZ')
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (err) {
+            console.error('Chart load error:', err);
+        }
     }
     document.addEventListener('DOMContentLoaded', () => loadChartData(30));
 </script>
