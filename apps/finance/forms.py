@@ -13,6 +13,16 @@ class AccountForm(forms.ModelForm):
             'balance': forms.NumberInput(attrs={'class': INPUT_CLASSES, 'placeholder': '0'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['balance'].required = False
+        if not self.instance.pk:
+            self.fields['balance'].initial = 0
+
+    def clean_balance(self):
+        val = self.cleaned_data.get('balance')
+        return val if val is not None else 0
+
 class CategoryForm(forms.ModelForm):
     """Kirim va chiqim kategoriyalari uchun form"""
     class Meta:
@@ -39,6 +49,10 @@ class TransactionForm(forms.ModelForm):
         transaction_type = kwargs.pop('transaction_type', None)
         super().__init__(*args, **kwargs)
 
+        self.fields['category'].required = False
+        self.fields['category'].empty_label = "- Tanlang (ixtiyoriy) -"
+        self.fields['description'].required = False
+
         if organization:
             self.fields['account'].queryset = Account.objects.filter(
                 organization=organization, is_deleted=False
@@ -51,9 +65,8 @@ class TransactionForm(forms.ModelForm):
                     is_deleted=False
                 )
 
-            # Agar kategoriya bo'lmasa, bo'sh ko'rsatmaslik uchun
-            if not self.fields['category'].queryset.exists():
-                self.fields['category'].help_text = "Diqqat: Hozircha kategoriya yo'q. Avval kategoriya qo'shing."
+        if not self.fields['category'].queryset.exists():
+            self.fields['category'].help_text = "Hozircha kategoriya yo'q (ixtiyoriy)."
 
 class StudentPaymentForm(forms.ModelForm):
     class Meta:
@@ -97,7 +110,11 @@ class AdminCashTransactionForm(forms.ModelForm):
         organization = kwargs.pop('organization', None)
         transaction_type = kwargs.pop('transaction_type', None)
         super().__init__(*args, **kwargs)
+        self.fields['category'].required = False
+        self.fields['category'].empty_label = "- Kategoriya tanlang (ixtiyoriy) -"
         self.fields['payment_method'].required = False
+        self.fields['payment_method'].initial = 'cash'
+        self.fields['description'].required = False
 
         if organization and transaction_type:
             self.fields['category'].queryset = TransactionCategory.objects.filter(
@@ -105,9 +122,20 @@ class AdminCashTransactionForm(forms.ModelForm):
                 transaction_type=transaction_type,
                 is_deleted=False
             )
+        elif transaction_type:
+            self.fields['category'].queryset = TransactionCategory.objects.filter(
+                transaction_type=transaction_type,
+                is_deleted=False
+            )
 
         if not self.fields['category'].queryset.exists():
-            self.fields['category'].help_text = "Diqqat: Hozircha kategoriya yo'q. Avval kategoriya qo'shing."
+            self.fields['category'].help_text = "Hozircha kategoriya yaratilmagan (ixtiyoriy)."
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if not amount or amount <= 0:
+            raise forms.ValidationError("Summa 0 dan katta bo'lishi kerak!")
+        return amount
 
     def clean_payment_method(self):
         return self.cleaned_data.get('payment_method') or 'cash'

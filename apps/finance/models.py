@@ -80,7 +80,7 @@ class Transaction(TenantAwareModel):
 
     # 1. Pul qayerga tushdi/chiqdi?
     account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name='transactions', verbose_name="Kassa")
-    category = models.ForeignKey(TransactionCategory, on_delete=models.SET_NULL, null=True, verbose_name="Kategoriya")
+    category = models.ForeignKey(TransactionCategory, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Kategoriya")
 
     # 2. Kim bilan bog'liq?
     student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments',

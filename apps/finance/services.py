@@ -263,7 +263,7 @@ def reset_all_student_balances(*, triggered_by, password, request=None):
 
 
 @transaction.atomic
-def confirm_transaction(transaction_id, user):
+def confirm_transaction(transaction_id, user, allow_negative=False):
     """
     Tranzaksiyani xavfsiz tasdiqlash.
     Bazaviy qoidalar:
@@ -279,7 +279,7 @@ def confirm_transaction(transaction_id, user):
     if tx.status == 'confirmed':
         return tx
 
-    if tx.transaction_type in ['expense', 'salary', 'refund']:
+    if tx.transaction_type in ['expense', 'salary', 'refund'] and not allow_negative:
         tx.account.refresh_from_db()
         if tx.account.balance < tx.amount:
             raise ValidationError(f"Kassada mablag' yetarli emas! Mavjud: {tx.account.balance}")

@@ -26,15 +26,17 @@ logger = logging.getLogger(__name__)
 
 def _get_or_create_admin_account(user, org):
     """Admin uchun shaxsiy kassani olish yoki yaratish."""
+    name_suffix = user.get_full_name().strip() or user.first_name or user.phone or f"ID #{user.pk}"
+    account_name = f"Admin Kassa - {name_suffix}"
     account = Account.objects.filter(
         organization=org,
-        name=f"Admin Kassa - {user.get_full_name()}",
+        name=account_name,
         is_deleted=False,
     ).first()
     if not account:
         account = Account.objects.create(
             organization=org,
-            name=f"Admin Kassa - {user.get_full_name()}",
+            name=account_name,
             account_type='cash',
             balance=Decimal('0.00'),
         )
@@ -153,15 +155,20 @@ def admin_add_income(request):
                     confirm_service(t.id, user)
 
                 log_user_action(user, 'CREATE', 'Transaction', t.id, str(t), request=request)
-                messages.success(request, "Kirim qo'shildi va darhol tasdiqlandi.")
+                messages.success(request, f"Kirim qo'shildi: {t.amount:,.0f} UZS ({t.get_payment_method_display()})")
                 return redirect('finance:admin_cash_dashboard')
             except ValidationError as exc:
-                form.add_error(None, exc.message)
+                form.add_error(None, exc.message if hasattr(exc, 'message') else str(exc))
+            except Exception as exc:
+                logger.error(f"Kirim qo'shishda xatolik: {exc}")
+                form.add_error(None, f"Xatolik yuz berdi: {exc}")
+        else:
+            messages.error(request, "Iltimos, kiritilgan ma'lumotlarni tekshiring.")
     else:
         form = AdminCashTransactionForm(organization=org, transaction_type='income')
 
     return render(request, 'finance/admin_cash/transaction_form.html', {
-        'form': form, 'title': 'Kirim', 'type': 'income'
+        'form': form, 'title': 'Kirim', 'type': 'income', 'admin_account': admin_account
     })
 
 
@@ -186,18 +193,23 @@ def admin_add_expense(request):
                     t.created_by = user
                     t.status = 'pending'
                     t.save()
-                    confirm_service(t.id, user)
+                    confirm_service(t.id, user, allow_negative=True)
 
                 log_user_action(user, 'CREATE', 'Transaction', t.id, str(t), request=request)
-                messages.success(request, "Chiqim qo'shildi va darhol tasdiqlandi.")
+                messages.success(request, f"Chiqim qo'shildi: {t.amount:,.0f} UZS ({t.get_payment_method_display()})")
                 return redirect('finance:admin_cash_dashboard')
             except ValidationError as exc:
-                form.add_error(None, exc.message)
+                form.add_error(None, exc.message if hasattr(exc, 'message') else str(exc))
+            except Exception as exc:
+                logger.error(f"Chiqim qo'shishda xatolik: {exc}")
+                form.add_error(None, f"Xatolik yuz berdi: {exc}")
+        else:
+            messages.error(request, "Iltimos, kiritilgan ma'lumotlarni tekshiring.")
     else:
         form = AdminCashTransactionForm(organization=org, transaction_type='expense')
 
     return render(request, 'finance/admin_cash/transaction_form.html', {
-        'form': form, 'title': 'Chiqim', 'type': 'expense'
+        'form': form, 'title': 'Chiqim', 'type': 'expense', 'admin_account': admin_account
     })
 
 
