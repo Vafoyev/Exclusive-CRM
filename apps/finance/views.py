@@ -358,25 +358,60 @@ def add_expense(request):
     return render(request, 'finance/transaction_form.html', {'form': form, 'title': 'Chiqim', 'type': 'expense'})
 
 @login_required
-@permission_required('finance', 'edit')
 def confirm_transaction(request, pk):
-    # Bu view endi services.py orqali ishlaydi (avvalgi fixda to'g'irlangan)
+    if not (request.user.role in ['super_admin', 'owner', 'admin'] or check_permission(request.user, 'finance', 'edit')):
+        messages.error(request, "Sizda tranzaksiyani tasdiqlash huquqi yo'q!")
+        return redirect('finance:transaction_list')
+
+    # Bu view services.py orqali ishlaydi
     from .services import confirm_transaction as confirm_service
     try:
         confirm_service(pk, request.user)
-        messages.success(request, "Tasdiqlandi")
+        messages.success(request, "Muvaffaqiyatli tasdiqlandi")
     except Exception as e:
         messages.error(request, str(e))
+
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
     return redirect('finance:transaction_list')
 
 @login_required
-@permission_required('finance', 'edit')
 def reject_transaction(request, pk):
-    t = get_object_or_404(Transaction, pk=pk)
+    if not (request.user.role in ['super_admin', 'owner', 'admin'] or check_permission(request.user, 'finance', 'edit')):
+        messages.error(request, "Sizda tranzaksiyani rad etish huquqi yo'q!")
+        return redirect('finance:transaction_list')
+
+    org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
+    qs = Transaction.objects.filter(pk=pk)
+    if org and request.user.role not in ['super_admin', 'owner']:
+        qs = qs.filter(organization=org)
+    t = get_object_or_404(qs)
+
     if t.status == 'pending':
+        reason = request.POST.get('reason', '').strip()
         t.status = 'rejected'
+        t.receipt_verified = False
+        t.confirmed_by = request.user
+        t.confirmed_at = timezone.now()
+        if reason:
+            t.receipt_notes = reason
         t.save()
-        messages.warning(request, "Rad etildi")
+        try:
+            log_user_action(
+                request.user, 'UPDATE', 'Transaction', t.id,
+                f"Tranzaksiya rad etildi: {t.amount:,.0f} so'm. Sabab: {t.receipt_notes or 'ko\'rsatilmadi'}",
+                request=request
+            )
+        except Exception:
+            pass
+        messages.warning(request, "Tranzaksiya rad etildi")
+    else:
+        messages.info(request, f"Bu tranzaksiya allaqachon ko'rib chiqilgan ({t.get_status_display()}).")
+
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
     return redirect('finance:transaction_list')
 
 # Student payments view (Placeholder - needs existing imports)
@@ -552,14 +587,63 @@ def pending_receipts(request):
     })
 
 @login_required
-@permission_required('finance', 'edit')
 def verify_receipt(request, pk):
-    return confirm_transaction(request, pk)
+    if not (request.user.role in ['super_admin', 'owner', 'admin'] or check_permission(request.user, 'finance', 'edit') or check_permission(request.user, 'admin_finance', 'edit')):
+        messages.error(request, "Sizda chekni tasdiqlash huquqi yo'q!")
+        return redirect('finance:pending_receipts')
+
+    from .services import confirm_transaction as confirm_service
+    try:
+        confirm_service(pk, request.user)
+        messages.success(request, "Chek muvaffaqiyatli tasdiqlandi!")
+    except Exception as e:
+        messages.error(request, f"Tasdiqlashda xatolik: {e}")
+
+    referer = request.META.get('HTTP_REFERER')
+    if referer and 'receipt' in referer:
+        return redirect(referer)
+    return redirect('finance:pending_receipts')
+
 
 @login_required
-@permission_required('finance', 'edit')
 def reject_receipt(request, pk):
-    return reject_transaction(request, pk)
+    if not (request.user.role in ['super_admin', 'owner', 'admin'] or check_permission(request.user, 'finance', 'edit') or check_permission(request.user, 'admin_finance', 'edit')):
+        messages.error(request, "Sizda chekni rad etish huquqi yo'q!")
+        return redirect('finance:pending_receipts')
+
+    org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
+    qs = Transaction.objects.filter(pk=pk)
+    if org and request.user.role not in ['super_admin', 'owner']:
+        qs = qs.filter(organization=org)
+    tx = get_object_or_404(qs)
+
+    if tx.status == 'pending':
+        reason = request.POST.get('reason', '').strip()
+        tx.status = 'rejected'
+        tx.receipt_verified = False
+        tx.receipt_verified_by = request.user
+        tx.receipt_verified_at = timezone.now()
+        tx.confirmed_by = request.user
+        tx.confirmed_at = timezone.now()
+        tx.receipt_notes = reason or "Chek rad etildi"
+        tx.save()
+
+        try:
+            log_user_action(
+                request.user, 'UPDATE', 'Transaction', tx.id,
+                f"Chek rad etildi: {tx.amount:,.0f} so'm. Sabab: {tx.receipt_notes}",
+                request=request
+            )
+        except Exception:
+            pass
+        messages.warning(request, "Chek muvaffaqiyatli rad etildi.")
+    else:
+        messages.info(request, f"Bu chek allaqachon ko'rib chiqilgan ({tx.get_status_display()}).")
+
+    referer = request.META.get('HTTP_REFERER')
+    if referer and 'receipt' in referer:
+        return redirect(referer)
+    return redirect('finance:pending_receipts')
 
 
 @login_required

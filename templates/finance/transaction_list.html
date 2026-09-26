@@ -198,11 +198,15 @@
                             {% if trans.status == 'pending' %}
                             <div class="flex items-center justify-end gap-1.5">
                                 <a href="{% url 'finance:confirm_transaction' trans.pk %}"
+                                    hx-boost="false"
+                                    onclick="return confirm('Haqiqatan ham bu tranzaksiyani tasdiqlamoqchimisiz?')"
                                     class="p-1.5 rounded-lg transition text-emerald-400 hover:bg-emerald-500/20"
                                     title="Tasdiqlash">
                                     <i class="ph-bold ph-check text-base"></i>
                                 </a>
                                 <a href="{% url 'finance:reject_transaction' trans.pk %}"
+                                    hx-boost="false"
+                                    onclick="return confirm('Haqiqatan ham bu tranzaksiyani rad etmoqchimisiz?')"
                                     class="p-1.5 rounded-lg transition text-rose-400 hover:bg-rose-500/20"
                                     title="Rad etish">
                                     <i class="ph-bold ph-x text-base"></i>
