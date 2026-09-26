@@ -7,23 +7,25 @@
 
     <!-- Header -->
     <div class="flex items-center gap-4">
-        <a href="javascript:history.back()" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+        <a href="javascript:history.back()" class="p-2.5 bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl hover:border-[var(--border-hover)] transition">
             <i class="ph ph-arrow-left text-xl"></i>
         </a>
-        <h1 class="text-2xl font-bold text-slate-800">{{ title }}</h1>
+        <h1 class="text-2xl font-bold text-[var(--text-main)]">{{ title }}</h1>
     </div>
 
     <!-- Form -->
-    <form method="POST" class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-6">
+    <form method="POST" class="bg-[var(--bg-card)] rounded-2xl shadow-sm border border-[var(--border-color)] p-6 space-y-6">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="space-y-4 text-[var(--text-main)] [&_label]:block [&_label]:text-xs [&_label]:font-semibold [&_label]:text-[var(--text-second)] [&_label]:mb-1.5 [&_input]:w-full [&_input]:px-3.5 [&_input]:py-2.5 [&_input]:rounded-xl [&_input]:border [&_input]:border-[var(--border-color)] [&_input]:bg-[var(--bg-hover)] [&_input]:text-[var(--text-main)] [&_select]:w-full [&_select]:px-3.5 [&_select]:py-2.5 [&_select]:rounded-xl [&_select]:border [&_select]:border-[var(--border-color)] [&_select]:bg-[var(--bg-hover)] [&_select]:text-[var(--text-main)] [&_textarea]:w-full [&_textarea]:px-3.5 [&_textarea]:py-2.5 [&_textarea]:rounded-xl [&_textarea]:border [&_textarea]:border-[var(--border-color)] [&_textarea]:bg-[var(--bg-hover)] [&_textarea]:text-[var(--text-main)]">
+            {{ form.as_p }}
+        </div>
 
-        <div class="flex justify-end gap-4 pt-4 border-t">
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border-color)]">
             <a href="javascript:history.back()"
-                class="px-6 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition">
+                class="px-5 py-2.5 bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-second)] hover:text-[var(--text-main)] rounded-xl hover:border-[var(--border-hover)] transition text-sm font-medium">
                 Bekor qilish
             </a>
-            <button type="submit" class="px-6 py-2 bg-[#4F46E5] text-white rounded-lg hover:bg-[#4338CA] transition">
+            <button type="submit" class="px-6 py-2.5 bg-[var(--primary)] text-white rounded-xl hover:opacity-90 font-medium transition text-sm shadow-sm">
                 Saqlash
             </button>
         </div>
