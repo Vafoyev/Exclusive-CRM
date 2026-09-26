@@ -6,37 +6,37 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-slate-800">Material Kategoriyalari</h1>
-            <p class="text-slate-500">Materiallarni guruhlash uchun kategoriyalar</p>
+            <h1 class="text-2xl font-bold text-[var(--text-main)]">Material Kategoriyalari</h1>
+            <p class="text-sm text-[var(--text-muted)]">Materiallarni guruhlash uchun kategoriyalar</p>
         </div>
         <div class="flex gap-3">
             <a href="{% url 'material_list' %}"
-                class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition flex items-center gap-2">
+                class="px-4 py-2 bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-color)] rounded-xl hover:border-[var(--border-hover)] transition flex items-center gap-2 text-sm font-medium">
                 <i class="ph ph-arrow-left"></i> Materiallarga
             </a>
             <a href="{% url 'material_category_create' %}"
-                class="px-4 py-2 bg-gradient-to-r from-[#818CF8] to-purple-600 text-white rounded-lg hover:shadow-lg transition flex items-center gap-2">
+                class="px-4 py-2 bg-[var(--primary)] text-white rounded-xl hover:opacity-90 transition flex items-center gap-2 text-sm font-medium shadow-sm">
                 <i class="ph ph-plus"></i> Qo'shish
             </a>
         </div>
     </div>
 
     <!-- Kategoriyalar ro'yxati -->
-    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+    <div class="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] overflow-hidden shadow-sm">
         {% if categories %}
-        <div class="divide-y divide-slate-100">
+        <div class="divide-y divide-[var(--border-color)]">
             {% for cat in categories %}
-            <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+            <div class="p-4 flex items-center justify-between hover:bg-[var(--bg-hover)] transition">
                 <div class="flex items-center gap-3">
                     <span class="text-3xl">{{ cat.icon }}</span>
                     <div>
-                        <h3 class="font-semibold text-slate-800">{{ cat.name }}</h3>
-                        <p class="text-sm text-slate-500">{{ cat.materials.count }} material</p>
+                        <h3 class="font-semibold text-[var(--text-main)]">{{ cat.name }}</h3>
+                        <p class="text-xs text-[var(--text-muted)]">{{ cat.materials.count }} material</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
                     <span
-                        class="px-3 py-1 text-xs bg-slate-100 text-slate-600 rounded-full">
+                        class="px-3 py-1 text-xs bg-[var(--bg-hover)] text-[var(--text-second)] border border-[var(--border-color)] rounded-full">
                         Tartib: {{ cat.order }}
                     </span>
                 </div>
@@ -46,12 +46,11 @@
         {% else %}
         <div class="p-12 text-center">
             <div
-                class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="ph ph-folders text-3xl text-slate-400"></i>
+                class="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ph ph-folders text-3xl"></i>
             </div>
-            <p class="text-slate-500 mb-4">Kategoriyalar mavjud emas</p>
-            <a href="{% url 'material_category_create' %}" class="text-[#64748B] hover:underline">Birinchi kategoriyani
-                yarating →</a>
+            <p class="text-[var(--text-muted)] text-sm mb-4">Kategoriyalar mavjud emas</p>
+            <a href="{% url 'material_category_create' %}" class="text-indigo-400 hover:underline text-sm font-medium">Birinchi kategoriyani yarating →</a>
         </div>
         {% endif %}
     </div>
