@@ -42,8 +42,8 @@
   --text-main:    #18181B;
   --text-second:  #71717A;
   --text-muted:   #A1A1AA;
-  --brand:        #18181B;
-  --brand-hover:  #3F3F46;
+  --brand:        #4F46E5;
+  --brand-hover:  #4338CA;
   --brand-text:   #FFFFFF;
   --money:        #047857;
 
@@ -126,9 +126,9 @@
   --text-main:    #FAFAFA;
   --text-second:  #A1A1AA;
   --text-muted:   #71717A;
-  --brand:        #FAFAFA;
-  --brand-hover:  #E4E4E7;
-  --brand-text:   #09090B;
+  --brand:        #4F46E5;
+  --brand-hover:  #4338CA;
+  --brand-text:   #FFFFFF;
   --money:        #10B981;
 
   /* KANBAN (Dark mode) */
@@ -138,9 +138,9 @@
   --kanban-registered: #022C22;
   --kanban-registered-text: #10B981;
 
-  --primary: var(--brand);
-  --primary-hover: var(--brand-hover);
-  --primary-light: #27272A;
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --primary-light: rgba(79, 70, 229, 0.15);
 
   --slate-50: #18181B;
   --slate-100: #27272A;
