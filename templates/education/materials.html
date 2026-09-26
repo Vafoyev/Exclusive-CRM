@@ -20,7 +20,7 @@
                 <span>Kategoriyalar</span>
             </a>
             <a href="{% url 'material_upload' %}"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--primary)] text-white rounded-xl font-medium hover:opacity-90 shadow-sm transition">
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium shadow-sm transition">
                 <i class="ph ph-upload-simple text-lg"></i>
                 <span>Yangi Material</span>
             </a>
@@ -56,7 +56,7 @@
                     <option value="audio" {% if material_type == 'audio' %}selected{% endif %}>🎵 Audio</option>
                 </select>
             </div>
-            <button type="submit" class="px-6 py-2.5 bg-[var(--primary)] text-white rounded-xl hover:opacity-90 transition font-medium shadow-sm flex items-center gap-1.5">
+            <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition font-medium shadow-sm flex items-center gap-1.5">
                 <i class="ph ph-magnifying-glass"></i> Qidirish
             </button>
         </form>

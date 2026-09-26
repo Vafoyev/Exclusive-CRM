@@ -13,7 +13,7 @@
         {% has_permission 'education' 'create' as can_create_course %}
         {% if can_create_course %}
         <a href="{% url 'course_create' %}"
-            class="px-4 py-2 bg-[var(--primary)] text-white font-medium rounded-xl hover:opacity-90 transition flex items-center gap-2 shadow-sm">
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition flex items-center gap-2 shadow-sm">
             <i class="ph ph-plus"></i> Kurs qo'shish
         </a>
         {% endif %}

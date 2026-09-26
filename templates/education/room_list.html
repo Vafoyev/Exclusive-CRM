@@ -13,7 +13,7 @@
         </div>
         {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' %}
         <a href="{% url 'room_create' %}"
-            class="px-4 py-2 bg-[var(--primary)] text-white font-medium rounded-xl hover:opacity-90 transition flex items-center gap-2 shadow-sm">
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition flex items-center gap-2 shadow-sm">
             <i class="ph ph-plus"></i> Yangi Xona
         </a>
         {% endif %}
