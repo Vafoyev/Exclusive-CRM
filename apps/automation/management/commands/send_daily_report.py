@@ -17,6 +17,6 @@ class Command(BaseCommand):
         self.stdout.write("Kunlik hisobot Telegramga yuborilmoqda...")
         result = send_daily_report(chat_id=chat_id)
         if result.get('success'):
-            self.stdout.write(self.style.SUCCESS(f"✅ Hisobot muvaffaqiyatli yuborildi! Message ID: {result.get('message_id')}"))
+            self.stdout.write(self.style.SUCCESS(f"✅ Hisobot muvaffaqiyatli yuborildi! Yuborilgan chatlar: {result.get('sent_count')}/{result.get('total_targets')}"))
         else:
             self.stdout.write(self.style.ERROR(f"❌ Xatolik yuz berdi: {result.get('error')}"))
