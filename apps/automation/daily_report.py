@@ -139,39 +139,71 @@ def send_daily_report(chat_id=None, bot_token=None, organization=None) -> dict:
         logger.warning("Telegram bot token sozlanmagan!")
         return {'success': False, 'error': "Bot token topilmadi."}
 
-    target_chat = (
-        chat_id
-        or getattr(settings, 'TELEGRAM_REPORT_CHAT_ID', None)
-        or getattr(settings, 'TELEGRAM_BACKUP_CHAT_ID', None)
-        or ''
-    )
-    if not target_chat:
-        try:
-            from apps.core.models import BackupConfiguration
-            conf = BackupConfiguration.objects.first()
-            if conf and conf.telegram_chat_id:
-                target_chat = conf.telegram_chat_id
-        except Exception:
-            pass
+    target_chats = set()
+    if chat_id:
+        if isinstance(chat_id, (list, tuple)):
+            target_chats.update(str(cid).strip() for cid in chat_id if str(cid).strip())
+        else:
+            for cid in str(chat_id).split(','):
+                if cid.strip():
+                    target_chats.add(cid.strip())
 
-    if not target_chat:
-        return {'success': False, 'error': "Chat ID topilmadi."}
-
-    text = generate_daily_report_text(organization=organization)
+    configured_chats = getattr(settings, 'TELEGRAM_REPORT_CHAT_ID', '') or getattr(settings, 'TELEGRAM_BACKUP_CHAT_ID', '') or ''
+    for cid in str(configured_chats).split(','):
+        if cid.strip():
+            target_chats.add(cid.strip())
 
     try:
-        url = f"https://api.telegram.org/bot{token}/sendMessage"
-        response = requests.post(url, json={
-            'chat_id': str(target_chat),
-            'text': text,
-            'parse_mode': 'HTML',
-        }, timeout=15)
-        res_data = response.json()
-        if res_data.get('ok'):
-            return {'success': True, 'message_id': res_data['result']['message_id']}
-        else:
-            logger.error("Telegram sendMessage xatosi: %s", res_data)
-            return {'success': False, 'error': res_data.get('description', 'Noma\'lum xatolik')}
-    except Exception as e:
-        logger.exception("Telegram report yuborishda xatolik:")
-        return {'success': False, 'error': str(e)}
+        from apps.core.models import BackupConfiguration
+        conf = BackupConfiguration.objects.first()
+        if conf and conf.telegram_chat_id:
+            for cid in str(conf.telegram_chat_id).split(','):
+                if cid.strip():
+                    target_chats.add(cid.strip())
+    except Exception:
+        pass
+
+    try:
+        from apps.users.models import User
+        admin_tids = User.objects.filter(
+            role__in=['super_admin', 'owner'],
+            telegram_id__isnull=False,
+            is_active=True
+        ).values_list('telegram_id', flat=True)
+        for tid in admin_tids:
+            if tid:
+                target_chats.add(str(tid).strip())
+    except Exception:
+        pass
+
+    if not target_chats:
+        return {'success': False, 'error': "Qabul qiluvchi Chat ID topilmadi."}
+
+    text = generate_daily_report_text(organization=organization)
+    sent_count = 0
+    errors = []
+
+    for target_chat in target_chats:
+        try:
+            url = f"https://api.telegram.org/bot{token}/sendMessage"
+            response = requests.post(url, json={
+                'chat_id': str(target_chat),
+                'text': text,
+                'parse_mode': 'HTML',
+            }, timeout=15)
+            res_data = response.json()
+            if res_data.get('ok'):
+                sent_count += 1
+            else:
+                logger.error("Telegram sendMessage xatosi (chat %s): %s", target_chat, res_data)
+                errors.append(f"{target_chat}: {res_data.get('description')}")
+        except Exception as e:
+            logger.exception("Telegram report yuborishda xatolik:")
+            errors.append(f"{target_chat}: {e}")
+
+    return {
+        'success': sent_count > 0,
+        'sent_count': sent_count,
+        'total_targets': len(target_chats),
+        'errors': errors
+    }
