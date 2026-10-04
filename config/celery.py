@@ -32,10 +32,10 @@ app.conf.beat_schedule = {
         'task': 'apps.automation.tasks.send_debt_reminders',
         'schedule': crontab(hour=9, minute=0),
     },
-    # Har kuni soat 21:00 da Telegramga kunlik hisobot
+    # Har kuni soat 19:00 da Telegramga kunlik hisobot
     'daily-telegram-report': {
         'task': 'apps.automation.tasks.send_daily_report_task',
-        'schedule': crontab(hour=21, minute=0),
+        'schedule': crontab(hour=19, minute=0),
     },
     # Har 5 daqiqada cache tozalash (o'chirilgan obyektlar)
     'cleanup-deleted-objects': {
