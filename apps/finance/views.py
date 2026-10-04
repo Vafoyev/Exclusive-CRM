@@ -331,7 +331,16 @@ def add_income(request):
             t.created_by = request.user
             t.status = 'pending'
             t.save()
-            messages.success(request, "Kirim qo'shildi")
+
+            if request.user.role in ['super_admin', 'owner', 'admin']:
+                from .services import confirm_transaction as confirm_service
+                try:
+                    confirm_service(t.id, request.user)
+                    messages.success(request, f"Kirim qabul qilindi va tasdiqlandi: {t.amount:,.0f} UZS")
+                except Exception:
+                    messages.success(request, "Kirim qo'shildi (tasdiqlash kutilmoqda)")
+            else:
+                messages.success(request, "Kirim qo'shildi (tasdiqlash kutilmoqda)")
             return redirect('finance:transaction_list')
     else:
         form = TransactionForm(organization=org, transaction_type='income')

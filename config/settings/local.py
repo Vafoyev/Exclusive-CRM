@@ -18,8 +18,9 @@ try:
 except ImportError:
     pass
 
-# Email backend - development uchun console
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email backend
+from decouple import config
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend' if config('EMAIL_HOST_USER', default='') else 'django.core.mail.backends.console.EmailBackend')
 
 # Logging
 LOGGING = {

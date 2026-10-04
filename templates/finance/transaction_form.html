@@ -43,6 +43,16 @@
             {% endif %}
         </div>
 
+        {% if type == 'income' %}
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">O'quvchi <span class="text-[11px] font-normal text-slate-400 lowercase">(kurs to'lovi bo'lsa tanlang)</span></label>
+            {{ form.student }}
+            {% if form.student.errors %}
+            <p class="text-xs text-rose-600 mt-1 font-medium">{{ form.student.errors.0 }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Kategoriya <span class="text-[11px] font-normal text-slate-400 lowercase">(ixtiyoriy)</span></label>

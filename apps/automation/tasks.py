@@ -149,3 +149,14 @@ def generate_report_async(report_type, org_id, date_from, date_to, user_id):
     )
 
     return f"Report generated: {transactions} transactions"
+
+
+@shared_task
+def send_daily_report_task():
+    """
+    Har kuni kechqurun Telegram bot orqali kunlik hisobotni yuborish.
+    """
+    from apps.automation.daily_report import send_daily_report
+    result = send_daily_report()
+    return f"Daily report task finished: {result}"
+

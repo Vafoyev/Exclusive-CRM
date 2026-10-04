@@ -159,6 +159,51 @@ def send_backup_to_telegram(file_path, bot_token, chat_id='', auto_detect_chat=T
     }
 
 
+def send_backup_to_email(file_path, recipient_email=None):
+    """Backup faylni email orqali yuborish (Gmail / Google Drive ga saqlash uchun)."""
+    from django.core.mail import EmailMessage
+
+    email_to = recipient_email or getattr(settings, 'BACKUP_RECIPIENT_EMAIL', 'isobekvafoyev9@gmail.com')
+    if not email_to:
+        return {'sent': False, 'message': "Qabul qiluvchi email ko'rsatilmagan."}
+
+    sender = getattr(settings, 'EMAIL_HOST_USER', None) or getattr(settings, 'DEFAULT_FROM_EMAIL', None)
+    if not sender:
+        return {'sent': False, 'message': "EMAIL_HOST_USER sozlanmagan."}
+
+    file_size = os.path.getsize(file_path)
+    file_name = os.path.basename(file_path)
+    now_str = timezone.localtime().strftime('%Y-%m-%d %H:%M')
+
+    subject = f"Exclusive CRM - Baza Zaxirasi ({file_name})"
+    body = (
+        f"Assalomu alaykum!\n\n"
+        f"Exclusive CRM tizimining ma'lumotlar bazasi zaxira nusxasi (backup) muvaffaqiyatli tayyorlandi.\n\n"
+        f"📌 Tafsilotlar:\n"
+        f"• Fayl nomi: {file_name}\n"
+        f"• Fayl hajmi: {format_file_size(file_size)}\n"
+        f"• Sana va vaqt: {now_str}\n\n"
+        f"📁 Google Drive'ga saqlash:\n"
+        f"Ushbu xatga biriktirilgan fayl ustiga bosib, 'Google Drive'ga saqlash' (Save to Drive) belgisini bosing.\n\n"
+        f"Hurmat bilan,\n"
+        f"Exclusive CRM avtomatlashtirish tizimi"
+    )
+
+    try:
+        msg = EmailMessage(
+            subject=subject,
+            body=body,
+            from_email=sender,
+            to=[email_to],
+        )
+        msg.attach_file(file_path)
+        msg.send(fail_silently=False)
+        return {'sent': True, 'message': f"Backup {email_to} ga yuborildi."}
+    except Exception as e:
+        logger.exception("Email yuborishda xatolik:")
+        return {'sent': False, 'message': f"Email xatosi: {e}"}
+
+
 def trigger_backup_now(configuration=None, triggered_by=None, trigger_source='manual'):
     configuration = configuration or get_backup_configuration()
     run_log = BackupRunLog.objects.create(
@@ -181,11 +226,16 @@ def trigger_backup_now(configuration=None, triggered_by=None, trigger_source='ma
         if telegram_result.get('chat_id') and configuration.telegram_chat_id != telegram_result['chat_id']:
             configuration.telegram_chat_id = telegram_result['chat_id']
 
+        email_result = send_backup_to_email(backup_file)
+
         removed_count = cleanup_old_backups(days=max(configuration.retention_days or 1, 1))
-        message = (
-            f"Backup tayyor: {os.path.basename(backup_file)} ({format_file_size(file_size)}). "
-            f"{telegram_result['message']} Eski tozalangan backup: {removed_count} ta."
-        )
+        message_parts = [
+            f"Backup tayyor: {os.path.basename(backup_file)} ({format_file_size(file_size)}).",
+            telegram_result['message'],
+            email_result['message'],
+            f"Eski tozalangan: {removed_count} ta."
+        ]
+        message = " ".join(part for part in message_parts if part)
 
         configuration.last_run_at = timezone.now()
         configuration.last_status = 'success'

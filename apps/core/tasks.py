@@ -125,9 +125,22 @@ def backup_and_report():
         except Exception as exc:
             logger.error("Telegram yuborishda xato: %s", exc)
 
+        email_sent = False
+        try:
+            from apps.core.backup_services import send_backup_to_email
+            email_res = send_backup_to_email(backup_file)
+            email_sent = email_res.get('sent', False)
+        except Exception as exc:
+            logger.error("Email yuborishda xato: %s", exc)
+
         removed = _cleanup_old_backups(days=30)
-        status = "Telegramga yuborildi" if telegram_sent else "Faqat lokal saqlandi"
-        return f"Backup tayyor: {os.path.basename(backup_file)} | {status} | {removed} ta eski backup o'chirildi"
+        channels = []
+        if telegram_sent:
+            channels.append("Telegram")
+        if email_sent:
+            channels.append("Email")
+        status = ", ".join(channels) if channels else "Faqat lokal saqlandi"
+        return f"Backup tayyor: {os.path.basename(backup_file)} | Yuborildi: {status} | {removed} ta eski backup o'chirildi"
     except Exception as exc:
         logger.error("Backup xatosi: %s", exc)
         return f"Backup failed: {exc}"

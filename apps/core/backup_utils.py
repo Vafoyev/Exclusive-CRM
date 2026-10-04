@@ -60,26 +60,31 @@ def create_backup_file():
     db_settings = settings.DATABASES['default']
     engine = db_settings.get('ENGINE', '')
 
+    dumped_with_pg = False
     if 'postgresql' in engine:
-        backup_file = os.path.join(backup_dir, f"backup_{timestamp}.sql")
-        env = os.environ.copy()
-        env['PGPASSWORD'] = db_settings.get('PASSWORD', '')
-        pg_dump_path = resolve_pg_dump_path()
-        command = [
-            pg_dump_path,
-            '-h', db_settings.get('HOST', 'localhost'),
-            '-p', str(db_settings.get('PORT', '5432')),
-            '-U', db_settings.get('USER', 'postgres'),
-            '-d', db_settings.get('NAME', 'crmtizim_db'),
-            '-F', 'p',
-            '--no-owner',
-            '--no-acl',
-            '-f', backup_file,
-        ]
-        result = subprocess.run(command, env=env, capture_output=True, text=True, timeout=300)
-        if result.returncode != 0:
-            raise RuntimeError(result.stderr.strip() or "pg_dump ishlamadi.")
-    else:
+        try:
+            backup_file = os.path.join(backup_dir, f"backup_{timestamp}.sql")
+            env = os.environ.copy()
+            env['PGPASSWORD'] = db_settings.get('PASSWORD', '')
+            pg_dump_path = resolve_pg_dump_path()
+            command = [
+                pg_dump_path,
+                '-h', db_settings.get('HOST', 'localhost'),
+                '-p', str(db_settings.get('PORT', '5432')),
+                '-U', db_settings.get('USER', 'postgres'),
+                '-d', db_settings.get('NAME', 'crmtizim_db'),
+                '-F', 'p',
+                '--no-owner',
+                '--no-acl',
+                '-f', backup_file,
+            ]
+            result = subprocess.run(command, env=env, capture_output=True, text=True, timeout=300)
+            if result.returncode == 0 and os.path.exists(backup_file):
+                dumped_with_pg = True
+        except Exception:
+            dumped_with_pg = False
+
+    if not dumped_with_pg:
         backup_file = os.path.join(backup_dir, f"backup_{timestamp}.json")
         with open(backup_file, 'w', encoding='utf-8') as output_file:
             call_command(

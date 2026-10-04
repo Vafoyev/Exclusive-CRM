@@ -36,10 +36,11 @@ class CategoryForm(forms.ModelForm):
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
-        fields = ['account', 'category', 'amount', 'description']
+        fields = ['account', 'category', 'student', 'amount', 'description']
         widgets = {
             'account': forms.Select(attrs={'class': INPUT_CLASSES}),
             'category': forms.Select(attrs={'class': INPUT_CLASSES}),
+            'student': forms.Select(attrs={'class': INPUT_CLASSES}),
             'amount': forms.NumberInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Summa', 'min': '0'}),
             'description': forms.Textarea(attrs={'class': INPUT_CLASSES, 'rows': 3, 'placeholder': 'Izoh...'}),
         }
@@ -71,6 +72,17 @@ class TransactionForm(forms.ModelForm):
 
         if not self.fields['category'].queryset.exists():
             self.fields['category'].help_text = "Hozircha kategoriya yo'q (ixtiyoriy)."
+
+        # O'quvchi maydoni
+        from apps.users.models import User
+        stu_qs = User.objects.filter(role='student', is_active=True, is_deleted=False)
+        if organization:
+            stu_qs = stu_qs.filter(organization=organization)
+        self.fields['student'].queryset = stu_qs.order_by('first_name', 'last_name')
+        self.fields['student'].required = False
+        self.fields['student'].empty_label = "- O'quvchini tanlang (ixtiyoriy) -"
+        if transaction_type == 'expense':
+            self.fields['student'].widget = forms.HiddenInput()
 
 class StudentPaymentForm(forms.ModelForm):
     class Meta:

@@ -721,7 +721,11 @@
 
 {{ students_for_payment|json_script:"students-data" }}
 <script>
-    const studentsData = JSON.parse(document.getElementById('students-data').textContent);
+    let rawStudentsData = JSON.parse(document.getElementById('students-data').textContent);
+    if (typeof rawStudentsData === 'string') {
+        try { rawStudentsData = JSON.parse(rawStudentsData); } catch (e) { rawStudentsData = []; }
+    }
+    const studentsData = Array.isArray(rawStudentsData) ? rawStudentsData : [];
     const csrfToken = '{{ csrf_token }}';
     let monthlyFeeMode = 'bulk';
 
