@@ -574,6 +574,28 @@ def finance_report(request):
 
 
 @login_required
+def send_telegram_report_view(request):
+    """
+    Kunlik hisobotni Telegramga darhol yuborish (admin tugmasi).
+    """
+    if request.user.role not in ['super_admin', 'owner', 'admin']:
+        messages.error(request, "Sizda hisobot yuborish huquqi yo'q!")
+        return redirect('finance:report')
+
+    if request.method == 'POST':
+        from apps.automation.daily_report import send_daily_report
+        res = send_daily_report(organization=request.organization)
+        if res.get('success'):
+            sent_count = res.get('sent_count', 0)
+            messages.success(request, f"Kunlik hisobot {sent_count} ta Telegram chatiga muvaffaqiyatli yuborildi!")
+        else:
+            err = res.get('error') or ", ".join(res.get('errors', [])) or "Noma'lum xatolik"
+            messages.error(request, f"Hisobot yuborishda xatolik yuz berdi: {err}")
+
+    return redirect('finance:report')
+
+
+@login_required
 @permission_required('finance', 'view')
 def pending_receipts(request):
     org = request.organization

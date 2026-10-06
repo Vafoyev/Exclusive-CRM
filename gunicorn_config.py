@@ -3,9 +3,10 @@ import multiprocessing
 # Server socket
 bind = "127.0.0.1:8001"
 
-# Workers
-workers = multiprocessing.cpu_count() * 2 + 1
-worker_class = "sync"
+# Workers - 1GB RAM li server uchun optimallashtirilgan
+workers = 2
+threads = 2
+worker_class = "gthread"
 worker_connections = 1000
 
 # Request handling

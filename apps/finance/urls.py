@@ -53,6 +53,7 @@ urlpatterns = [
     
     # Reports
     path('reports/', views.finance_report, name='report'),
+    path('reports/send-telegram/', views.send_telegram_report_view, name='send_telegram_report'),
     
     # Payroll (Oylik)
     path('payroll/', payroll_views.payroll_list, name='payroll_list'),

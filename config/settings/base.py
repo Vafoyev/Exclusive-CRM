@@ -278,18 +278,42 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_TASK_ACKS_LATE = True
 
+from celery.schedules import crontab
+
 # Celery beat (davriy vazifalar)
 CELERY_BEAT_SCHEDULE = {
-    # Har kuni soat 9:00 da eslatmalar yuborish
+    # Har kuni soat 19:00 da Telegramga kunlik hisobot
+    'daily-telegram-report': {
+        'task': 'apps.automation.tasks.send_daily_report_task',
+        'schedule': crontab(hour=19, minute=0),
+    },
+    # Har kuni soat 23:59 da backup
+    'daily-database-backup': {
+        'task': 'apps.core.tasks.backup_and_report',
+        'schedule': crontab(hour=23, minute=59),
+    },
+    # Har kuni soat 9:00 da qarzdorlarga eslatma
+    'daily-debt-reminders': {
+        'task': 'apps.automation.tasks.send_debt_reminders',
+        'schedule': crontab(hour=9, minute=0),
+    },
+    # Har kuni soat 9:00 da darslar eslatmasi
     'send-daily-reminders': {
         'task': 'apps.automation.tasks.send_daily_reminders',
-        'schedule': 60 * 60 * 24,  # Har 24 soatda
+        'schedule': crontab(hour=9, minute=0),
     },
+    # Har 5 daqiqada rejalashtirilgan backuplar
     'process-scheduled-backups': {
         'task': 'apps.core.tasks.process_scheduled_backups',
         'schedule': 300,
     },
+    # Har 5 daqiqada cache tozalash (o'chirilgan obyektlar)
+    'cleanup-deleted-objects': {
+        'task': 'apps.core.tasks.cleanup_deleted_objects',
+        'schedule': 300,  # 5 daqiqa
+    },
 }
+
 
 # CORS (Mobil ilova uchun)
 # ⚠️ Production'da faqat o'z domenlaringizni ruxsat bering!

@@ -41,6 +41,29 @@
                 class="hidden md:flex px-3.5 py-2 bg-[var(--bg-card)] hover:bg-[var(--bg-hover)] text-[var(--text-second)] hover:text-[var(--text-main)] rounded-xl transition items-center gap-1.5 border border-[var(--border-color)] shadow-sm text-xs sm:text-sm font-medium">
                 <i class="ph ph-printer text-base"></i> Chop etish
             </button>
+
+            {% if request.user.role in 'super_admin,owner,admin' %}
+            <form method="post" action="{% url 'finance:send_telegram_report' %}" class="inline m-0">
+                {% csrf_token %}
+                <button type="submit"
+                    onclick="return confirm('Bugungi kunlik hisobot Telegramga yuborilsinmi?')"
+                    class="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm font-semibold">
+                    <i class="ph ph-telegram-logo text-base"></i> <span>Telegramga hisobot</span>
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Avtomatik hisobot holati -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl text-xs">
+        <div class="flex items-center gap-2 text-[var(--text-second)]">
+            <span class="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="font-semibold text-[var(--text-main)]">Avtomatik Kunlik Hisobot:</span>
+            <span>Har kuni soat <b class="text-sky-500">19:00</b> da Telegram bot orqali guruh va adminlarga yuboriladi</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-lg font-medium">Celery Beat: Faol</span>
         </div>
     </div>
 
