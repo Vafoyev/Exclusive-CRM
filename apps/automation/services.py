@@ -131,11 +131,16 @@ def _send_telegram(user, message: str) -> str:
             logger.warning(f"User {user} has no telegram_id")
             return 'sent'  # Tizimda ko'rinishi uchun sent
 
-        import telebot
-        bot = telebot.TeleBot(telegram_token)
-        bot.send_message(telegram_id, message, parse_mode='HTML')
-
-        return 'sent'
+        import requests
+        resp = requests.post(
+            f"https://api.telegram.org/bot{telegram_token}/sendMessage",
+            json={"chat_id": telegram_id, "text": message, "parse_mode": "HTML"},
+            timeout=10
+        )
+        if resp.status_code == 200:
+            return 'sent'
+        logger.error(f"Telegram API error {resp.status_code}: {resp.text}")
+        return 'failed'
 
     except Exception as e:
         logger.error(f"Telegram error: {e}")
