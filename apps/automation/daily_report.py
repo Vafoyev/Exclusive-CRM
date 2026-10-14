@@ -40,6 +40,18 @@ def generate_daily_report_text(organization=None) -> str:
     card_sum = tx_qs.filter(payment_method='card').aggregate(total=Sum('amount'))['total'] or Decimal('0')
     terminal_sum = tx_qs.filter(payment_method__in=['terminal', 'transfer', 'online']).aggregate(total=Sum('amount'))['total'] or Decimal('0')
 
+    # Tasdiqlash kutilayotgan to'lovlar (pending)
+    pending_qs = Transaction.objects.filter(
+        transaction_type='income',
+        status='pending',
+        created_at__date=today,
+        is_deleted=False,
+    )
+    if organization:
+        pending_qs = pending_qs.filter(organization=organization)
+    pending_count = pending_qs.count()
+    pending_sum = pending_qs.aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
     # 2. O'QUVCHILAR
     student_qs = User.objects.filter(role='student', is_active=True, is_deleted=False)
     if organization:
@@ -95,8 +107,36 @@ def generate_daily_report_text(organization=None) -> str:
         if terminal_sum > 0:
             text += f"   🏦 Terminal/Bank: {terminal_sum:,.0f} UZS\n"
 
+        # To'lov qilgan o'quvchilar ro'yxati
+        payments = list(tx_qs.select_related('student', 'account').order_by('created_at'))
+        text += f"\n🧾 <b>Bugungi to'lovlar ro'yxati:</b>\n"
+        method_icons = {
+            'cash': '💵 Naqd',
+            'card': '💳 Karta',
+            'terminal': '🏦 Terminal',
+            'transfer': '🏛 O\'tkazma',
+            'online': '📱 Onlayn',
+        }
+        limit = 30
+        for idx, p in enumerate(payments[:limit], 1):
+            if p.student:
+                s_name = p.student.get_full_name() or p.student.username
+                s_phone = f" ({p.student.phone})" if getattr(p.student, 'phone', None) else ""
+            else:
+                s_name = p.description or "Noma'lum to'lovchi"
+                s_phone = ""
+            m_str = method_icons.get(p.payment_method, p.payment_method or '')
+            p_time = timezone.localtime(p.created_at).strftime('%H:%M')
+            text += f"{idx}. <b>{s_name}</b>{s_phone}\n   └ 💰 <b>{p.amount:,.0f} UZS</b> | {m_str} | ⏰ {p_time}\n"
+
+        if len(payments) > limit:
+            text += f"   <i>...va yana {len(payments) - limit} ta to'lov</i>\n"
+
+    if pending_count > 0:
+        text += f"\n⏳ <b>Tasdiqlash kutilayotgan to'lovlar:</b> <b>{pending_count} ta</b> ({pending_sum:,.0f} UZS)\n"
+
     text += (
-        f"• Jami kassa qoldig'i: <b>{total_kassa_balance:,.0f} UZS</b>\n\n"
+        f"\n• Jami kassa qoldig'i: <b>{total_kassa_balance:,.0f} UZS</b>\n\n"
         f"👥 <b>O'QUVCHILAR STATISTIKASI:</b>\n"
         f"• Bugun qo'shilgan yangi o'quvchilar: <b>+{new_students_today} ta</b>\n"
         f"• Jami faol o'quvchilar: <b>{total_students} nafar</b>\n"
@@ -207,3 +247,68 @@ def send_daily_report(chat_id=None, bot_token=None, organization=None) -> dict:
         'total_targets': len(target_chats),
         'errors': errors
     }
+
+
+def send_payment_notification(transaction) -> bool:
+    """
+    Yangi to'lov tasdiqlanganda Telegram guruh va adminlarga darhol bildirishnoma yuborish.
+    """
+    if not transaction or transaction.transaction_type != 'income' or transaction.status != 'confirmed':
+        return False
+
+    token = getattr(settings, 'TELEGRAM_BOT_TOKEN', None)
+    if not token:
+        return False
+
+    target_chats = set()
+    configured_chats = getattr(settings, 'TELEGRAM_REPORT_CHAT_ID', '') or getattr(settings, 'TELEGRAM_BACKUP_CHAT_ID', '') or ''
+    for cid in str(configured_chats).split(','):
+        if cid.strip():
+            target_chats.add(cid.strip())
+
+    if not target_chats:
+        return False
+
+    s_name = transaction.student.get_full_name() if transaction.student else (transaction.description or "Noma'lum to'lovchi")
+    s_phone = f"\n📞 <b>Telefon:</b> +{transaction.student.phone}" if (transaction.student and getattr(transaction.student, 'phone', None)) else ""
+    acc_name = transaction.account.name if transaction.account else "Kassa"
+    method_icons = {
+        'cash': '💵 Naqd',
+        'card': '💳 Karta',
+        'terminal': '🏦 Terminal',
+        'transfer': '🏛 O\'tkazma',
+        'online': '📱 Onlayn',
+    }
+    method_str = method_icons.get(transaction.payment_method, transaction.payment_method or 'Boshqa')
+    p_time = timezone.localtime(transaction.created_at).strftime('%d.%m.%Y %H:%M')
+    conf_by = f"\n👨‍💼 <b>Qabul qildi:</b> {transaction.confirmed_by.get_full_name() or transaction.confirmed_by.username}" if transaction.confirmed_by else ""
+    desc = f"\n📝 <b>Izoh:</b> {transaction.description}" if transaction.description and transaction.description != f"Tezkor to'lov: {s_name}" else ""
+
+    text = (
+        f"🟢 <b>YANGI TO'LOV QABUL QILINDI!</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━━\n"
+        f"👤 <b>O'quvchi:</b> <b>{s_name}</b>{s_phone}\n"
+        f"💰 <b>Summa:</b> <b>{transaction.amount:,.0f} UZS</b>\n"
+        f"💳 <b>To'lov turi:</b> {method_str}\n"
+        f"🏦 <b>Kassa:</b> {acc_name}{desc}{conf_by}\n"
+        f"⏰ <b>Vaqt:</b> {p_time}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━\n"
+        f"🤖 <i>Exclusive CRM</i>"
+    )
+
+    sent = False
+    for target_chat in target_chats:
+        try:
+            url = f"https://api.telegram.org/bot{token}/sendMessage"
+            resp = requests.post(url, json={
+                'chat_id': str(target_chat),
+                'text': text,
+                'parse_mode': 'HTML',
+            }, timeout=8)
+            if resp.status_code == 200:
+                sent = True
+        except Exception as e:
+            logger.error("Failed to send payment alert to %s: %s", target_chat, e)
+
+    return sent
+

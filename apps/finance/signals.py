@@ -98,6 +98,13 @@ def update_balances_on_transaction(sender, instance, created, **kwargs):
             instance.student.balance += instance.amount
             instance.student.save(update_fields=['balance'])
 
+        # Telegram guruh va adminlarga to'lov bildirishnomasini yuborish
+        try:
+            from apps.automation.daily_report import send_payment_notification
+            send_payment_notification(instance)
+        except Exception:
+            pass
+
     elif instance.transaction_type == 'expense':
         # Chiqim - kassadan ayiriladi
         account.balance -= instance.amount
