@@ -12,9 +12,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Phosphor Icons & Lottie Player -->
+    <!-- Phosphor Icons & Bodymovin Lottie Web -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
 
     <style>
         * {
@@ -599,14 +599,7 @@
             <!-- Markaz: Lottie Animatsiya va Matnlar -->
             <div class="hero-center">
                 <div class="lottie-box">
-                    <lottie-player
-                        src="{% static 'img/login_animation.json' %}"
-                        background="transparent"
-                        speed="1"
-                        style="width: 100%; height: 100%;"
-                        loop
-                        autoplay>
-                    </lottie-player>
+                    <div id="lottieContainer" style="width: 100%; height: 100%; max-height: 340px; display: flex; align-items: center; justify-content: center;"></div>
                 </div>
 
                 <h2>Boshqaruv va Ta'lim Tizimi</h2>
@@ -649,6 +642,7 @@
 
     <!-- JS Skript -->
     <script>
+        // Parolni ko'rsatish/yashirish
         function togglePass() {
             const pass = document.getElementById('id_password');
             const icon = document.getElementById('eyeIcon');
@@ -660,6 +654,23 @@
                 icon.className = 'ph ph-eye';
             }
         }
+
+        // Bodymovin Lottie Animatsiyasini yuklash
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                if (typeof lottie !== 'undefined') {
+                    lottie.loadAnimation({
+                        container: document.getElementById('lottieContainer'),
+                        renderer: 'svg',
+                        loop: true,
+                        autoplay: true,
+                        path: "{% static 'img/login_animation.json' %}"
+                    });
+                }
+            } catch (e) {
+                console.error("Lottie yuklashda xatolik:", e);
+            }
+        });
     </script>
 </body>
 
