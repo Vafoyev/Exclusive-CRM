@@ -8,8 +8,9 @@ from django.utils import timezone
 
 from apps.users.models import User
 from apps.finance.models import Transaction, Account
+from apps.finance.payroll import StaffAttendance
 from apps.education.models import Group
-from apps.operations.models import Lesson
+from apps.operations.models import Lesson, Attendance
 from apps.crm.models import Lead
 
 logger = logging.getLogger(__name__)
@@ -83,7 +84,78 @@ def generate_daily_report_text(organization=None) -> str:
     today_lessons = lessons_qs.count()
     finished_lessons = lessons_qs.filter(status='finished').count()
 
-    # 5. CRM / LIDLAR
+    # 5. O'QUVCHILAR DAVOMATI (BUGUNGI KUN BO'YICHA)
+    today_att_qs = Attendance.objects.filter(lesson__date=today, is_deleted=False)
+    if organization:
+        today_att_qs = today_att_qs.filter(organization=organization)
+
+    total_att_records = today_att_qs.count()
+    st_present = today_att_qs.filter(status='present').count()
+    st_late = today_att_qs.filter(status='late').count()
+    st_absent = today_att_qs.filter(status='absent').count()
+    st_excused = today_att_qs.filter(status='excused').count()
+    att_percentage = round(((st_present + st_late) / total_att_records * 100), 1) if total_att_records > 0 else 0
+
+    # Sababsiz kelmagan o'quvchilar ro'yxati (direktor nazorati uchun)
+    absent_students_list = list(
+        today_att_qs.filter(status='absent')
+        .select_related('student', 'lesson__group')
+        .order_by('lesson__group__name', 'student__first_name')[:15]
+    )
+
+    # 6. O'QITUVCHILAR DAVOMATI VA DARSLARI
+    teacher_lessons_qs = lessons_qs.filter(teacher__isnull=False).select_related('teacher', 'group')
+    teacher_ids = list(teacher_lessons_qs.values_list('teacher_id', flat=True).distinct())
+    teachers_count = len(teacher_ids)
+
+    # Xodimlar kelish/ketish davomati (StaffAttendance)
+    staff_att_qs = StaffAttendance.objects.filter(date=today, staff_id__in=teacher_ids, is_deleted=False)
+    if organization:
+        staff_att_qs = staff_att_qs.filter(organization=organization)
+    staff_att_map = {sa.staff_id: sa for sa in staff_att_qs}
+
+    # O'qituvchilar bo'yicha tahlil
+    teachers_report = []
+    teachers_full_finished_count = 0
+    teachers_pending_count = 0
+
+    teachers = list(User.objects.filter(id__in=teacher_ids).order_by('first_name', 'last_name'))
+    for t in teachers:
+        t_lessons = [l for l in teacher_lessons_qs if l.teacher_id == t.id]
+        t_total = len(t_lessons)
+        t_finished = sum(1 for l in t_lessons if l.status == 'finished')
+        
+        if t_finished == t_total and t_total > 0:
+            teachers_full_finished_count += 1
+            icon = "✅"
+        elif t_finished > 0:
+            teachers_pending_count += 1
+            icon = "⏳"
+        else:
+            teachers_pending_count += 1
+            icon = "❌"
+
+        # Kelish vaqti
+        sa = staff_att_map.get(t.id)
+        sa_note = ""
+        if sa:
+            if sa.check_in:
+                sa_note = f" (Keldi: {sa.check_in.strftime('%H:%M')})"
+            elif sa.status == 'absent':
+                sa_note = " (Kelmadi)"
+            elif sa.status == 'late':
+                sa_note = f" (Kechikdi {sa.late_minutes} daq)"
+
+        t_name = t.get_full_name() or t.username
+        teachers_report.append({
+            'name': t_name,
+            'finished': t_finished,
+            'total': t_total,
+            'icon': icon,
+            'sa_note': sa_note,
+        })
+
+    # 7. CRM / LIDLAR
     leads_qs = Lead.objects.filter(is_deleted=False)
     if organization:
         leads_qs = leads_qs.filter(organization=organization)
@@ -135,9 +207,46 @@ def generate_daily_report_text(organization=None) -> str:
     if pending_count > 0:
         text += f"\n⏳ <b>Tasdiqlash kutilayotgan to'lovlar:</b> <b>{pending_count} ta</b> ({pending_sum:,.0f} UZS)\n"
 
+    text += f"\n• Jami kassa qoldig'i: <b>{total_kassa_balance:,.0f} UZS</b>\n\n"
+
+    # KUNLIK DAVOMAT BO'LIMI: O'QUVCHILAR
     text += (
-        f"\n• Jami kassa qoldig'i: <b>{total_kassa_balance:,.0f} UZS</b>\n\n"
-        f"👥 <b>O'QUVCHILAR STATISTIKASI:</b>\n"
+        f"📋 <b>KUNLIK DAVOMAT (O'QUVCHILAR):</b>\n"
+        f"• Qatnashganlar (Bor): <b>{st_present} ta</b>\n"
+        f"• Kechikkanlar: <b>{st_late} ta</b>\n"
+        f"• Sababsiz kelmaganlar: <b>{st_absent} ta</b>\n"
+        f"• Sababli kelmaganlar: <b>{st_excused} ta</b>\n"
+    )
+    if total_att_records > 0:
+        text += f"• Umumiy davomat ko'rsatkichi: <b>{att_percentage}%</b>\n"
+    else:
+        text += f"• <i>Bugungi darslarga hali davomat olinmagan yoki darslar yo'q</i>\n"
+
+    # Kelmagan o'quvchilar ro'yxati
+    if absent_students_list:
+        text += f"\n⚠️ <b>Bugun darsga kelmagan o'quvchilar:</b>\n"
+        for i, a in enumerate(absent_students_list, 1):
+            st_name = a.student.get_full_name() or a.student.username
+            grp_name = a.lesson.group.name if a.lesson and a.lesson.group else "—"
+            text += f" {i}. {st_name} (<i>{grp_name}</i>)\n"
+        if st_absent > len(absent_students_list):
+            text += f" <i>...va yana {st_absent - len(absent_students_list)} ta o'quvchi</i>\n"
+
+    # KUNLIK DAVOMAT BO'LIMI: O'QITUVCHILAR
+    text += f"\n👩‍🏫 <b>O'QITUVCHILAR DAVOMATI VA DARSLARI:</b>\n"
+    text += f"• Bugun darsi bor o'qituvchilar: <b>{teachers_count} nafar</b>\n"
+    text += f"• Darslarini to'liq o'tganlar: <b>{teachers_full_finished_count} nafar</b>\n"
+    if teachers_pending_count > 0:
+        text += f"• Hali o'tmagan / kutilayotgan: <b>{teachers_pending_count} nafar</b>\n"
+
+    if teachers_report:
+        text += f"\n👨‍🏫 <b>O'qituvchilar dars holati:</b>\n"
+        for idx, tr in enumerate(teachers_report, 1):
+            text += f"{idx}. <b>{tr['name']}</b>: {tr['finished']}/{tr['total']} dars {tr['icon']}{tr['sa_note']}\n"
+
+    # UMUMIY STATISTIKA
+    text += (
+        f"\n👥 <b>O'QUVCHILAR UMUMIY STATISTIKASI:</b>\n"
         f"• Bugun qo'shilgan yangi o'quvchilar: <b>+{new_students_today} ta</b>\n"
         f"• Jami faol o'quvchilar: <b>{total_students} nafar</b>\n"
         f"• Qarzdor o'quvchilar: <b>{debtors_count} ta</b> (jami: <b>-{total_debt:,.0f} UZS</b>)\n\n"

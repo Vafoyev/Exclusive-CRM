@@ -82,10 +82,10 @@
                     <tr>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Xodim</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Asosiy</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Foiz / Dars</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Bonus</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ushlab qolish
-                        </th>
-                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Jami</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ushlab qolish</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Jami Net</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Holat</th>
                         <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Amallar</th>
                     </tr>
@@ -96,7 +96,7 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div
-                                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#818CF8] to-purple-500 flex items-center justify-center text-white font-bold">
+                                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#154734] to-[#2E8B57] flex items-center justify-center text-white font-bold">
                                     {{ payroll.staff.first_name|first }}
                                 </div>
                                 <div>
@@ -106,17 +106,27 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-slate-700">{{ payroll.base_salary|floatformat:0 }}
+                        <td class="px-6 py-4 text-slate-700">{{ payroll.base_salary|floatformat:0 }}</td>
+                        <td class="px-6 py-4">
+                            {% if payroll.percentage_earnings > 0 %}
+                                <div class="font-bold text-emerald-700">+{{ payroll.percentage_earnings|floatformat:0 }}</div>
+                                <div class="text-[11px] text-slate-400">Foiz: {{ payroll.percentage_rate|floatformat:0 }}% ({{ payroll.student_count }} talaba)</div>
+                            {% elif payroll.lesson_earnings > 0 %}
+                                <div class="font-semibold text-slate-700">+{{ payroll.lesson_earnings|floatformat:0 }}</div>
+                                <div class="text-[11px] text-slate-400">{{ payroll.lessons_count }} ta dars</div>
+                            {% else %}
+                                <span class="text-slate-400">—</span>
+                            {% endif %}
                         </td>
-                        <td class="px-6 py-4 text-green-600">+{{ payroll.kpi_bonus|floatformat:0 }}</td>
+                        <td class="px-6 py-4 text-green-600">+{{ payroll.kpi_bonus|add:payroll.other_bonus|floatformat:0 }}</td>
                         <td class="px-6 py-4 text-red-500">-{{ payroll.total_deductions|floatformat:0 }}</td>
-                        <td class="px-6 py-4 font-bold text-slate-800">{{ payroll.net_salary|floatformat:0 }}</td>
+                        <td class="px-6 py-4 font-extrabold text-slate-900">{{ payroll.net_salary|floatformat:0 }}</td>
                         <td class="px-6 py-4">
                             <span
                                 class="px-2.5 py-1 text-xs font-bold rounded-lg
                                 {% if payroll.status == 'paid' %}bg-green-100 text-green-700
-                                {% elif payroll.status == 'approved' %}bg-[#4F46E5]/10 text-[#0F172A]
-                                {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                                {% elif payroll.status == 'approved' %}bg-emerald-100 text-emerald-800
+                                {% else %}bg-amber-100 text-amber-800{% endif %}">
                                 {{ payroll.get_status_display }}
                             </span>
                         </td>

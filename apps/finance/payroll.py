@@ -4,6 +4,7 @@ StaffKPI - Xodim KPI hisobi
 PayrollRecord - Oylik hisob-kitobi
 StaffAttendance - Xodim davomati (NFC)
 """
+from decimal import Decimal
 from django.db import models
 from apps.core.models import TenantAwareModel
 from apps.users.models import User
@@ -110,6 +111,12 @@ class PayrollRecord(TenantAwareModel):
     per_lesson_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Darslik stavka")
     lessons_count = models.PositiveIntegerField(default=0, verbose_name="Darslar soni")
     lesson_earnings = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Dars daromadi")
+
+    # Talabalar to'lovidan foiz stavkasi bo'yicha hisob
+    percentage_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="Foiz stavkasi (%)")
+    student_count = models.PositiveIntegerField(default=0, verbose_name="Talabalar soni")
+    student_revenue = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Talabalar to'lovi jami")
+    percentage_earnings = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Foizdan daromad")
     
     kpi_bonus = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="KPI bonus")
     other_bonus = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Boshqa bonuslar")
@@ -147,25 +154,34 @@ class PayrollRecord(TenantAwareModel):
     def calculate(self):
         """Oylikni hisoblash"""
         # Dars daromadi
-        self.lesson_earnings = self.per_lesson_rate * self.lessons_count
+        self.lesson_earnings = Decimal(str(self.per_lesson_rate or 0)) * Decimal(str(self.lessons_count or 0))
+
+        # Talabalar to'lovidan foiz daromadi: (student_revenue * percentage_rate) / 100
+        pct_rate = Decimal(str(self.percentage_rate or 0))
+        st_rev = Decimal(str(self.student_revenue or 0))
+        if pct_rate > Decimal('0') and st_rev > Decimal('0'):
+            self.percentage_earnings = (st_rev * pct_rate) / Decimal('100')
+        else:
+            self.percentage_earnings = Decimal('0')
         
         # Yalpi summa
         self.gross_salary = (
-            self.base_salary + 
+            Decimal(str(self.base_salary or 0)) + 
             self.lesson_earnings + 
-            self.kpi_bonus + 
-            self.other_bonus
+            self.percentage_earnings +
+            Decimal(str(self.kpi_bonus or 0)) + 
+            Decimal(str(self.other_bonus or 0))
         )
         
         # Jami ushlab qolish
         self.total_deductions = (
-            self.late_penalty + 
-            self.absent_penalty + 
-            self.other_deductions
+            Decimal(str(self.late_penalty or 0)) + 
+            Decimal(str(self.absent_penalty or 0)) + 
+            Decimal(str(self.other_deductions or 0))
         )
         
         # Qo'lga tegadigan
-        self.net_salary = self.gross_salary - self.total_deductions
+        self.net_salary = max(Decimal('0'), self.gross_salary - self.total_deductions)
         
         return self.net_salary
 

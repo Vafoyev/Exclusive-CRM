@@ -6,12 +6,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Sum, Count, Avg
+from decimal import Decimal
 from datetime import date, timedelta
 import calendar
 
 from apps.finance.payroll import StaffKPI, PayrollRecord, StaffAttendance
 from apps.finance.models import Account, Transaction, TransactionCategory
 from apps.users.models import User
+from apps.education.models import Group, GroupStudent
 from apps.operations.models import Lesson, Attendance
 from apps.core.audit import log_user_action
 
@@ -101,10 +103,57 @@ def calculate_payroll(request, staff_id):
     else:
         selected_month = date.today().replace(day=1)
     
+    # O'qituvchining guruhlari va talabalari
+    teacher_groups = Group.objects.filter(teacher=staff)
+    if org:
+        teacher_groups = teacher_groups.filter(organization=org)
+
+    # Shu guruhlarga a'zo talabalar
+    group_students_qs = GroupStudent.objects.filter(group__in=teacher_groups, status='active').select_related('student', 'group')
+    student_ids = list(group_students_qs.values_list('student_id', flat=True).distinct())
+    student_count = len(student_ids)
+
+    # Davr (Oy boshi va oxiri)
+    month_end = add_months(selected_month, 1) - timedelta(days=1)
+
+    # Talabalarning shu oyda to'lagan tasdiqlangan to'lovlari
+    student_tx_qs = Transaction.objects.filter(
+        student_id__in=student_ids,
+        transaction_type='income',
+        status='confirmed',
+        created_at__date__gte=selected_month,
+        created_at__date__lte=month_end,
+        is_deleted=False,
+    )
+    if org:
+        student_tx_qs = student_tx_qs.filter(organization=org)
+
+    calculated_student_revenue = student_tx_qs.aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # Guruhlar bo'yicha tahlil (direktorga ko'rsatish uchun)
+    group_breakdown = []
+    for g in teacher_groups:
+        g_st_ids = list(GroupStudent.objects.filter(group=g, status='active').values_list('student_id', flat=True))
+        g_rev = student_tx_qs.filter(student_id__in=g_st_ids).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+        group_breakdown.append({
+            'group': g,
+            'students_count': len(g_st_ids),
+            'revenue': g_rev,
+        })
+
+    # Talabalar bo'yicha tushumlar ro'yxati
+    student_payments_detail = list(
+        student_tx_qs.select_related('student', 'account').order_by('-created_at')[:50]
+    )
+
     # Mavjud payroll bormi?
+    default_pct = staff.profile_data.get('percentage_rate', 40) if hasattr(staff, 'profile_data') and staff.profile_data else 40
     defaults = {
-        'base_salary': staff.profile_data.get('base_salary', 0) if hasattr(staff, 'profile_data') and staff.profile_data else 0,
-        'per_lesson_rate': staff.profile_data.get('per_lesson_rate', 50000) if hasattr(staff, 'profile_data') and staff.profile_data else 50000,
+        'base_salary': Decimal(str(staff.profile_data.get('base_salary', 0))) if hasattr(staff, 'profile_data') and staff.profile_data else Decimal('0'),
+        'per_lesson_rate': Decimal(str(staff.profile_data.get('per_lesson_rate', 0))) if hasattr(staff, 'profile_data') and staff.profile_data else Decimal('0'),
+        'percentage_rate': Decimal(str(default_pct)),
+        'student_count': student_count,
+        'student_revenue': calculated_student_revenue,
     }
 
     if org:
@@ -115,20 +164,37 @@ def calculate_payroll(request, staff_id):
         month=selected_month,
         defaults=defaults
     )
-    
+
+    # Agar payroll avval yaratilgan bo'lsa va student_revenue/student_count 0 bo'lsa yoki yangilanishi kerak bo'lsa:
+    if not created and payroll.status in ['draft', 'pending']:
+        if payroll.student_revenue == 0 and calculated_student_revenue > 0:
+            payroll.student_revenue = calculated_student_revenue
+        if payroll.student_count == 0 and student_count > 0:
+            payroll.student_count = student_count
+        if payroll.percentage_rate == 0 and default_pct > 0:
+            payroll.percentage_rate = Decimal(str(default_pct))
+
     if request.method == 'POST':
         # Formadan ma'lumotlarni olish
-        payroll.base_salary = float(request.POST.get('base_salary', 0))
-        payroll.per_lesson_rate = float(request.POST.get('per_lesson_rate', 0))
-        payroll.kpi_bonus = float(request.POST.get('kpi_bonus', 0))
-        payroll.other_bonus = float(request.POST.get('other_bonus', 0))
-        payroll.late_penalty = float(request.POST.get('late_penalty', 0))
-        payroll.absent_penalty = float(request.POST.get('absent_penalty', 0))
-        payroll.other_deductions = float(request.POST.get('other_deductions', 0))
+        payroll.base_salary = Decimal(str(request.POST.get('base_salary', 0) or 0))
+        payroll.per_lesson_rate = Decimal(str(request.POST.get('per_lesson_rate', 0) or 0))
+        payroll.percentage_rate = Decimal(str(request.POST.get('percentage_rate', 0) or 0))
+        payroll.student_count = student_count
+
+        post_revenue = request.POST.get('student_revenue')
+        if post_revenue is not None and str(post_revenue).strip() != '':
+            payroll.student_revenue = Decimal(str(post_revenue))
+        else:
+            payroll.student_revenue = calculated_student_revenue
+
+        payroll.kpi_bonus = Decimal(str(request.POST.get('kpi_bonus', 0) or 0))
+        payroll.other_bonus = Decimal(str(request.POST.get('other_bonus', 0) or 0))
+        payroll.late_penalty = Decimal(str(request.POST.get('late_penalty', 0) or 0))
+        payroll.absent_penalty = Decimal(str(request.POST.get('absent_penalty', 0) or 0))
+        payroll.other_deductions = Decimal(str(request.POST.get('other_deductions', 0) or 0))
         payroll.notes = request.POST.get('notes', '')
-        
+
         # Darslar sonini hisoblash
-        month_end = add_months(selected_month, 1) - timedelta(days=1)
         lessons_count = Lesson.objects.filter(
             teacher=staff,
             date__gte=selected_month,
@@ -136,19 +202,24 @@ def calculate_payroll(request, staff_id):
             status='finished'
         ).count()
         payroll.lessons_count = lessons_count
-        
+
         # Hisoblash va saqlash
         payroll.calculate()
         payroll.status = 'pending'
         payroll.save()
-        
+
+        # Profilga foiz stavkasini eslab qolish uchun saqlash
+        if hasattr(staff, 'profile_data'):
+            if not isinstance(staff.profile_data, dict):
+                staff.profile_data = {}
+            staff.profile_data['percentage_rate'] = float(payroll.percentage_rate)
+            staff.save(update_fields=['profile_data'])
+
         log_user_action(request.user, 'payroll_calculate', payroll)
-        messages.success(request, f"{staff.full_name} uchun oylik hisoblandi")
+        messages.success(request, f"{staff.full_name} uchun oylik muvaffaqiyatli hisoblandi!")
         return redirect('finance:payroll_list')
 
     # Statistika
-    month_end = add_months(selected_month, 1) - timedelta(days=1)
-    
     # O'tilgan darslar
     lessons_count = Lesson.objects.filter(
         teacher=staff,
@@ -156,7 +227,7 @@ def calculate_payroll(request, staff_id):
         date__lte=month_end,
         status='finished'
     ).count()
-    
+
     # Kechikishlar
     late_count = StaffAttendance.objects.filter(
         staff=staff,
@@ -164,7 +235,7 @@ def calculate_payroll(request, staff_id):
         date__lte=month_end,
         status='late'
     ).count()
-    
+
     # Yo'qlamalar
     absent_count = StaffAttendance.objects.filter(
         staff=staff,
@@ -172,7 +243,12 @@ def calculate_payroll(request, staff_id):
         date__lte=month_end,
         status='absent'
     ).count()
-    
+
+    # Hisoblangan foiz summasi
+    preview_percentage_earnings = Decimal('0')
+    if payroll.percentage_rate and payroll.student_revenue:
+        preview_percentage_earnings = (payroll.student_revenue * payroll.percentage_rate) / Decimal('100')
+
     context = {
         'staff': staff,
         'payroll': payroll,
@@ -181,6 +257,12 @@ def calculate_payroll(request, staff_id):
         'late_count': late_count,
         'absent_count': absent_count,
         'created': created,
+        'teacher_groups': teacher_groups,
+        'student_count': student_count,
+        'calculated_student_revenue': calculated_student_revenue,
+        'group_breakdown': group_breakdown,
+        'student_payments_detail': student_payments_detail,
+        'preview_percentage_earnings': preview_percentage_earnings,
     }
     return render(request, 'finance/payroll_calculate.html', context)
 

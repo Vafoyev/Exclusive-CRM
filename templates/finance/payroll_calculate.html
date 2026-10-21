@@ -4,137 +4,329 @@
 {% block header_title %}💰 Oylik Hisoblash{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-5xl mx-auto space-y-6">
 
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
             <a href="{% url 'finance:payroll_list' %}"
-                class="p-2 rounded-xl hover:bg-slate-100 transition">
-                <i class="ph ph-arrow-left text-xl text-slate-600"></i>
+                class="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition text-slate-600">
+                <i class="ph ph-arrow-left text-xl"></i>
             </a>
             <div class="flex items-center gap-3">
                 <div
-                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#818CF8] to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#154734] to-[#2E8B57] flex items-center justify-center text-white text-2xl font-bold shadow-md shadow-emerald-900/10">
                     {{ staff.first_name|first }}
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-slate-800">{{ staff.full_name }}</h1>
-                    <p class="text-slate-500">{{ staff.get_role_display }} • {{ selected_month|date:"F Y" }}</p>
+                    <p class="text-slate-500 font-medium">{{ staff.get_role_display }} • {{ selected_month|date:"F Y" }}</p>
                 </div>
             </div>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 bg-emerald-50 text-emerald-800 px-4 py-2 rounded-xl border border-emerald-200 text-sm font-semibold">
+            <i class="ph ph-percent text-emerald-600 text-lg"></i>
+            Foizli hisoblash tizimi
+        </div>
+    </div>
+
+    <!-- Ma'lumotlar kartalari -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass-panel p-4 rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                <i class="ph ph-student"></i>
+            </div>
+            <p class="text-3xl font-extrabold text-slate-800">{{ student_count }}</p>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Jami Talabalar</p>
+        </div>
+
+        <div class="glass-panel p-4 rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                <i class="ph ph-coins"></i>
+            </div>
+            <p class="text-2xl font-extrabold text-emerald-600">{{ calculated_student_revenue|floatformat:0 }}</p>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Talabalar to'lovi (UZS)</p>
+        </div>
+
+        <div class="glass-panel p-4 rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                <i class="ph ph-chalkboard-teacher"></i>
+            </div>
+            <p class="text-3xl font-extrabold text-blue-600">{{ lessons_count }}</p>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">O'tilgan darslar</p>
+        </div>
+
+        <div class="glass-panel p-4 rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                <i class="ph ph-clock"></i>
+            </div>
+            <p class="text-3xl font-extrabold text-amber-600">{{ late_count }} / {{ absent_count }}</p>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Kechikish / Yo'qlama</p>
         </div>
     </div>
 
     <!-- Form -->
-    <form method="post" class="space-y-6">
+    <form method="post" id="payrollForm" class="space-y-6">
         {% csrf_token %}
 
-        <!-- Ma'lumotlar -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="glass-panel p-4 rounded-xl text-center">
-                <p class="text-3xl font-bold text-[#64748B]">{{ lessons_count }}</p>
-                <p class="text-xs text-slate-500 uppercase">O'tilgan Darslar</p>
+        <!-- FOIZLI OYLIK HISOBLASH (ASOSIY DIREKTOR MEXANIZMI) -->
+        <div class="glass-panel p-6 rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 shadow-md space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-100 pb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-base">
+                            <i class="ph ph-percent"></i>
+                        </span>
+                        Talabalar to'lovidan o'qituvchiga foiz hisoblash
+                    </h3>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                        Direktor talabalar soni va to'lov summasiga qarab o'qituvchiga o'zi foiz belgilaydi.
+                    </p>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-slate-400 block">Hisoblangan foiz daromadi</span>
+                    <span id="display_percentage_earnings" class="text-2xl font-black text-emerald-700">0 UZS</span>
+                </div>
             </div>
-            <div class="glass-panel p-4 rounded-xl text-center">
-                <p class="text-3xl font-bold text-yellow-600">{{ late_count }}</p>
-                <p class="text-xs text-slate-500 uppercase">Kechikishlar</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Foiz stavkasi -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-800 mb-2 flex items-center justify-between">
+                        <span>O'qituvchining foiz stavkasi (%)</span>
+                        <span class="text-xs text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full">Direktor foizi</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number" step="0.1" min="0" max="100" id="percentage_rate" name="percentage_rate"
+                            value="{{ payroll.percentage_rate|floatformat:1 }}"
+                            class="w-full pl-4 pr-12 py-3 rounded-xl border border-emerald-300 bg-white text-slate-900 font-bold text-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition shadow-sm">
+                        <span class="absolute right-4 top-3.5 text-slate-400 font-bold">%</span>
+                    </div>
+
+                    <!-- Preset foiz tugmalari -->
+                    <div class="flex items-center gap-2 mt-2.5">
+                        <span class="text-xs text-slate-400">Tezkor tanlash:</span>
+                        <button type="button" onclick="setPercentage(30)" class="text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-700 font-medium transition">30%</button>
+                        <button type="button" onclick="setPercentage(40)" class="text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-700 font-medium transition">40%</button>
+                        <button type="button" onclick="setPercentage(50)" class="text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-700 font-medium transition">50%</button>
+                        <button type="button" onclick="setPercentage(60)" class="text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-700 font-medium transition">60%</button>
+                    </div>
+                </div>
+
+                <!-- Talabalar to'lovi jami -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-800 mb-2 flex items-center justify-between">
+                        <span>Talabalar to'lovi jami (UZS)</span>
+                        <span class="text-xs text-slate-500">{{ student_count }} ta talabadan</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number" step="100" min="0" id="student_revenue" name="student_revenue"
+                            value="{{ payroll.student_revenue|floatformat:0 }}"
+                            class="w-full pl-4 pr-16 py-3 rounded-xl border border-slate-300 bg-white text-slate-900 font-bold text-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition shadow-sm">
+                        <span class="absolute right-4 top-3.5 text-slate-400 font-bold text-xs">UZS</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                        Avtomatik hisoblangan summa: <b>{{ calculated_student_revenue|floatformat:0 }} UZS</b>. Kerak bo'lsa qo'lda o'zgartirishingiz mumkin.
+                    </p>
+                </div>
             </div>
-            <div class="glass-panel p-4 rounded-xl text-center">
-                <p class="text-3xl font-bold text-red-600">{{ absent_count }}</p>
-                <p class="text-xs text-slate-500 uppercase">Yo'qlamalar</p>
+
+            <!-- Formula tushuntirish banneri -->
+            <div class="p-3.5 bg-emerald-100/60 rounded-xl border border-emerald-200/80 flex items-center gap-3 text-xs sm:text-sm text-emerald-900">
+                <i class="ph ph-info text-emerald-700 text-xl shrink-0"></i>
+                <div id="formula_banner">
+                    Formula: <b>Talabalar to'lovi</b> × <b>Foiz (%)</b> = <b>O'qituvchining foiz daromadi</b>
+                </div>
             </div>
         </div>
 
-        <!-- Hisob-kitob formasi -->
-        <div class="glass-panel p-6 rounded-2xl space-y-6">
+        <!-- O'QITUVCHINING GURUHLARI VA TO'LOVLARI TAHLILI -->
+        {% if group_breakdown %}
+        <div class="glass-panel p-6 rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm space-y-4">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-users-three text-indigo-600 text-lg"></i>
+                O'qituvchining guruhlari va talabalar to'lovlari ({{ selected_month|date:"F Y" }})
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs uppercase bg-slate-50 text-slate-500 border-b border-slate-200">
+                        <tr>
+                            <th class="py-3 px-4">Guruh nomi</th>
+                            <th class="py-3 px-4">Kurs</th>
+                            <th class="py-3 px-4 text-center">Talabalar soni</th>
+                            <th class="py-3 px-4 text-right">Shu oydagi to'lovlar</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for g_data in group_breakdown %}
+                        <tr class="hover:bg-slate-50/80 transition">
+                            <td class="py-3 px-4 font-semibold text-slate-800 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                {{ g_data.group.name }}
+                            </td>
+                            <td class="py-3 px-4 text-slate-600">{{ g_data.group.course.name|default:"—" }}</td>
+                            <td class="py-3 px-4 text-center font-bold text-slate-700">{{ g_data.students_count }} nafar</td>
+                            <td class="py-3 px-4 text-right font-extrabold text-emerald-700">{{ g_data.revenue|floatformat:0 }} UZS</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
 
-            <!-- Daromadlar -->
+        <!-- BOSHQA DAROMADLAR VA USHLAB QOLISHLAR -->
+        <div class="glass-panel p-6 rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm space-y-6">
+
+            <!-- Qo'shimcha daromadlar -->
             <div>
-                <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                    <i class="ph ph-trend-up text-green-500"></i> Daromadlar
+                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="ph ph-trend-up text-green-600"></i> Qo'shimcha Daromadlar (Asosiy oylik, Darslik stavka, KPI)
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Asosiy
-                            Oylik</label>
-                        <input type="number" name="base_salary" value="{{ payroll.base_salary|floatformat:0 }}"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Fiksirlangan Asosiy Oylik</label>
+                        <input type="number" id="base_salary" name="base_salary" value="{{ payroll.base_salary|floatformat:0 }}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Darslik
-                            Stavka</label>
-                        <input type="number" name="per_lesson_rate" value="{{ payroll.per_lesson_rate|floatformat:0 }}"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Darslik Stavka (1 dars)</label>
+                        <input type="number" id="per_lesson_rate" name="per_lesson_rate" value="{{ payroll.per_lesson_rate|floatformat:0 }}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">KPI Bonus</label>
-                        <input type="number" name="kpi_bonus" value="{{ payroll.kpi_bonus|floatformat:0 }}"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">KPI Bonus</label>
+                        <input type="number" id="kpi_bonus" name="kpi_bonus" value="{{ payroll.kpi_bonus|floatformat:0 }}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Boshqa
-                            Bonuslar</label>
-                        <input type="number" name="other_bonus" value="{{ payroll.other_bonus|floatformat:0 }}"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Boshqa Bonuslar</label>
+                        <input type="number" id="other_bonus" name="other_bonus" value="{{ payroll.other_bonus|floatformat:0 }}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
             </div>
 
-            <hr class="border-slate-200">
+            <hr class="border-slate-100">
 
             <!-- Ushlab qolishlar -->
             <div>
-                <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                    <i class="ph ph-trend-down text-red-500"></i> Ushlab Qolishlar
+                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="ph ph-trend-down text-red-500"></i> Ushlab Qolishlar (Jarimalar)
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Kechikish
-                            Jarimasi</label>
-                        <input type="number" name="late_penalty" value="{{ payroll.late_penalty|floatformat:0 }}"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kechikish Jarimasi</label>
+                        <input type="number" id="late_penalty" name="late_penalty" value="{{ payroll.late_penalty|floatformat:0 }}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:ring-2 focus:ring-red-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Yo'qlama
-                            Jarimasi</label>
-                        <input type="number" name="absent_penalty" value="{{ payroll.absent_penalty|floatformat:0 }}"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Yo'qlama Jarimasi</label>
+                        <input type="number" id="absent_penalty" name="absent_penalty" value="{{ payroll.absent_penalty|floatformat:0 }}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:ring-2 focus:ring-red-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Boshqa Ushlab
-                            Qolish</label>
-                        <input type="number" name="other_deductions"
-                            value="{{ payroll.other_deductions|floatformat:0 }}"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Boshqa Ushlab Qolish</label>
+                        <input type="number" id="other_deductions" name="other_deductions" value="{{ payroll.other_deductions|floatformat:0 }}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:ring-2 focus:ring-red-500">
                     </div>
                 </div>
             </div>
 
-            <hr class="border-slate-200">
+            <hr class="border-slate-100">
 
             <!-- Izoh -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Izoh</label>
-                <textarea name="notes" rows="3"
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500">{{ payroll.notes }}</textarea>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Direktor izohi</label>
+                <textarea name="notes" rows="2" placeholder="Masalan: 40% foiz stavkasi bo'yicha to'liq hisoblandi"
+                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:ring-2 focus:ring-emerald-500">{{ payroll.notes }}</textarea>
             </div>
-
         </div>
 
-        <!-- Submit -->
-        <div class="flex justify-end gap-3">
-            <a href="{% url 'finance:payroll_list' %}"
-                class="px-6 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 transition">
-                Bekor qilish
-            </a>
-            <button type="submit"
-                class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#818CF8] to-purple-500 text-white font-semibold hover:shadow-lg hover:shadow-indigo-500/30 transition">
-                <i class="ph ph-calculator mr-2"></i> Hisoblash
-            </button>
+        <!-- YAKUNIY OYLIK HISOBLASH KARTASI (LIVE SUMMARY) -->
+        <div class="p-6 rounded-2xl bg-slate-900 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-800">
+            <div class="space-y-1 text-center md:text-left">
+                <span class="text-xs uppercase tracking-wider text-slate-400 font-bold">Jami qo'lga tegadigan oylik (Net):</span>
+                <div class="flex items-baseline gap-2 justify-center md:justify-start">
+                    <span id="display_net_salary" class="text-3xl md:text-4xl font-black text-emerald-400">0 UZS</span>
+                </div>
+                <div class="text-xs text-slate-400" id="calculation_summary_text">
+                    (Asosiy + Foiz + Darslar + Bonuslar) - Jarimalar
+                </div>
+            </div>
+
+            <!-- Submit buttons -->
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <a href="{% url 'finance:payroll_list' %}"
+                    class="flex-1 md:flex-initial px-5 py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 transition text-center text-sm font-semibold">
+                    Bekor qilish
+                </a>
+                <button type="submit"
+                    class="flex-1 md:flex-initial px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold hover:shadow-lg hover:shadow-emerald-600/30 transition text-sm flex items-center justify-center gap-2">
+                    <i class="ph ph-check-circle text-lg"></i>
+                    Oylikni Tasdiqlashga Saqlash
+                </button>
+            </div>
         </div>
 
     </form>
 
 </div>
+
+<script>
+function formatMoney(num) {
+    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " UZS";
+}
+
+function setPercentage(val) {
+    document.getElementById('percentage_rate').value = val;
+    calculateLive();
+}
+
+function calculateLive() {
+    const pctRate = parseFloat(document.getElementById('percentage_rate').value) || 0;
+    const stRev = parseFloat(document.getElementById('student_revenue').value) || 0;
+    const baseSalary = parseFloat(document.getElementById('base_salary').value) || 0;
+    const perLessonRate = parseFloat(document.getElementById('per_lesson_rate').value) || 0;
+    const lessonsCount = {{ lessons_count|default:0 }};
+    const kpiBonus = parseFloat(document.getElementById('kpi_bonus').value) || 0;
+    const otherBonus = parseFloat(document.getElementById('other_bonus').value) || 0;
+    const latePenalty = parseFloat(document.getElementById('late_penalty').value) || 0;
+    const absentPenalty = parseFloat(document.getElementById('absent_penalty').value) || 0;
+    const otherDeductions = parseFloat(document.getElementById('other_deductions').value) || 0;
+
+    // Foiz daromadi: (stRev * pctRate) / 100
+    const pctEarnings = (stRev * pctRate) / 100;
+    const lessonEarnings = perLessonRate * lessonsCount;
+
+    const grossSalary = baseSalary + pctEarnings + lessonEarnings + kpiBonus + otherBonus;
+    const deductions = latePenalty + absentPenalty + otherDeductions;
+    const netSalary = Math.max(0, grossSalary - deductions);
+
+    // Ekranga chiqarish
+    document.getElementById('display_percentage_earnings').innerText = formatMoney(pctEarnings);
+    document.getElementById('display_net_salary').innerText = formatMoney(netSalary);
+
+    // Formula banner
+    const banner = document.getElementById('formula_banner');
+    if (banner) {
+        banner.innerHTML = `Hisob-kitob: <b>${formatMoney(stRev)}</b> × <b>${pctRate}%</b> = <b class="text-emerald-800">${formatMoney(pctEarnings)}</b> o'qituvchining ulushi`;
+    }
+
+    const summaryText = document.getElementById('calculation_summary_text');
+    if (summaryText) {
+        summaryText.innerHTML = `Foiz: <b>${formatMoney(pctEarnings)}</b> + Asosiy: <b>${formatMoney(baseSalary)}</b> + Dars: <b>${formatMoney(lessonEarnings)}</b> - Jarima: <b>${formatMoney(deductions)}</b>`;
+    }
+}
+
+// Barcha inputlarga event listener bog'lash
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('#payrollForm input');
+    inputs.forEach(inp => {
+        inp.addEventListener('input', calculateLive);
+        inp.addEventListener('change', calculateLive);
+    });
+    calculateLive();
+});
+</script>
 {% endblock %}
