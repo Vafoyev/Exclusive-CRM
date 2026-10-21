@@ -1,293 +1,373 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="uz" class="h-full">
+<html lang="uz">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kirish | EXCLUSIVE AIM O'QUV MARKAZI</title>
+    <title>Kirish | EXCLUSIVE ACADEMY</title>
 
-    <!-- FONTS & ICONS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
         body {
-            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            min-height: 100vh;
+            background: #F4F6F8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            color: #1E293B;
+            position: relative;
         }
 
-        /* Exclusive Aim Emerald Gradient */
-        .ea-gradient-bg {
-            background: linear-gradient(145deg, #0D3023 0%, #154734 45%, #1B5E43 100%);
+        /* Yumshoq, bosiq naqsh */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+            pointer-events: none;
         }
 
-        /* Subtle animated dot grid background */
-        .ea-pattern {
-            background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1.5px, transparent 1.5px);
-            background-size: 28px 28px;
+        /* Asosiy Karta */
+        .login-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 36px 32px 30px;
+            box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(15, 23, 42, 0.04);
+            border: 1px solid #E2E8F0;
         }
 
-        /* Globe circular pulse */
-        @keyframes pulse-slow {
-            0%, 100% {
-                transform: scale(1) rotate(0deg);
-                opacity: 0.35;
-            }
-            50% {
-                transform: scale(1.05) rotate(180deg);
-                opacity: 0.55;
-            }
+        /* Brend va Logotip */
+        .brand-section {
+            text-align: center;
+            margin-bottom: 24px;
         }
 
-        .globe-pulse {
-            animation: pulse-slow 20s ease-in-out infinite;
+        .brand-logo-img {
+            width: 88px;
+            height: 88px;
+            border-radius: 22px;
+            object-fit: cover;
+            box-shadow: 0 12px 28px -6px rgba(22, 67, 47, 0.35);
+            margin-bottom: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            transition: transform 0.3s ease;
         }
 
-        /* Custom inputs */
-        .login-input {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        .brand-logo-img:hover {
+            transform: scale(1.03);
         }
-        .login-input:focus {
-            border-color: #154734;
-            box-shadow: 0 0 0 4px rgba(21, 71, 52, 0.12);
+
+        .brand-name {
+            font-size: 21px;
+            font-weight: 800;
+            color: #184833;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #64748B;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Forma Sarlavhasi */
+        .form-title-wrap {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .form-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .form-subtitle {
+            font-size: 12.5px;
+            color: #64748B;
+            margin-top: 2px;
+        }
+
+        /* Xatolik xabari */
+        .alert-error {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: #B91C1C;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Inputlar */
+        .form-field {
+            margin-bottom: 16px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #334155;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .field-input-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .field-icon {
+            position: absolute;
+            left: 14px;
+            color: #94A3B8;
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        .input-text {
+            width: 100%;
+            height: 46px;
+            padding: 0 14px 0 42px;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #0F172A;
+            background: #F8FAFC;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .input-text:focus {
+            background: #FFFFFF;
+            border-color: #184833;
+            box-shadow: 0 0 0 3px rgba(24, 72, 51, 0.12);
+        }
+
+        .eye-button {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #94A3B8;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            transition: color 0.15s;
+        }
+
+        .eye-button:hover {
+            color: #475569;
+        }
+
+        /* Qo'shimcha qator */
+        .field-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            font-size: 12.5px;
+        }
+
+        .remember-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+            color: #475569;
+            font-weight: 500;
+            user-select: none;
+        }
+
+        .remember-label input {
+            width: 15px;
+            height: 15px;
+            accent-color: #184833;
+            cursor: pointer;
+        }
+
+        .forgot-pass {
+            color: #184833;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .forgot-pass:hover {
+            text-decoration: underline;
+        }
+
+        /* Tugma */
+        .submit-btn {
+            width: 100%;
+            height: 48px;
+            background: #184833;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 22px -5px rgba(24, 72, 51, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            background: #133A29;
+            transform: translateY(-1px);
+            box-shadow: 0 12px 26px -5px rgba(24, 72, 51, 0.45);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Footer */
+        .card-bottom {
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px solid #F1F5F9;
+            text-align: center;
+            font-size: 11.5px;
+            color: #64748B;
+        }
+
+        .card-bottom b {
+            color: #184833;
+        }
+
+        .copyright {
+            margin-top: 6px;
+            color: #94A3B8;
+            font-size: 11px;
         }
     </style>
 </head>
 
-<body class="h-full bg-white text-slate-800 antialiased selection:bg-emerald-700 selection:text-white">
+<body>
 
-    <div class="min-h-full flex flex-col lg:flex-row">
+    <div class="login-card">
 
-        <!-- ============================================================== -->
-        <!-- CHAP TOMON: TOZA, MINIMALIST VA ANIQ LOGIN FORMASI (50%) -->
-        <!-- ============================================================== -->
-        <div class="flex-1 flex flex-col justify-between px-6 py-8 sm:px-12 lg:px-16 xl:px-24 bg-white relative">
-            
-            <!-- Yuqori Brand Header: Rasmiy Flayer Logotipi -->
-            <div class="flex items-center justify-between">
-                <a href="/" class="flex items-center gap-3 group">
-                    <img src="{% static 'img/exclusive_aim_logo.png' %}" alt="EXCLUSIVE AIM" class="h-9 sm:h-11 object-contain">
-                </a>
-
-                <!-- O'ng burchak tizim faolligi nishoni -->
-                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Tizim faol
-                    </span>
-                </div>
-            </div>
-
-            <!-- Asosiy Forma Qismi -->
-            <div class="w-full max-w-md mx-auto my-auto py-8">
-                <div class="mb-8">
-                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-                        Tizimga kirish
-                    </h1>
-                    <p class="text-slate-500 text-sm leading-relaxed">
-                        Exclusive Aim boshqaruv paneliga kirish uchun telefon raqam va parolingizni kiriting.
-                    </p>
-                </div>
-
-                {% if form.errors %}
-                <div class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-3">
-                    <i class="ph ph-warning-circle text-xl text-rose-600 flex-shrink-0 mt-0.5"></i>
-                    <div>
-                        <p class="font-bold">Kirishda xatolik yuz berdi</p>
-                        <p class="text-xs text-rose-600 mt-0.5">Telefon raqam yoki parol noto'g'ri kiritildi. Iltimos, qayta tekshirib ko'ring.</p>
-                    </div>
-                </div>
-                {% endif %}
-
-                <form method="post" class="space-y-5" autocomplete="on">
-                    {% csrf_token %}
-
-                    <!-- Login (Telefon raqam yoki Username) -->
-                    <div>
-                        <label for="id_username" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                            Login yoki Telefon raqam
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <i class="ph ph-user text-lg"></i>
-                            </span>
-                            <input type="text" name="username" id="id_username" required autofocus autocomplete="username"
-                                placeholder="Masalan: 998901234567"
-                                value="{{ form.username.value|default:'' }}"
-                                class="login-input w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:bg-white focus:outline-none">
-                        </div>
-                    </div>
-
-                    <!-- Parol -->
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <label for="id_password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                Parol
-                            </label>
-                            <a href="#help" onclick="alert('Parolni tiklash uchun Exclusive Aim ma\'muriyatiga murojaat qiling: +998 78 555 13 78')"
-                                class="text-xs font-semibold text-[#154734] hover:text-emerald-700 transition">
-                                Parolni unutdingizmi?
-                            </a>
-                        </div>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <i class="ph ph-lock-key text-lg"></i>
-                            </span>
-                            <input type="password" name="password" id="id_password" required autocomplete="current-password"
-                                placeholder="••••••••"
-                                class="login-input w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:bg-white focus:outline-none">
-                            <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer">
-                                <i class="ph ph-eye text-lg" id="eyeIcon"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Eslab qolish -->
-                    <div class="flex items-center justify-between pt-1">
-                        <label class="flex items-center gap-2 cursor-pointer select-none">
-                            <input type="checkbox" name="remember_me" class="w-4 h-4 rounded text-[#154734] border-slate-300 focus:ring-[#154734]">
-                            <span class="text-xs font-medium text-slate-600">Meni eslab qolish</span>
-                        </label>
-                        <span class="text-xs text-slate-400 flex items-center gap-1">
-                            <i class="ph ph-shield-check text-emerald-600"></i> Xavfsiz ulanish
-                        </span>
-                    </div>
-
-                    <!-- Kirish Tugmasi (Exclusive Aim Emerald Button) -->
-                    <div class="pt-2">
-                        <button type="submit"
-                            class="w-full py-3.5 px-6 rounded-xl font-bold text-white bg-[#154734] hover:bg-[#1C5C44] active:bg-[#0F3526] shadow-lg shadow-emerald-950/25 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-base cursor-pointer">
-                            <span>Tizimga kirish</span>
-                            <i class="ph ph-arrow-right text-lg"></i>
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Aloqa va qo'llab-quvvatlash -->
-                <div class="mt-8 p-4 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed flex items-center justify-between">
-                    <div class="flex items-center gap-2 font-medium">
-                        <i class="ph ph-phone-call text-base text-emerald-700"></i>
-                        <span>Aloqa: <b>+998 78 555 13 78</b></span>
-                    </div>
-                    <a href="https://instagram.com/mahliyo__jasurbekovna" target="_blank" class="text-slate-500 hover:text-emerald-700 font-medium flex items-center gap-1">
-                        <i class="ph ph-instagram-logo text-base"></i> @mahliyo__jasurbekovna
-                    </a>
-                </div>
-            </div>
-
-            <!-- Pastki Footer Qismi -->
-            <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
-                <div>
-                    &copy; 2026 EXCLUSIVE AIM O'QUV MARKAZI. Barcha huquqlar himoyalangan.
-                </div>
-                <div class="flex items-center gap-4">
-                    <span class="text-emerald-700 font-semibold flex items-center gap-1">
-                        <i class="ph ph-lock text-sm"></i> 256-bit SSL Himoyalangan
-                    </span>
-                </div>
-            </div>
+        <!-- Logotip: Foydalanuvchining o'z rasmiy logotipi -->
+        <div class="brand-section">
+            <img src="{% static 'img/exclusive_academy_logo.jpg' %}" alt="EXCLUSIVE ACADEMY" class="brand-logo-img">
+            <h1 class="brand-name">EXCLUSIVE ACADEMY</h1>
+            <p class="brand-sub">O'quv Markazi</p>
         </div>
 
-        <!-- ============================================================== -->
-        <!-- O'NG TOMON: CLOUDFLARE STYLE YORQIN BRAND / HERO QISMI (50%) -->
-        <!-- ============================================================== -->
-        <div class="hidden lg:flex flex-1 ea-gradient-bg ea-pattern relative overflow-hidden flex-col justify-between p-12 xl:p-16 text-white">
-            
-            <!-- Orqa fondagi Dunyo / Tarmoq animatsiyasi elementlari -->
-            <div class="absolute -right-24 -top-24 w-[600px] h-[600px] rounded-full border border-white/10 globe-pulse pointer-events-none"></div>
-            <div class="absolute -right-12 -top-12 w-[480px] h-[480px] rounded-full border border-white/15 pointer-events-none"></div>
-            <div class="absolute right-12 top-12 w-[340px] h-[340px] rounded-full border border-white/20 pointer-events-none"></div>
+        <div class="form-title-wrap">
+            <h2 class="form-title">Tizimga kirish</h2>
+            <p class="form-subtitle">Boshqaruv tizimiga kirish uchun ma'lumotlaringizni kiriting</p>
+        </div>
 
-            <!-- Yuqori Badge -->
-            <div class="relative z-10 flex items-center justify-between">
-                <span class="px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-bold tracking-wide uppercase flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
-                    EXCLUSIVE AIM &bull; O'quv Markazi
-                </span>
-                <span class="text-xs font-semibold text-emerald-100/90 flex items-center gap-1.5">
-                    <i class="ph ph-map-pin"></i> Boshqaruv platformasi
-                </span>
-            </div>
+        {% if form.errors %}
+        <div class="alert-error">
+            <i class="ph ph-warning-circle" style="font-size: 18px;"></i>
+            <span>Login yoki parol noto'g'ri kiritildi</span>
+        </div>
+        {% endif %}
 
-            <!-- Markaziy Ta'sirli Matn va Ilustratsiya -->
-            <div class="relative z-10 my-auto py-10 max-w-lg">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-400/20 text-emerald-200 text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-400/30">
-                    <i class="ph ph-sparkle"></i> Ingliz tili — yangi imkoniyatlar eshigi!
-                </div>
-                <h2 class="text-4xl xl:text-5xl font-black tracking-tight leading-tight mb-5">
-                    Siz ham muvaffaqiyatga erishasiz!
-                </h2>
-                <p class="text-emerald-100/90 text-base leading-relaxed font-normal mb-8">
-                    1-darsdan inglizcha gapirishingizga kafolat beramiz! Darslar, guruhlar, kassa va davomat — barchasi yagona aqlli tizimda.
-                </p>
+        <form method="post" autocomplete="on">
+            {% csrf_token %}
 
-                <!-- Flayerdagi Yo'nalishlar Kartochkalari -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-500/30 flex items-center justify-center text-emerald-200 mb-2.5">
-                            <i class="ph ph-graduation-cap text-xl"></i>
-                        </div>
-                        <p class="text-xs text-emerald-200 uppercase font-bold tracking-wider">IELTS / CEFR</p>
-                        <p class="text-sm font-bold text-white mt-0.5">Xalqaro imtihonlarga intensiv tayyorlov</p>
-                    </div>
-
-                    <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-500/30 flex items-center justify-center text-emerald-200 mb-2.5">
-                            <i class="ph ph-chat-centered-text text-xl"></i>
-                        </div>
-                        <p class="text-xs text-emerald-200 uppercase font-bold tracking-wider">Grammatika & So'zlashuv</p>
-                        <p class="text-sm font-bold text-white mt-0.5">1-darsdan jonli inglizcha muloqot</p>
-                    </div>
-
-                    <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-500/30 flex items-center justify-center text-emerald-200 mb-2.5">
-                            <i class="ph ph-receipt text-xl"></i>
-                        </div>
-                        <p class="text-xs text-emerald-200 uppercase font-bold tracking-wider">Shaffof kassa</p>
-                        <p class="text-sm font-bold text-white mt-0.5">Direktor tasdiqlagan to'lov cheklari</p>
-                    </div>
-
-                    <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-500/30 flex items-center justify-center text-emerald-200 mb-2.5">
-                            <i class="ph ph-users-three text-xl"></i>
-                        </div>
-                        <p class="text-xs text-emerald-200 uppercase font-bold tracking-wider">Oila zanjiri</p>
-                        <p class="text-sm font-bold text-white mt-0.5">O'quvchi va ota-onalar monitoringi</p>
-                    </div>
+            <!-- Login / Telefon -->
+            <div class="form-field">
+                <label for="id_username" class="field-label">Login yoki Telefon</label>
+                <div class="field-input-box">
+                    <i class="ph ph-user field-icon"></i>
+                    <input type="text" name="username" id="id_username" required autofocus autocomplete="username"
+                        placeholder="Login yoki telefon raqam" value="{{ form.username.value|default:'' }}"
+                        class="input-text">
                 </div>
             </div>
 
-            <!-- Pastki Sifat / Aloqa Kafolati -->
-            <div class="relative z-10 pt-6 border-t border-white/15 flex items-center justify-between text-xs text-emerald-100/80">
-                <div class="flex items-center gap-2">
-                    <i class="ph ph-check-circle-fill text-emerald-400 text-base"></i>
-                    <span>Darslar shaxsan <b>Mahliyo Jasurbekovna</b> tomonidan olib boriladi</span>
-                </div>
-                <div class="font-bold tracking-wide">
-                    Exclusive Suite v4.5
+            <!-- Parol -->
+            <div class="form-field">
+                <label for="id_password" class="field-label">Parol</label>
+                <div class="field-input-box">
+                    <i class="ph ph-lock-key field-icon"></i>
+                    <input type="password" name="password" id="id_password" required autocomplete="current-password"
+                        placeholder="••••••••" class="input-text">
+                    <button type="button" onclick="togglePass()" class="eye-button" aria-label="Parolni ko'rsatish">
+                        <i class="ph ph-eye" id="eyeIcon"></i>
+                    </button>
                 </div>
             </div>
 
+            <!-- Eslab qolish & Parolni unutdingizmi -->
+            <div class="field-row">
+                <label class="remember-label">
+                    <input type="checkbox" name="remember_me">
+                    <span>Eslab qolish</span>
+                </label>
+                <a href="#help" onclick="alert('Parolni tiklash uchun administratorga murojaat qiling')" class="forgot-pass">
+                    Parolni unutdingizmi?
+                </a>
+            </div>
+
+            <!-- Kirish tugmasi -->
+            <button type="submit" class="submit-btn">
+                <span>Tizimga kirish</span>
+                <i class="ph ph-arrow-right" style="font-size: 16px;"></i>
+            </button>
+        </form>
+
+        <div class="card-bottom">
+            <span>Aloqa: <b>+998 78 555 13 78</b></span>
+            <p class="copyright">&copy; 2026 Exclusive Academy. Barcha huquqlar himoyalangan.</p>
         </div>
 
     </div>
 
-    <!-- Parolni ko'rsatish/yashirish skripti -->
     <script>
-        function togglePasswordVisibility() {
-            const passwordInput = document.getElementById('id_password');
-            const eyeIcon = document.getElementById('eyeIcon');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                eyeIcon.classList.remove('ph-eye');
-                eyeIcon.classList.add('ph-eye-slash');
+        function togglePass() {
+            const pass = document.getElementById('id_password');
+            const icon = document.getElementById('eyeIcon');
+            if (pass.type === 'password') {
+                pass.type = 'text';
+                icon.className = 'ph ph-eye-slash';
             } else {
-                passwordInput.type = 'password';
-                eyeIcon.classList.remove('ph-eye-slash');
-                eyeIcon.classList.add('ph-eye');
+                pass.type = 'password';
+                icon.className = 'ph ph-eye';
             }
         }
     </script>

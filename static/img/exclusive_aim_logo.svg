@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 80" fill="none">
+    <!-- Icon part: Stylized Emerald & Gold "EA" Crest -->
+    <g transform="translate(10, 6)">
+        <!-- Shield/Badge Base -->
+        <rect x="0" y="0" width="68" height="68" rx="18" fill="#154734"/>
+        <rect x="0" y="0" width="68" height="68" rx="18" fill="url(#crest_grad)" stroke="#22C55E" stroke-opacity="0.3" stroke-width="1.5"/>
+        
+        <!-- Inner Stylized Monogram "EA" -->
+        <path d="M22 48V20H46V26H29V31H43V37H29V42H47V48H22Z" fill="#F6C344"/>
+        <!-- Academic cap spark -->
+        <polygon points="50,16 53,22 59,23 54,27 56,33 50,29 44,33 46,27 41,23 47,22" fill="#FFFFFF" opacity="0.9"/>
+    </g>
+    
+    <!-- Text Part -->
+    <g transform="translate(92, 16)">
+        <!-- EXCLUSIVE -->
+        <text x="0" y="26" font-family="'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="24" font-weight="900" letter-spacing="1.5" fill="#154734">EXCLUSIVE</text>
+        <text x="148" y="26" font-family="'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="24" font-weight="900" letter-spacing="1.5" fill="#D97706">AIM</text>
+        
+        <!-- O'QUV MARKAZI -->
+        <text x="1" y="44" font-family="'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="10.5" font-weight="700" letter-spacing="4" fill="#64748B">O'QUV MARKAZI</text>
+    </g>
+
+    <!-- Gradients -->
+    <defs>
+        <linearGradient id="crest_grad" x1="0" y1="0" x2="68" y2="68" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#1B5E43"/>
+            <stop offset="1" stop-color="#0B2B1E"/>
+        </linearGradient>
+    </defs>
+</svg>
