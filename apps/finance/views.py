@@ -218,6 +218,10 @@ def transaction_list(request):
 @login_required
 @permission_required('finance', 'view')
 def account_list(request):
+    if not request.user.is_director:
+        messages.error(request, "Kassalar balansi faqat direktor uchun ochiq!")
+        return redirect('finance:admin_cash_dashboard')
+
     org = request.organization
     accounts = Account.objects.filter(is_deleted=False)
     if org:
@@ -230,6 +234,10 @@ def account_list(request):
 @login_required
 @permission_required('finance', 'create')
 def account_create(request):
+    if not request.user.is_director:
+        messages.error(request, "Kassa yaratish faqat direktor uchun ruxsat etilgan!")
+        return redirect('finance:admin_cash_dashboard')
+
     from .forms import AccountForm
     org = request.organization
     if request.method == 'POST':
@@ -247,6 +255,10 @@ def account_create(request):
 @login_required
 @permission_required('finance', 'edit')
 def account_edit(request, pk):
+    if not request.user.is_director:
+        messages.error(request, "Kassani tahrirlash faqat direktor uchun ruxsat etilgan!")
+        return redirect('finance:admin_cash_dashboard')
+
     from .forms import AccountForm
     org = request.organization
     account = get_object_or_404(Account, pk=pk, organization=org)
@@ -264,6 +276,10 @@ def account_edit(request, pk):
 @permission_required('finance', 'delete')
 @require_POST
 def account_delete(request, pk):
+    if not request.user.is_director:
+        messages.error(request, "Kassani o'chirish faqat direktor uchun ruxsat etilgan!")
+        return redirect('finance:admin_cash_dashboard')
+
     org = request.organization
     account = get_object_or_404(Account, pk=pk, organization=org)
     account.is_deleted = True

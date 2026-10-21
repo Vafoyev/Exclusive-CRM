@@ -9,7 +9,7 @@
             <i class="ph ph-buildings text-[var(--text-muted)] text-base"></i>
             <span class="text-[var(--text-main)] font-medium hidden sm:inline">{{ request.user.branch.name|default:"Bosh Filial" }}</span>
             <span class="text-[var(--text-muted)] hidden sm:inline">/</span>
-            <span class="text-[var(--text-main)] font-semibold">Moliya / Kassa</span>
+            <span class="text-[var(--text-main)] font-semibold">{% if request.user.is_director %}Boshqaruv & Nazorat{% else %}Kassa & Ish Maydoni{% endif %}</span>
         </div>
     </div>
 
@@ -101,19 +101,27 @@
             <span class="text-xs font-semibold" x-text="isDark ? 'Tungi' : 'Kunduzgi'"></span>
         </button>
 
-        <!-- Sozlamalar -->
-        <a href="{% url 'core:settings' %}" class="p-2 text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)] rounded-lg border border-[var(--border-color)] transition text-sm" title="Sozlamalar">
+        <!-- Sozlamalar (Faqat Direktor uchun) -->
+        {% if request.user.is_director %}
+        <a href="{% url 'core:settings' %}" class="p-2 text-[var(--text-second)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)] rounded-lg border border-[var(--border-color)] transition text-sm" title="Tizim Sozlamalari">
             <i class="ph ph-gear text-base"></i>
         </a>
+        {% endif %}
 
-
-
-        <!-- Primary CTA: + To'lov qabul qilish -->
-        <a href="{% url 'finance:add_income' %}"
-           class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
-            <i class="ph ph-plus text-sm font-bold"></i>
-            <span>To'lov qabul qilish</span>
+        <!-- Primary Top Action: Direktor uchun Analitika, Administrator uchun Kurs To'lovi Olish -->
+        {% if request.user.is_director %}
+        <a href="{% url 'core:director_analytics' %}"
+           class="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+            <i class="ph-fill ph-chart-line-up text-sm"></i>
+            <span>Direktor Tahlili</span>
         </a>
+        {% elif 'admin_finance' in user_modules or request.user.role in 'admin,staff' %}
+        <a href="{% url 'finance:admin_add_course_payment' %}"
+           class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+            <i class="ph-fill ph-credit-card text-sm font-bold"></i>
+            <span>Kurs To'lovi Olish</span>
+        </a>
+        {% endif %}
 
     </div>
 </header>

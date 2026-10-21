@@ -193,9 +193,9 @@ def role_based_dashboard(request):
     user = request.user
     role = user.role
     
-    if role == 'super_admin':
+    if getattr(user, 'is_director', False) or role in ['super_admin', 'owner']:
         return super_admin_dashboard(request)
-    elif role in ['owner', 'admin']:
+    elif role == 'admin':
         return admin_dashboard(request)
     elif role == 'teacher':
         return teacher_dashboard(request)

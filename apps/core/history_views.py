@@ -10,9 +10,10 @@ from django.http import JsonResponse
 
 from apps.core.models import AuditLog
 from apps.users.models import User
+from apps.core.permissions import director_required
 
 
-@login_required
+@director_required
 def history_list(request):
     """
     Tizim tarixi - barcha amallar ro'yxati.
@@ -99,7 +100,7 @@ def history_list(request):
     return render(request, 'core/history.html', context)
 
 
-@login_required
+@director_required
 def history_detail(request, log_id):
     """
     Bitta log yozuvi tafsiloti.

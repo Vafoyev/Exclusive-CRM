@@ -26,11 +26,15 @@
             </a>
             {% endif %}
             {% has_permission 'finance' 'create' as can_create_payment %}
-            {% if can_create_payment %}
+            {% if can_create_payment and not request.user.is_director %}
             <button onclick="openQuickPayment()"
-                class="inline-flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/25">
-                <i class="ph-fill ph-credit-card"></i> To'lov Qabul Qilish
+                class="inline-flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg text-sm font-semibold transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/25">
+                <i class="ph-fill ph-credit-card"></i> Kurs To'lovi Olish
             </button>
+            <a href="{% url 'finance:admin_submit_cash' %}"
+                class="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-lg text-sm font-medium hover:bg-amber-500/20 transition">
+                <i class="ph-fill ph-paper-plane-tilt"></i> Kassa Topshirish
+            </a>
             {% endif %}
             {% has_permission 'users' 'create' as can_create_user %}
             {% if can_create_user %}
@@ -241,18 +245,23 @@
                     {% endif %}
                 </div>
             </div>
-            {% if request.user.is_director %}
             <div class="pt-3 border-t border-[#94A3B8]/20 flex gap-2">
+                {% if request.user.is_director %}
                 <a href="{% url 'finance:pending_receipts' %}"
                     class="flex-1 py-2 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold text-center transition flex items-center justify-center gap-1 shadow-sm">
                     <i class="ph ph-check-circle"></i> Cheklarni tasdiqlash
                 </a>
-                <a href="{% url 'finance:admin_student_payments' %}"
-                    class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold text-center transition flex items-center justify-center gap-1">
-                    To'lovlar
+                {% else %}
+                <a href="{% url 'finance:admin_cash_dashboard' %}"
+                    class="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold text-center transition flex items-center justify-center gap-1 shadow-sm">
+                    <i class="ph-fill ph-cash-register"></i> Kassam
                 </a>
+                <a href="{% url 'finance:admin_submit_cash' %}"
+                    class="py-2 px-3 bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 border border-amber-500/30 rounded-lg text-xs font-semibold text-center transition flex items-center justify-center gap-1">
+                    <i class="ph-fill ph-paper-plane-tilt"></i> Topshirish
+                </a>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </div>
     {% endif %}

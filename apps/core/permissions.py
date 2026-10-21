@@ -47,6 +47,18 @@ def staff_required(view_func):
     return role_required('owner', 'admin', 'teacher', 'staff')(view_func)
 
 
+def director_required(view_func):
+    """Faqat direktor (owner, super_admin) uchun"""
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+        if getattr(request.user, 'is_director', False) or request.user.role in ['owner', 'super_admin']:
+            return view_func(request, *args, **kwargs)
+        messages.error(request, "Bu sahifa faqat direktor uchun mo'ljallangan!")
+        raise PermissionDenied("Bu sahifa faqat direktor uchun!")
+    return wrapper
+
+
 # ============================================
 # MODUL ASOSIDAGI RUXSATLAR (Yangi)
 # ============================================
@@ -66,11 +78,15 @@ def check_permission(user, module: str, action: str = 'view') -> bool:
     if not user.is_authenticated:
         return False
 
-    # Super admin va owner - hamma narsaga ruxsat
-    if user.role in ['super_admin', 'owner']:
+    # Super admin va owner - hamma narsaga ruxsat (Direktor)
+    if user.role in ['super_admin', 'owner'] or getattr(user, 'is_director', False):
         return True
 
-    # Admin - barcha operatsion modullarga to'liq ruxsat berish
+    # Tizim sozlamalari (settings / system) FAQAT direktor uchun!
+    if module in ['settings', 'system']:
+        return False
+
+    # Admin - barcha operatsion modullarga to'liq ruxsat berish (lekin tizim sozlamalari emas)
     if user.role == 'admin':
         if not user.permissions:
             return True

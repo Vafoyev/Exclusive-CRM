@@ -29,7 +29,11 @@ def add_months(source_date, months):
 
 @login_required
 def payroll_list(request):
-    """Xodimlar oyliklari ro'yxati"""
+    """Xodimlar oyliklari ro'yxati (Faqat direktor uchun)"""
+    if not request.user.is_director:
+        messages.error(request, "Xodimlar oyliklarini boshqarish faqat direktor uchun ruxsat etilgan!")
+        return redirect('finance:admin_cash_dashboard')
+
     org = request.user.organization
 
     # Default: joriy oy
@@ -86,7 +90,11 @@ def payroll_list(request):
 
 @login_required
 def calculate_payroll(request, staff_id):
-    """Xodim uchun oylikni hisoblash"""
+    """Xodim uchun oylikni hisoblash (Faqat direktor uchun)"""
+    if not request.user.is_director:
+        messages.error(request, "Oylik hisoblash faqat direktor uchun ruxsat etilgan!")
+        return redirect('finance:admin_cash_dashboard')
+
     org = request.user.organization
 
     staff_query = User.objects.filter(pk=staff_id)
@@ -294,7 +302,11 @@ def approve_payroll(request, pk):
 
 @login_required
 def pay_salary(request, pk):
-    """Oylikni to'lash (Tranzaksiya yaratish)"""
+    """Oylikni to'lash (Faqat direktor uchun)"""
+    if not request.user.is_director:
+        messages.error(request, "Oylik to'lash faqat direktor uchun ruxsat etilgan!")
+        return redirect('finance:admin_cash_dashboard')
+
     org = request.user.organization
 
     payroll_query = PayrollRecord.objects.filter(pk=pk)
