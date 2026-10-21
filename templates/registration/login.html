@@ -7,10 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kirish | EXCLUSIVE ACADEMY</title>
 
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons & Lottie Player -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
     <style>
         * {
@@ -20,123 +24,150 @@
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        body {
-            min-height: 100vh;
-            background: #F4F6F8;
+        html, body {
+            height: 100%;
+            width: 100%;
+            background: #FFFFFF;
+            color: #0F172A;
+            overflow-x: hidden;
+        }
+
+        .login-layout {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            color: #1E293B;
-            position: relative;
+            min-height: 100vh;
+            width: 100%;
         }
 
-        /* Yumshoq, bosiq naqsh */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
-            background-size: 20px 20px;
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        /* Asosiy Karta */
-        .login-card {
+        /* ============================================================== */
+        /* CHAP TOMON: TOZA VA MINIMALIST LOGIN FORMASI (45%)             */
+        /* ============================================================== */
+        .login-pane {
+            flex: 1;
+            max-width: 580px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px 48px;
+            background: #FFFFFF;
             position: relative;
             z-index: 10;
-            width: 100%;
-            max-width: 420px;
-            background: #FFFFFF;
-            border-radius: 24px;
-            padding: 36px 32px 30px;
-            box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(15, 23, 42, 0.04);
-            border: 1px solid #E2E8F0;
         }
 
-        /* Brend va Logotip */
-        .brand-section {
-            text-align: center;
+        /* Header Logo */
+        .pane-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 24px;
         }
 
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
         .brand-logo-img {
-            width: 88px;
-            height: 88px;
-            border-radius: 22px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             object-fit: cover;
-            box-shadow: 0 12px 28px -6px rgba(22, 67, 47, 0.35);
-            margin-bottom: 14px;
-            border: 2px solid rgba(255, 255, 255, 0.8);
-            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(24, 72, 51, 0.2);
         }
 
-        .brand-logo-img:hover {
-            transform: scale(1.03);
+        .brand-text-col {
+            display: flex;
+            flex-direction: column;
         }
 
-        .brand-name {
-            font-size: 21px;
+        .brand-main-text {
+            font-size: 17px;
             font-weight: 800;
             color: #184833;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            line-height: 1.2;
+            letter-spacing: 0.5px;
+            line-height: 1.1;
         }
 
-        .brand-sub {
-            font-size: 11px;
-            font-weight: 600;
+        .brand-sub-text {
+            font-size: 10px;
+            font-weight: 700;
             letter-spacing: 2px;
             color: #64748B;
             text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        /* Forma Sarlavhasi */
-        .form-title-wrap {
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid #F1F5F9;
-        }
-
-        .form-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #0F172A;
-        }
-
-        .form-subtitle {
-            font-size: 12.5px;
-            color: #64748B;
             margin-top: 2px;
         }
 
-        /* Xatolik xabari */
-        .alert-error {
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #166534;
+            background: #F0FDF4;
+            padding: 5px 12px;
+            border-radius: 100px;
+            border: 1px solid #DCFCE7;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22C55E;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+        }
+
+        /* Forma markazi */
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+            margin: auto 0;
+            padding: 20px 0;
+        }
+
+        .form-heading {
+            margin-bottom: 28px;
+        }
+
+        .form-heading h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0F172A;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .form-heading p {
+            font-size: 14px;
+            color: #64748B;
+            line-height: 1.5;
+        }
+
+        /* Error alert */
+        .error-box {
             background: #FEF2F2;
             border: 1px solid #FECACA;
             border-radius: 12px;
-            padding: 10px 14px;
+            padding: 12px 14px;
             color: #B91C1C;
             font-size: 13px;
             font-weight: 500;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        /* Inputlar */
-        .form-field {
-            margin-bottom: 16px;
+        /* Input fields */
+        .input-group {
+            margin-bottom: 18px;
         }
 
-        .field-label {
+        .input-label {
             display: block;
-            font-size: 11.5px;
+            font-size: 12px;
             font-weight: 700;
             color: #334155;
             text-transform: uppercase;
@@ -144,13 +175,13 @@
             margin-bottom: 6px;
         }
 
-        .field-input-box {
+        .input-wrap {
             position: relative;
             display: flex;
             align-items: center;
         }
 
-        .field-icon {
+        .input-icon {
             position: absolute;
             left: 14px;
             color: #94A3B8;
@@ -158,11 +189,11 @@
             pointer-events: none;
         }
 
-        .input-text {
+        .form-control {
             width: 100%;
-            height: 46px;
+            height: 48px;
             padding: 0 14px 0 42px;
-            border: 1.5px solid #CBD5E1;
+            border: 1.5px solid #E2E8F0;
             border-radius: 12px;
             font-size: 14px;
             font-weight: 500;
@@ -172,13 +203,13 @@
             outline: none;
         }
 
-        .input-text:focus {
+        .form-control:focus {
             background: #FFFFFF;
             border-color: #184833;
             box-shadow: 0 0 0 3px rgba(24, 72, 51, 0.12);
         }
 
-        .eye-button {
+        .toggle-pass {
             position: absolute;
             right: 12px;
             background: none;
@@ -189,23 +220,22 @@
             padding: 4px;
             display: flex;
             align-items: center;
-            transition: color 0.15s;
         }
 
-        .eye-button:hover {
+        .toggle-pass:hover {
             color: #475569;
         }
 
         /* Qo'shimcha qator */
-        .field-row {
+        .form-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 22px;
-            font-size: 12.5px;
+            margin-bottom: 24px;
+            font-size: 13px;
         }
 
-        .remember-label {
+        .remember-wrap {
             display: flex;
             align-items: center;
             gap: 7px;
@@ -215,27 +245,27 @@
             user-select: none;
         }
 
-        .remember-label input {
-            width: 15px;
-            height: 15px;
+        .remember-wrap input {
+            width: 16px;
+            height: 16px;
             accent-color: #184833;
             cursor: pointer;
         }
 
-        .forgot-pass {
+        .forgot-btn {
             color: #184833;
             font-weight: 600;
             text-decoration: none;
         }
 
-        .forgot-pass:hover {
+        .forgot-btn:hover {
             text-decoration: underline;
         }
 
         /* Tugma */
-        .submit-btn {
+        .btn-login {
             width: 100%;
-            height: 48px;
+            height: 50px;
             background: #184833;
             color: #FFFFFF;
             border: none;
@@ -247,117 +277,377 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 10px 22px -5px rgba(24, 72, 51, 0.4);
+            box-shadow: 0 10px 20px -5px rgba(24, 72, 51, 0.35);
             transition: all 0.2s ease;
         }
 
-        .submit-btn:hover {
-            background: #133A29;
+        .btn-login:hover {
+            background: #123827;
             transform: translateY(-1px);
-            box-shadow: 0 12px 26px -5px rgba(24, 72, 51, 0.45);
+            box-shadow: 0 12px 24px -5px rgba(24, 72, 51, 0.45);
         }
 
-        .submit-btn:active {
+        .btn-login:active {
             transform: translateY(0);
         }
 
         /* Footer */
-        .card-bottom {
-            margin-top: 22px;
-            padding-top: 16px;
+        .pane-footer {
+            padding-top: 20px;
             border-top: 1px solid #F1F5F9;
-            text-align: center;
-            font-size: 11.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
             color: #64748B;
         }
 
-        .card-bottom b {
+        .support-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
             color: #184833;
         }
 
-        .copyright {
-            margin-top: 6px;
-            color: #94A3B8;
-            font-size: 11px;
+        /* ============================================================== */
+        /* O'NG TOMON: CLOUDFLARE STYLE HASHOAMATLI LOTTIE HERO (55%)     */
+        /* ============================================================== */
+        .hero-pane {
+            flex: 1.2;
+            background: linear-gradient(145deg, #092418 0%, #113A28 50%, #184833 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 48px;
+            color: #FFFFFF;
+            overflow: hidden;
+        }
+
+        /* Nozik tarmoqli orqa fon naqshi */
+        .hero-pattern {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px);
+            background-size: 28px 28px;
+            pointer-events: none;
+        }
+
+        /* Dumaloq yorug'lik effektlari */
+        .glow-circle-1 {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .glow-circle-2 {
+            position: absolute;
+            bottom: -50px;
+            left: -50px;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(246, 195, 68, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-top-badge {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #E2E8F0;
+        }
+
+        /* Markaziy Lottie Animatsiya va Matn */
+        .hero-center {
+            position: relative;
+            z-index: 10;
+            margin: auto 0;
+            text-align: center;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .lottie-box {
+            width: 100%;
+            max-width: 420px;
+            height: 340px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-center h2 {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.25;
+            margin-bottom: 12px;
+            color: #FFFFFF;
+        }
+
+        .hero-center p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 24px;
+        }
+
+        /* Imkoniyatlar pill'lari */
+        .feature-tags {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .tag-item i {
+            color: #F6C344;
+        }
+
+        .hero-footer {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .security-mark {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #86EFAC;
+            font-weight: 600;
+        }
+
+        /* Mobil va Planshet (Responsive) */
+        @media (max-width: 1024px) {
+            .hero-pane {
+                display: none;
+            }
+
+            .login-pane {
+                max-width: 100%;
+                padding: 32px 24px;
+                min-height: 100vh;
+            }
+
+            .form-container {
+                margin: auto;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <div class="login-card">
+    <div class="login-layout">
 
-        <!-- Logotip: Foydalanuvchining o'z rasmiy logotipi -->
-        <div class="brand-section">
-            <img src="{% static 'img/exclusive_academy_logo.jpg' %}" alt="EXCLUSIVE ACADEMY" class="brand-logo-img">
-            <h1 class="brand-name">EXCLUSIVE ACADEMY</h1>
-            <p class="brand-sub">O'quv Markazi</p>
-        </div>
+        <!-- ============================================================== -->
+        <!-- CHAP TOMON: LOGIN FORMASI                                      -->
+        <!-- ============================================================== -->
+        <div class="login-pane">
 
-        <div class="form-title-wrap">
-            <h2 class="form-title">Tizimga kirish</h2>
-            <p class="form-subtitle">Boshqaruv tizimiga kirish uchun ma'lumotlaringizni kiriting</p>
-        </div>
-
-        {% if form.errors %}
-        <div class="alert-error">
-            <i class="ph ph-warning-circle" style="font-size: 18px;"></i>
-            <span>Login yoki parol noto'g'ri kiritildi</span>
-        </div>
-        {% endif %}
-
-        <form method="post" autocomplete="on">
-            {% csrf_token %}
-
-            <!-- Login / Telefon -->
-            <div class="form-field">
-                <label for="id_username" class="field-label">Login yoki Telefon</label>
-                <div class="field-input-box">
-                    <i class="ph ph-user field-icon"></i>
-                    <input type="text" name="username" id="id_username" required autofocus autocomplete="username"
-                        placeholder="Login yoki telefon raqam" value="{{ form.username.value|default:'' }}"
-                        class="input-text">
-                </div>
-            </div>
-
-            <!-- Parol -->
-            <div class="form-field">
-                <label for="id_password" class="field-label">Parol</label>
-                <div class="field-input-box">
-                    <i class="ph ph-lock-key field-icon"></i>
-                    <input type="password" name="password" id="id_password" required autocomplete="current-password"
-                        placeholder="••••••••" class="input-text">
-                    <button type="button" onclick="togglePass()" class="eye-button" aria-label="Parolni ko'rsatish">
-                        <i class="ph ph-eye" id="eyeIcon"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Eslab qolish & Parolni unutdingizmi -->
-            <div class="field-row">
-                <label class="remember-label">
-                    <input type="checkbox" name="remember_me">
-                    <span>Eslab qolish</span>
-                </label>
-                <a href="#help" onclick="alert('Parolni tiklash uchun administratorga murojaat qiling')" class="forgot-pass">
-                    Parolni unutdingizmi?
+            <!-- Yuqori Brand Qismi -->
+            <div class="pane-header">
+                <a href="/" class="brand-link">
+                    <img src="{% static 'img/exclusive_academy_logo.jpg' %}" alt="EA" class="brand-logo-img">
+                    <div class="brand-text-col">
+                        <span class="brand-main-text">EXCLUSIVE ACADEMY</span>
+                        <span class="brand-sub-text">O'quv Markazi</span>
+                    </div>
                 </a>
+
+                <div class="status-pill">
+                    <span class="status-dot"></span>
+                    <span>Tizim faol</span>
+                </div>
             </div>
 
-            <!-- Kirish tugmasi -->
-            <button type="submit" class="submit-btn">
-                <span>Tizimga kirish</span>
-                <i class="ph ph-arrow-right" style="font-size: 16px;"></i>
-            </button>
-        </form>
+            <!-- Asosiy Forma -->
+            <div class="form-container">
+                <div class="form-heading">
+                    <h1>Tizimga kirish</h1>
+                    <p>Exclusive Academy boshqaruv tizimiga kirish uchun login va parolingizni kiriting.</p>
+                </div>
 
-        <div class="card-bottom">
-            <span>Aloqa: <b>+998 78 555 13 78</b></span>
-            <p class="copyright">&copy; 2026 Exclusive Academy. Barcha huquqlar himoyalangan.</p>
+                {% if form.errors %}
+                <div class="error-box">
+                    <i class="ph ph-warning-circle" style="font-size: 20px;"></i>
+                    <span>Telefon raqam yoki parol noto'g'ri kiritildi.</span>
+                </div>
+                {% endif %}
+
+                <form method="post" autocomplete="on">
+                    {% csrf_token %}
+
+                    <!-- Login -->
+                    <div class="input-group">
+                        <label for="id_username" class="input-label">Login yoki Telefon</label>
+                        <div class="input-wrap">
+                            <i class="ph ph-user input-icon"></i>
+                            <input type="text" name="username" id="id_username" required autofocus autocomplete="username"
+                                placeholder="Masalan: 998901234567" value="{{ form.username.value|default:'' }}"
+                                class="form-control">
+                        </div>
+                    </div>
+
+                    <!-- Parol -->
+                    <div class="input-group">
+                        <label for="id_password" class="input-label">Parol</label>
+                        <div class="input-wrap">
+                            <i class="ph ph-lock-key input-icon"></i>
+                            <input type="password" name="password" id="id_password" required autocomplete="current-password"
+                                placeholder="••••••••" class="form-control">
+                            <button type="button" onclick="togglePass()" class="toggle-pass" aria-label="Parolni ko'rsatish">
+                                <i class="ph ph-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Eslab qolish & Parolni unutdingizmi -->
+                    <div class="form-row">
+                        <label class="remember-wrap">
+                            <input type="checkbox" name="remember_me">
+                            <span>Meni eslab qolish</span>
+                        </label>
+                        <a href="#help" onclick="alert('Parolni tiklash uchun administratorga murojaat qiling: +998 78 555 13 78')"
+                            class="forgot-btn">
+                            Parolni unutdingizmi?
+                        </a>
+                    </div>
+
+                    <!-- Kirish Tugmasi -->
+                    <button type="submit" class="btn-login">
+                        <span>Tizimga kirish</span>
+                        <i class="ph ph-arrow-right" style="font-size: 17px;"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Pastki Footer -->
+            <div class="pane-footer">
+                <div class="support-info">
+                    <i class="ph ph-phone-call" style="font-size: 15px;"></i>
+                    <span>+998 78 555 13 78</span>
+                </div>
+                <span>&copy; 2026 Exclusive Academy</span>
+            </div>
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- O'NG TOMON: CLOUDFLARE STYLE LOTTIE ANIMATSIYA                 -->
+        <!-- ============================================================== -->
+        <div class="hero-pane">
+            <div class="hero-pattern"></div>
+            <div class="glow-circle-1"></div>
+            <div class="glow-circle-2"></div>
+
+            <!-- Yuqori Badge -->
+            <div class="hero-top-badge">
+                <div class="badge-pill">
+                    <i class="ph ph-sparkle" style="color: #F6C344;"></i>
+                    <span>EXCLUSIVE ACADEMY MANAGEMENT</span>
+                </div>
+                <span style="font-size: 12px; color: rgba(255,255,255,0.7);">v4.5 Enterprise</span>
+            </div>
+
+            <!-- Markaz: Lottie Animatsiya va Matnlar -->
+            <div class="hero-center">
+                <div class="lottie-box">
+                    <lottie-player
+                        src="{% static 'img/login_animation.json' %}"
+                        background="transparent"
+                        speed="1"
+                        style="width: 100%; height: 100%;"
+                        loop
+                        autoplay>
+                    </lottie-player>
+                </div>
+
+                <h2>Boshqaruv va Ta'lim Tizimi</h2>
+                <p>
+                    Darslar jadvali, kunlik davomat, shaffof kassa va o'qituvchilar oylik hisob-kitoblari — barchasi yagona professional platformada.
+                </p>
+
+                <!-- Imkoniyatlar teglari -->
+                <div class="feature-tags">
+                    <div class="tag-item">
+                        <i class="ph ph-users-three"></i>
+                        <span>O'quvchilar & Oila</span>
+                    </div>
+                    <div class="tag-item">
+                        <i class="ph ph-coins"></i>
+                        <span>Shaffof Kassa</span>
+                    </div>
+                    <div class="tag-item">
+                        <i class="ph ph-chart-line-up"></i>
+                        <span>Foizli Oylik</span>
+                    </div>
+                    <div class="tag-item">
+                        <i class="ph ph-calendar-check"></i>
+                        <span>Kunlik Davomat</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pastki Sifat kafolati -->
+            <div class="hero-footer">
+                <div class="security-mark">
+                    <i class="ph ph-shield-check" style="font-size: 16px;"></i>
+                    <span>256-bit SSL Himoyalangan xavfsiz tizim</span>
+                </div>
+                <span>Exclusive Aim Suite</span>
+            </div>
         </div>
 
     </div>
 
+    <!-- JS Skript -->
     <script>
         function togglePass() {
             const pass = document.getElementById('id_password');
