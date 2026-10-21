@@ -28,7 +28,7 @@ class Account(TenantAwareModel):
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Joriy Balans")
 
     def __str__(self):
-        return f"{self.name} ({self.balance:,.0f})"
+        return self.name
 
     class Meta:
         db_table = 'finance_accounts'

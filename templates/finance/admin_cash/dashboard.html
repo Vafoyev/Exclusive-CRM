@@ -41,7 +41,7 @@
     </div>
 
     <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <!-- Kirim -->
         <div class="rounded-2xl p-6 bg-gradient-to-br from-emerald-500/20 to-green-600/10 border border-emerald-500/30">
             <div class="flex items-center justify-between">
@@ -78,6 +78,21 @@
                 </div>
                 <div class="p-3 rounded-xl bg-[#4F46E5]/15">
                     <i class="ph-fill ph-wallet text-2xl text-[#64748B]"></i>
+                </div>
+            </div>
+        </div>
+        <!-- Tasdiqlanmagan pul (Direktor tasdiqlashi kutilayotgan) -->
+        <div class="rounded-2xl p-6 bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/30">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-amber-700">Tasdiqlanmagan pul</p>
+                    <p class="text-2xl font-bold mt-1 text-amber-700">
+                        {{ pending_total_amount|floatformat:0 }} UZS
+                    </p>
+                    <p class="text-xs text-amber-600 mt-1 font-medium">{{ pending_count }} ta to'lov kutilmoqda</p>
+                </div>
+                <div class="p-3 rounded-xl bg-amber-500/20">
+                    <i class="ph-fill ph-hourglass-medium text-2xl text-amber-600"></i>
                 </div>
             </div>
         </div>
@@ -174,6 +189,7 @@
                         {% endif %}
                     </td>
                     <td class="p-4 text-right">
+                        {% if request.user.is_director %}
                         <div class="flex items-center justify-end gap-2">
                             <form method="POST" action="{% url 'finance:admin_confirm_student_payment' payment.pk %}"
                                 class="inline">
@@ -196,6 +212,9 @@
                                 </button>
                             </form>
                         </div>
+                        {% else %}
+                        <span class="text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-600 font-medium">Direktor kutilmoqda</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -318,7 +337,7 @@
                 <tr class="transition hover:bg-slate-100">
                     <td class="p-4 text-sm text-slate-400">{{ sub.created_at|date:"d.m.Y" }}</td>
                     <td class="p-4 text-sm text-slate-600">
-                        {{ sub.get_period_type_display }} ({{ sub.period_start|date:"d.m" }} - {{ sub.period_end|date:"d.m" }})
+                        {{ sub.get_period_type_display }}
                     </td>
                     <td class="p-4 text-right text-sm text-emerald-600">{{ sub.amount_cash|floatformat:0 }}</td>
                     <td class="p-4 text-right text-sm text-blue-600">{{ sub.amount_card|floatformat:0 }}</td>

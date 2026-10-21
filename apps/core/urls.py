@@ -3,6 +3,7 @@ from apps.core.history_views import history_list, history_detail
 from apps.core.settings_views import settings_index
 from apps.core.backup_views import backup_center
 from apps.core.views import notifications_list, notification_read, notifications_mark_all_read
+from apps.core.director_analytics import director_analytics_view
 
 app_name = 'core'
 
@@ -11,6 +12,7 @@ urlpatterns = [
     path('history/<int:log_id>/', history_detail, name='history_detail'),
     path('settings/', settings_index, name='settings'),
     path('backup-center/', backup_center, name='backup_center'),
+    path('analytics/', director_analytics_view, name='director_analytics'),
 
     # Bildirishnomalar
     path('notifications/', notifications_list, name='notifications'),

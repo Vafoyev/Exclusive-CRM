@@ -178,6 +178,14 @@ def transaction_list(request):
     income = stats['income'] or 0
     expense = stats['expense'] or 0
 
+    # Tasdiqlanmagan pullar statistikasi
+    pending_tx_qs = Transaction.objects.filter(is_deleted=False, status='pending', transaction_type='income')
+    if org:
+        pending_tx_qs = pending_tx_qs.filter(organization=org)
+    pending_stats = pending_tx_qs.aggregate(total=Sum('amount'), count=Count('id'))
+    pending_amount = pending_stats['total'] or 0
+    pending_count = pending_stats['count'] or 0
+
     # Optimallashtirilgan load
     transactions = transactions.select_related(
         'account', 'category', 'student', 'staff', 'created_by', 'confirmed_by'
@@ -193,6 +201,8 @@ def transaction_list(request):
         'income': income,
         'expense': expense,
         'balance': income - expense,
+        'pending_amount': pending_amount,
+        'pending_count': pending_count,
         'date_from': date_from,
         'date_to': date_to,
         'trans_type': trans_type,
@@ -368,9 +378,10 @@ def add_expense(request):
 
 @login_required
 def confirm_transaction(request, pk):
-    if not (request.user.role in ['super_admin', 'owner', 'admin'] or check_permission(request.user, 'finance', 'edit')):
-        messages.error(request, "Sizda tranzaksiyani tasdiqlash huquqi yo'q!")
-        return redirect('finance:transaction_list')
+    if not request.user.is_director:
+        messages.error(request, "Tranzaksiyani tasdiqlash faqat Direktor uchun ruxsat etilgan!")
+        referer = request.META.get('HTTP_REFERER')
+        return redirect(referer or 'finance:transaction_list')
 
     # Bu view services.py orqali ishlaydi
     from .services import confirm_transaction as confirm_service
@@ -387,9 +398,10 @@ def confirm_transaction(request, pk):
 
 @login_required
 def reject_transaction(request, pk):
-    if not (request.user.role in ['super_admin', 'owner', 'admin'] or check_permission(request.user, 'finance', 'edit')):
-        messages.error(request, "Sizda tranzaksiyani rad etish huquqi yo'q!")
-        return redirect('finance:transaction_list')
+    if not request.user.is_director:
+        messages.error(request, "Tranzaksiyani rad etish faqat Direktor uchun ruxsat etilgan!")
+        referer = request.META.get('HTTP_REFERER')
+        return redirect(referer or 'finance:transaction_list')
 
     org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
     qs = Transaction.objects.filter(pk=pk)
@@ -407,9 +419,10 @@ def reject_transaction(request, pk):
             t.receipt_notes = reason
         t.save()
         try:
+            reject_note = t.receipt_notes or "ko'rsatilmadi"
             log_user_action(
                 request.user, 'UPDATE', 'Transaction', t.id,
-                f"Tranzaksiya rad etildi: {t.amount:,.0f} so'm. Sabab: {t.receipt_notes or 'ko\'rsatilmadi'}",
+                f"Tranzaksiya rad etildi: {t.amount:,.0f} so'm. Sabab: {reject_note}",
                 request=request
             )
         except Exception:
@@ -598,6 +611,10 @@ def send_telegram_report_view(request):
 @login_required
 @permission_required('finance', 'view')
 def pending_receipts(request):
+    if not request.user.is_director:
+        messages.error(request, "Cheklarni ko'rish va tasdiqlash faqat Direktor uchun ruxsat etilgan!")
+        return redirect('finance:admin_cash_dashboard')
+
     org = request.organization
     txs = Transaction.objects.filter(receipt_verified=False, status='pending', is_deleted=False)
     if org:
@@ -619,8 +636,8 @@ def pending_receipts(request):
 
 @login_required
 def verify_receipt(request, pk):
-    if not (request.user.role in ['super_admin', 'owner', 'admin'] or check_permission(request.user, 'finance', 'edit') or check_permission(request.user, 'admin_finance', 'edit')):
-        messages.error(request, "Sizda chekni tasdiqlash huquqi yo'q!")
+    if not request.user.is_director:
+        messages.error(request, "Chekni tasdiqlash faqat Direktor uchun ruxsat etilgan!")
         return redirect('finance:pending_receipts')
 
     from .services import confirm_transaction as confirm_service
@@ -638,8 +655,8 @@ def verify_receipt(request, pk):
 
 @login_required
 def reject_receipt(request, pk):
-    if not (request.user.role in ['super_admin', 'owner', 'admin'] or check_permission(request.user, 'finance', 'edit') or check_permission(request.user, 'admin_finance', 'edit')):
-        messages.error(request, "Sizda chekni rad etish huquqi yo'q!")
+    if not request.user.is_director:
+        messages.error(request, "Chekni rad etish faqat Direktor uchun ruxsat etilgan!")
         return redirect('finance:pending_receipts')
 
     org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
@@ -693,6 +710,9 @@ def quick_payment(request):
 
         if not student_id or not amount or not account_id:
             return JsonResponse({'success': False, 'error': "Barcha maydonlarni to'ldiring."}, status=400)
+
+        if payment_method in ['card', 'terminal', 'online', 'transfer'] and not receipt_image:
+            return JsonResponse({'success': False, 'error': "Plastik karta yoki online to'lov uchun chek rasmini yuklash majburiy."}, status=400)
 
         try:
             amount_decimal = Decimal(amount)

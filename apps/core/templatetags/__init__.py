@@ -41,6 +41,12 @@ def user_can(context, *roles):
     return request.user.role in roles
 
 
+@register.filter(name='is_director')
+def is_director(user):
+    """Direktor (owner yoki super_admin) rolni tekshirish"""
+    return user.is_authenticated and (user.role in ['super_admin', 'owner'] or user.is_superuser)
+
+
 @register.filter(name='is_admin')
 def is_admin(user):
     """Admin yoki yuqori rolni tekshirish"""

@@ -79,6 +79,7 @@
                         </td>
                         <td class="p-3.5 text-right">
                             {% if sub.status == 'pending' %}
+                            {% if request.user.is_director %}
                             <div class="flex items-center justify-end gap-1.5">
                                 <form method="POST" action="{% url 'finance:approve_cash_submission' sub.pk %}" class="inline">
                                     {% csrf_token %}
@@ -95,6 +96,9 @@
                                     </button>
                                 </form>
                             </div>
+                            {% else %}
+                            <span class="text-xs text-amber-400/90 font-medium">Direktor kutilmoqda</span>
+                            {% endif %}
                             {% else %}
                             <div class="text-[11px] text-[var(--text-muted)]">
                                 <span class="font-medium text-[var(--text-second)]">{% if sub.approved_by %}{{ sub.approved_by.get_full_name|default:sub.approved_by.phone }}{% else %}-{% endif %}</span>

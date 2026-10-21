@@ -25,23 +25,38 @@
             </div>
             <div>
                 <p class="text-sm text-slate-500">To'lov tushadigan kassa</p>
-                <p class="font-semibold text-slate-700">{{ admin_account.name }} ({{ admin_account.balance|floatformat:0
-                    }} UZS)</p>
+                <p class="font-semibold text-slate-700">{{ admin_account.name }}</p>
             </div>
-        </div>
     </div>
 
     <!-- Form -->
-    <form method="POST" class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-6">
+    <form method="POST" enctype="multipart/form-data" class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-6">
         {% csrf_token %}
 
         <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">O'quvchi *</label>
+            <div class="flex items-center justify-between mb-1">
+                <label class="block text-sm font-medium text-slate-700">O'quvchi *</label>
+                <a href="{% url 'users:student_create' %}?next={% url 'finance:admin_add_course_payment' %}"
+                    class="text-xs text-[#4F46E5] hover:underline flex items-center gap-1 font-medium">
+                    <i class="ph ph-plus-circle"></i> Yangi o'quvchi qo'shish
+                </a>
+            </div>
             <select name="student" required
                 class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white">
                 <option value="">O'quvchini tanlang...</option>
                 {% for s in students %}
-                <option value="{{ s.pk }}">{{ s.get_full_name }} ({{ s.phone }})</option>
+                <option value="{{ s.pk }}" {% if selected_student_id == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.get_full_name }} ({{ s.phone }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Qaysi kurs/guruh uchun <span class="text-xs text-slate-400 font-normal">(ixtiyoriy)</span></label>
+            <select name="group" id="groupSelect"
+                class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white">
+                <option value="">Barcha kurslar / Guruh tanlash...</option>
+                {% for g in groups %}
+                <option value="{{ g.pk }}" data-price="{{ g.course.price|floatformat:0 }}" {% if selected_group_id == g.pk|stringformat:"s" %}selected{% endif %}>{{ g.course.name }} ({{ g.name }}) - {{ g.course.price|floatformat:0 }} UZS</option>
                 {% endfor %}
             </select>
         </div>
@@ -53,13 +68,14 @@
                     class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white">
                     <option value="">Tanlash...</option>
                     {% for cat in categories %}
-                    <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                    <option value="{{ cat.pk }}" {% if selected_category_id == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Summa *</label>
-                <input type="number" name="amount" min="0" required placeholder="To'lov summasi"
+                <input type="number" name="amount" id="amountInput" min="0" required placeholder="To'lov summasi"
+                    value="{{ selected_amount|default:'' }}"
                     class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white">
             </div>
         </div>
@@ -67,43 +83,66 @@
         <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">To'lov usuli *</label>
             <select name="payment_method" id="paymentMethod" onchange="toggleReceiptSection()"
-                class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white">
-                <option value="cash">Naqd pul</option>
-                <option value="card">Plastik karta</option>
-                <option value="terminal">Terminal</option>
+                class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white font-medium">
+                <option value="cash" {% if selected_payment_method == 'cash' %}selected{% endif %}>💵 Naqd pul</option>
+                <option value="card" {% if selected_payment_method == 'card' %}selected{% endif %}>💳 Plastik karta</option>
+                <option value="online" {% if selected_payment_method == 'online' %}selected{% endif %}>📱 Online to'lov (Click, Payme, Uzum)</option>
+                <option value="terminal" {% if selected_payment_method == 'terminal' %}selected{% endif %}>📟 Terminal</option>
             </select>
         </div>
 
-        <!-- Receipt Upload Section (only for non-cash payments) -->
-        <div id="receiptSection" class="hidden p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <h4 class="text-sm font-semibold text-slate-700 mb-3">
-                <i class="ph ph-receipt mr-1"></i> Chek Yuklash
-            </h4>
+        <!-- Receipt Upload Section (mandatory for non-cash payments) -->
+        <div id="receiptSection" class="hidden p-4 bg-slate-50 rounded-xl border-2 border-indigo-200/80 space-y-3">
+            <div class="flex items-center justify-between">
+                <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <i class="ph-fill ph-receipt text-indigo-600 text-lg"></i>
+                    <span>Chek Rasmini Yuklash</span>
+                </h4>
+                <span id="receiptBadge" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                    * Majburiy
+                </span>
+            </div>
+
+            <p class="text-xs text-slate-600">
+                Plastik karta yoki online to'lov (Click / Payme) uchun chek rasmini yuklash majburiy. Chek Direktor tomonidan tekshirilib tasdiqlanadi.
+            </p>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">
-                        <i class="ph ph-image"></i> Rasm (JPG, PNG)
+                    <label class="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                        <i class="ph ph-camera text-indigo-600"></i> Chek rasmi (JPG, PNG) <span class="text-rose-500">*</span>
                     </label>
-                    <input type="file" name="receipt_image" accept="image/*"
-                        class="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700">
+                    <input type="file" name="receipt_image" id="receiptImageInput" accept="image/*" onchange="previewReceiptImage(event)"
+                        class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 file:font-semibold cursor-pointer">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">
-                        <i class="ph ph-file-pdf"></i> PDF Fayl
+                    <label class="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                        <i class="ph ph-file-pdf text-rose-600"></i> PDF Chek (ixtiyoriy)
                     </label>
                     <input type="file" name="receipt_file" accept=".pdf"
-                        class="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700">
+                        class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer">
                 </div>
             </div>
-            <p class="text-xs text-amber-600 mt-2">
-                <i class="ph ph-info"></i> Plastik karta yoki bank o'tkazmasi uchun chek yuklash tavsiya etiladi
-            </p>
+
+            <!-- Image Preview Box -->
+            <div id="imagePreviewContainer" class="hidden pt-2">
+                <p class="text-xs font-medium text-slate-600 mb-1 flex items-center gap-1">
+                    <i class="ph ph-check-circle text-emerald-600"></i> Tanlangan chek ko'rinishi:
+                </p>
+                <div class="relative inline-block border-2 border-indigo-300 rounded-xl overflow-hidden shadow-sm bg-white p-1">
+                    <img id="imagePreviewEl" src="" alt="Chek ko'rinishi" class="max-h-48 max-w-full rounded-lg object-contain">
+                    <button type="button" onclick="clearReceiptImage()"
+                        class="absolute top-2 right-2 p-1.5 bg-rose-600 text-white rounded-full hover:bg-rose-700 shadow-md text-xs" title="Olib tashlash">
+                        <i class="ph-bold ph-x"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Izoh</label>
             <textarea name="description" rows="2" placeholder="Masalan: Yanvar oyi uchun kurs to'lovi"
-                class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white"></textarea>
+                class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white">{{ selected_description|default:'' }}</textarea>
         </div>
 
         <div class="flex justify-end gap-4 pt-4 border-t border-slate-100">
@@ -124,17 +163,56 @@
     function toggleReceiptSection() {
         const paymentMethod = document.getElementById('paymentMethod').value;
         const receiptSection = document.getElementById('receiptSection');
+        const receiptInput = document.getElementById('receiptImageInput');
 
         if (paymentMethod === 'cash') {
             receiptSection.classList.add('hidden');
+            if (receiptInput) receiptInput.required = false;
         } else {
             receiptSection.classList.remove('hidden');
+            if (receiptInput) receiptInput.required = true;
         }
+    }
+
+    function previewReceiptImage(event) {
+        const input = event.target;
+        const container = document.getElementById('imagePreviewContainer');
+        const preview = document.getElementById('imagePreviewEl');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                container.classList.remove('hidden');
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            container.classList.add('hidden');
+            preview.src = '';
+        }
+    }
+
+    function clearReceiptImage() {
+        const input = document.getElementById('receiptImageInput');
+        const container = document.getElementById('imagePreviewContainer');
+        const preview = document.getElementById('imagePreviewEl');
+        if (input) input.value = '';
+        if (preview) preview.src = '';
+        if (container) container.classList.add('hidden');
     }
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function () {
         toggleReceiptSection();
+
+        document.getElementById('groupSelect')?.addEventListener('change', function () {
+            const selected = this.options[this.selectedIndex];
+            const price = selected?.getAttribute('data-price');
+            const amountInput = document.getElementById('amountInput');
+            if (price && amountInput && (!amountInput.value || amountInput.value === '0')) {
+                amountInput.value = price;
+            }
+        });
     });
 </script>
 {% endblock %}

@@ -164,6 +164,111 @@ def parent_search(request):
 
 
 # ============================================
+# O'QUVCHI QIDIRISH (AJAX)
+# ============================================
+@login_required
+def student_search(request):
+    """AJAX orqali o'quvchilarni qidirish"""
+    q = request.GET.get('q', '').strip()
+    if len(q) < 2:
+        return JsonResponse({'results': []})
+
+    if not request.user.organization:
+        return JsonResponse({'results': []})
+
+    students = User.objects.filter(
+        role='student',
+        is_deleted=False,
+        organization=request.user.organization,
+    ).filter(
+        Q(first_name__icontains=q) |
+        Q(last_name__icontains=q) |
+        Q(phone__icontains=q)
+    )
+
+    results = [
+        {
+            'id': s.id,
+            'first_name': s.first_name,
+            'last_name': s.last_name,
+            'phone': s.phone,
+            'full_name': f"{s.first_name} {s.last_name} ({s.phone})",
+        }
+        for s in students[:10]
+    ]
+    return JsonResponse({'results': results})
+
+
+# ============================================
+# OTA-ONA VA O'QUVCHI BOG'LASH (LINKUP / UNLINK)
+# ============================================
+@login_required
+@permission_required('users', 'edit')
+def link_parent_student(request):
+    """Ota-onani o'quvchiga yoki o'quvchini ota-onaga bog'lash (linkup)"""
+    if request.method == 'POST':
+        parent_id = request.POST.get('parent_id')
+        student_id = request.POST.get('student_id')
+        relation_type = request.POST.get('relation_type', 'mother')
+        is_main_contact = request.POST.get('is_main_contact') in ['true', '1', 'on']
+        
+        org = request.user.organization
+        parent = get_object_or_404(User, pk=parent_id, role='parent', is_deleted=False)
+        student = get_object_or_404(User, pk=student_id, role='student', is_deleted=False)
+        
+        if org and (parent.organization != org or student.organization != org):
+            messages.error(request, "Ruxsat etilmagan amal!")
+            return redirect('users:user_list')
+        
+        relation, created = ParentStudent.objects.get_or_create(
+            parent=parent,
+            student=student,
+            defaults={
+                'relation_type': relation_type,
+                'is_main_contact': is_main_contact,
+                'organization': org or parent.organization,
+            }
+        )
+        if not created:
+            relation.relation_type = relation_type
+            relation.is_main_contact = is_main_contact
+            relation.save()
+            messages.success(request, f"{parent.full_name} va {student.full_name} bog'liqligi yangilandi!")
+        else:
+            messages.success(request, f"{student.full_name} muvaffaqiyatli {parent.full_name}ga biriktirildi!")
+        
+        next_url = request.POST.get('next')
+        if next_url:
+            return redirect(next_url)
+        return redirect('users:user_detail', pk=parent_id if request.POST.get('redirect_to') == 'parent' else student_id)
+        
+    return redirect('users:user_list')
+
+
+@login_required
+@permission_required('users', 'edit')
+def unlink_parent_student(request, relation_id):
+    """Ota-ona va o'quvchi o'rtasidagi bog'liqlikni uzish (unlink)"""
+    relation = get_object_or_404(ParentStudent, pk=relation_id)
+    org = request.user.organization
+    if org and relation.organization != org:
+        messages.error(request, "Ruxsat etilmagan amal!")
+        return redirect('users:user_list')
+    
+    parent_id = relation.parent_id
+    student_id = relation.student_id
+    parent_name = relation.parent.full_name
+    student_name = relation.student.full_name
+    relation.delete()
+    messages.success(request, f"{parent_name} va {student_name} o'rtasidagi bog'liqlik uzildi!")
+    
+    redirect_to = request.GET.get('redirect_to', 'parent')
+    if redirect_to == 'student':
+        return redirect('users:user_detail', pk=student_id)
+    return redirect('users:user_detail', pk=parent_id)
+
+
+# ============================================
 # O'QUVCHI QO'SHISH (Majburiy Ota-Ona bilan)
 # ============================================
 @login_required
@@ -191,20 +296,11 @@ def student_create(request):
                 })
                 idx += 1
 
-            # Kamida bitta ota-ona bo'lishi kerak
-            if not parents_data:
-                form.add_error(None, "Kamida bitta ota-ona ma'lumotlari kiritilishi kerak!")
-                return render(request, 'users/student_form.html', {
-                    'form': form,
-                    'title': "Yangi O'quvchi Qo'shish",
-                    'relation_types': ParentStudent.RELATION_TYPES,
-                })
-
             # 2. O'quvchini saqlash
             student = form.save(commit=False, organization=request.user.organization)
             student.save()
 
-            # 3. Har bir ota-onani yaratish yoki topish va bog'lash
+            # 3. Har bir ota-onani yaratish yoki topish va bog'lash (agar kiritilgan bo'lsa)
             parent_names = []
             for i, pd in enumerate(parents_data):
                 if pd['existing_id']:
@@ -245,8 +341,15 @@ def student_create(request):
                 )
                 parent_names.append(parent.full_name)
 
-            names_str = ", ".join(parent_names)
-            messages.success(request, f"✅ {student.full_name} muvaffaqiyatli qo'shildi! Ota-ona: {names_str}")
+            if parent_names:
+                names_str = ", ".join(parent_names)
+                messages.success(request, f"✅ {student.full_name} muvaffaqiyatli qo'shildi! Ota-ona: {names_str}")
+            else:
+                messages.success(request, f"✅ {student.full_name} muvaffaqiyatli qo'shildi!")
+
+            next_url = request.GET.get('next') or request.POST.get('next')
+            if next_url:
+                return redirect(next_url)
             return redirect('users:user_list')
     else:
         form = StudentForm()
@@ -347,27 +450,52 @@ def user_detail(request, pk):
         if user.organization != request.user.organization:
             raise Http404
 
-    # Ota-ona ma'lumotlari (o'quvchi uchun)
+    # Ota-ona ma'lumotlari va guruhlar (o'quvchi uchun)
     parent_relations = []
     student_presence = None
+    enrolled_groups = []
     if user.role == 'student':
         parent_relations = ParentStudent.objects.filter(
             student=user
         ).select_related('parent')
         student_presence = build_student_presence_map([user.id]).get(user.id)
+        from apps.education.models import GroupStudent
+        enrolled_groups = GroupStudent.objects.filter(
+            student=user,
+            is_deleted=False
+        ).select_related('group', 'group__course', 'group__teacher', 'group__room')
 
     # Farzandlar (ota-ona uchun)
     children_relations = []
+    children_details = []
     if user.role == 'parent':
         children_relations = ParentStudent.objects.filter(
             parent=user
         ).select_related('student')
+        
+        student_ids = [rel.student_id for rel in children_relations]
+        presence_map = build_student_presence_map(student_ids) if student_ids else {}
+        from apps.education.models import GroupStudent
+        
+        for rel in children_relations:
+            st = rel.student
+            st_groups = GroupStudent.objects.filter(
+                student=st, is_deleted=False
+            ).select_related('group', 'group__course')
+            children_details.append({
+                'relation': rel,
+                'student': st,
+                'groups': st_groups,
+                'presence': presence_map.get(st.id),
+            })
 
     context = {
         'detail_user': user,
         'parent_relations': parent_relations,
         'children_relations': children_relations,
+        'children_details': children_details,
         'student_presence': student_presence,
+        'enrolled_groups': enrolled_groups,
     }
     return render(request, 'users/user_detail.html', context)
 

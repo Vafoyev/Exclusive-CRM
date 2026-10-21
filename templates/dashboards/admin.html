@@ -19,6 +19,12 @@
             <p class="text-base text-[#64748B] font-semibold">{{ request.user.organization.name }}</p>
         </div>
         <div class="flex gap-2 flex-wrap">
+            {% if request.user.is_director %}
+            <a href="{% url 'core:director_analytics' %}"
+                class="inline-flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-semibold transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/25">
+                <i class="ph-fill ph-chart-line-up"></i> Direktor Analitikasi
+            </a>
+            {% endif %}
             {% has_permission 'finance' 'create' as can_create_payment %}
             {% if can_create_payment %}
             <button onclick="openQuickPayment()"
@@ -208,24 +214,45 @@
             {% endif %}
         </div>
 
-        <!-- Kutilayotgan to'lovlar soni -->
-        <div class="glass-section p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-bold text-[#0F172A] flex items-center gap-2"><i
-                        class="ph-fill ph-clock text-[#64748B]"></i> Kutilayotgan To'lovlar</h3>
-                {% if pending_payments > 0 %}
-                <span
-                    class="px-2.5 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold flex items-center gap-1"><i
-                        class="ph-fill ph-clock"></i> {{ pending_payments }} kutilmoqda</span>
-                {% endif %}
-            </div>
-            <div class="flex flex-col items-center justify-center py-6">
-                <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mb-3">
-                    <i class="ph-fill ph-hourglass text-2xl"></i>
+        <!-- Kutilayotgan to'lovlar summasi -->
+        <div class="glass-section p-5 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-[#0F172A] flex items-center gap-2"><i
+                            class="ph-fill ph-clock text-amber-500"></i> Tasdiqlanmagan Pullar</h3>
+                    {% if pending_payments > 0 %}
+                    <span
+                        class="px-2.5 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold flex items-center gap-1"><i
+                            class="ph-fill ph-clock"></i> {{ pending_payments }} ta to'lov</span>
+                    {% endif %}
                 </div>
-                <p class="text-3xl font-bold text-[#0F172A]">{{ pending_payments|default:0 }}</p>
-                <p class="text-sm text-[#94A3B8] mt-1">ta to'lov tasdiqlanishi kutilmoqda</p>
+                <div class="flex flex-col items-center justify-center py-4">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mb-2">
+                        <i class="ph-fill ph-wallet text-2xl"></i>
+                    </div>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-amber-600 tabular-nums">
+                        {{ pending_payments_amount|floatformat:0|intcomma }} <span class="text-xs font-bold text-slate-500">so'm</span>
+                    </p>
+                    <p class="text-xs text-[#64748B] mt-1">{{ pending_payments|default:0 }} ta to'lov tasdiqlanishi kutilmoqda</p>
+                    {% if pending_submissions_count > 0 %}
+                    <p class="text-[11px] text-amber-700 font-semibold mt-1 bg-amber-50 px-2 py-0.5 rounded-md">
+                        + Kassa topshirish: {{ pending_submissions_amount|floatformat:0|intcomma }} so'm ({{ pending_submissions_count }} ta)
+                    </p>
+                    {% endif %}
+                </div>
             </div>
+            {% if request.user.is_director %}
+            <div class="pt-3 border-t border-[#94A3B8]/20 flex gap-2">
+                <a href="{% url 'finance:pending_receipts' %}"
+                    class="flex-1 py-2 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold text-center transition flex items-center justify-center gap-1 shadow-sm">
+                    <i class="ph ph-check-circle"></i> Cheklarni tasdiqlash
+                </a>
+                <a href="{% url 'finance:admin_student_payments' %}"
+                    class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold text-center transition flex items-center justify-center gap-1">
+                    To'lovlar
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
     {% endif %}
@@ -681,6 +708,13 @@
         formData.append('account_id', accountId);
 
         const receiptFile = document.getElementById('qpReceiptImage').files[0];
+        if (paymentMethod !== 'cash' && !receiptFile) {
+            errorText.textContent = "Plastik karta yoki online to'lov uchun chek rasmini yuklang.";
+            errorDiv.classList.remove('hidden');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ph-fill ph-check-circle"></i> Tasdiqlash';
+            return;
+        }
         if (receiptFile) {
             formData.append('receipt_image', receiptFile);
         }

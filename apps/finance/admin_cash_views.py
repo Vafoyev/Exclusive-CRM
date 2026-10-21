@@ -97,6 +97,8 @@ def admin_cash_dashboard(request):
     )
     if org:
         pending_qs = pending_qs.filter(organization=org)
+    pending_count = pending_qs.count()
+    pending_total_amount = pending_qs.aggregate(t=Sum('amount'))['t'] or Decimal('0')
     pending_student_payments = pending_qs.select_related(
         'student', 'account', 'category', 'created_by'
     ).order_by('-created_at')[:20]
@@ -126,7 +128,8 @@ def admin_cash_dashboard(request):
         'balance_terminal': balance_terminal,
         'submissions': submissions,
         'pending_student_payments': pending_student_payments,
-        'pending_count': pending_student_payments.count(),
+        'pending_count': pending_count,
+        'pending_total_amount': pending_total_amount,
     }
     return render(request, 'finance/admin_cash/dashboard.html', context)
 
@@ -141,7 +144,7 @@ def admin_add_income(request):
     admin_account = _get_or_create_admin_account(user, org)
 
     if request.method == 'POST':
-        form = AdminCashTransactionForm(request.POST, organization=org, transaction_type='income')
+        form = AdminCashTransactionForm(request.POST, request.FILES, organization=org, transaction_type='income')
         if form.is_valid():
             try:
                 with transaction.atomic():
@@ -151,11 +154,15 @@ def admin_add_income(request):
                     t.transaction_type = 'income'
                     t.created_by = user
                     t.status = 'pending'
+                    t.receipt_verified = False
                     t.save()
-                    confirm_service(t.id, user)
+                    if t.payment_method == 'cash' or user.is_director:
+                        confirm_service(t.id, user)
+                        messages.success(request, f"Kirim qo'shildi: {t.amount:,.0f} UZS ({t.get_payment_method_display()})")
+                    else:
+                        messages.success(request, f"Kirim qo'shildi va chek yuklandi. Direktor tasdiqlashi kutilmoqda.")
 
                 log_user_action(user, 'CREATE', 'Transaction', t.id, str(t), request=request)
-                messages.success(request, f"Kirim qo'shildi: {t.amount:,.0f} UZS ({t.get_payment_method_display()})")
                 return redirect('finance:admin_cash_dashboard')
             except ValidationError as exc:
                 form.add_error(None, exc.message if hasattr(exc, 'message') else str(exc))
@@ -182,7 +189,7 @@ def admin_add_expense(request):
     admin_account = _get_or_create_admin_account(user, org)
 
     if request.method == 'POST':
-        form = AdminCashTransactionForm(request.POST, organization=org, transaction_type='expense')
+        form = AdminCashTransactionForm(request.POST, request.FILES, organization=org, transaction_type='expense')
         if form.is_valid():
             try:
                 with transaction.atomic():
@@ -451,10 +458,13 @@ def cash_submission_list(request):
 
 
 @login_required
-@permission_required('finance', 'edit')
 @require_POST
 def approve_cash_submission(request, pk):
-    """Kassa topshirishni tasdiqlash - pul asosiy kassaga o'tadi."""
+    """Kassa topshirishni tasdiqlash - faqat Direktor uchun ruxsat etilgan."""
+    if not request.user.is_director:
+        messages.error(request, "Kassa topshirishni tasdiqlash faqat Direktor uchun ruxsat etilgan!")
+        return redirect('finance:cash_submission_list')
+
     from .services import approve_cash_submission as approve_service
     try:
         approve_service(pk, request.user)
@@ -465,10 +475,12 @@ def approve_cash_submission(request, pk):
 
 
 @login_required
-@permission_required('finance', 'edit')
 @require_POST
 def reject_cash_submission(request, pk):
-    """Kassa topshirishni rad etish."""
+    """Kassa topshirishni rad etish - faqat Direktor uchun ruxsat etilgan."""
+    if not request.user.is_director:
+        messages.error(request, "Kassa topshirishni rad etish faqat Direktor uchun ruxsat etilgan!")
+        return redirect('finance:cash_submission_list')
     org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
     qs = CashSubmission.objects.filter(is_deleted=False)
     if org:
@@ -571,10 +583,13 @@ def admin_student_payments(request):
 
 
 @login_required
-@permission_required('admin_finance', 'edit')
 @require_POST
 def admin_confirm_student_payment(request, pk):
-    """O'quvchi to'lovini tasdiqlash va admin kassasiga o'tkazish."""
+    """O'quvchi to'lovini tasdiqlash - faqat Direktor uchun ruxsat etilgan."""
+    if not request.user.is_director:
+        messages.error(request, "To'lovni tasdiqlash faqat Direktor uchun ruxsat etilgan!")
+        return redirect('finance:admin_student_payments')
+
     org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
     user = request.user
 
@@ -604,10 +619,12 @@ def admin_confirm_student_payment(request, pk):
 
 
 @login_required
-@permission_required('admin_finance', 'edit')
 @require_POST
 def admin_reject_student_payment(request, pk):
-    """O'quvchi to'lovini rad etish."""
+    """O'quvchi to'lovini rad etish - faqat Direktor uchun ruxsat etilgan."""
+    if not request.user.is_director:
+        messages.error(request, "To'lovni rad etish faqat Direktor uchun ruxsat etilgan!")
+        return redirect('finance:admin_student_payments')
     org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
 
     qs = Transaction.objects.filter(pk=pk)
@@ -649,6 +666,12 @@ def admin_add_course_payment(request):
     if org:
         students = students.filter(organization=org)
 
+    # Guruhlar ro'yxati (o'quvchi bir nechta kursda o'qisa, qaysi biri uchun to'layotganini tanlash uchun)
+    from apps.education.models import Group
+    groups = Group.objects.filter(is_deleted=False, status__in=['active', 'pending']).select_related('course')
+    if org:
+        groups = groups.filter(organization=org)
+
     # Kategoriyalar
     categories = TransactionCategory.objects.filter(
         transaction_type='income', is_deleted=False
@@ -658,6 +681,7 @@ def admin_add_course_payment(request):
 
     if request.method == 'POST':
         student_id = request.POST.get('student')
+        group_id = request.POST.get('group')
         amount = request.POST.get('amount')
         category_id = request.POST.get('category')
         payment_method = request.POST.get('payment_method', 'cash')
@@ -667,7 +691,7 @@ def admin_add_course_payment(request):
         if not student_id or not amount:
             messages.error(request, "O'quvchi va summa maydonlarini to'ldiring!")
             return render(request, 'finance/admin_cash/course_payment_form.html', {
-                'students': students, 'categories': categories,
+                'students': students, 'groups': groups, 'categories': categories,
                 'admin_account': admin_account,
             })
 
@@ -678,14 +702,42 @@ def admin_add_course_payment(request):
         except (ValueError, ArithmeticError):
             messages.error(request, "Noto'g'ri summa formati!")
             return render(request, 'finance/admin_cash/course_payment_form.html', {
-                'students': students, 'categories': categories,
+                'students': students, 'groups': groups, 'categories': categories,
                 'admin_account': admin_account,
+            })
+
+        is_non_cash = payment_method in ['card', 'terminal', 'online', 'transfer']
+        receipt_image = request.FILES.get('receipt_image')
+        receipt_file = request.FILES.get('receipt_file')
+
+        # Plastik yoki online bo'lsa chek rasmini talab qilish
+        if is_non_cash and not receipt_image and not receipt_file:
+            messages.error(request, "Plastik karta yoki online to'lov uchun chek rasmini yuklash majburiy!")
+            return render(request, 'finance/admin_cash/course_payment_form.html', {
+                'students': students, 'groups': groups, 'categories': categories,
+                'admin_account': admin_account,
+                'selected_student_id': student_id,
+                'selected_group_id': group_id,
+                'selected_category_id': category_id,
+                'selected_amount': amount,
+                'selected_payment_method': payment_method,
+                'selected_description': description,
             })
 
         student = get_object_or_404(User, pk=student_id, role='student')
         category = None
         if category_id:
             category = TransactionCategory.objects.filter(pk=category_id).first()
+
+        group = None
+        if group_id:
+            group = groups.filter(pk=group_id).first()
+
+        course_detail = f" | {group.course.name} ({group.name})" if group and group.course else (f" | {group.name}" if group else "")
+        if not description:
+            desc_text = f"Kurs to'lovi: {student.get_full_name()}{course_detail}"
+        else:
+            desc_text = f"{description}{course_detail}"
 
         # Tranzaksiya yaratish - admin kassasiga tushadi
         tx_data = {
@@ -696,14 +748,13 @@ def admin_add_course_payment(request):
             'amount': amount_decimal,
             'transaction_type': 'income',
             'payment_method': payment_method,
-            'description': description or f"Kurs to'lovi: {student.get_full_name()}",
+            'description': desc_text,
             'status': 'pending',
             'created_by': user,
+            'receipt_verified': False,
         }
 
         # Chek fayllarini qo'shish
-        receipt_image = request.FILES.get('receipt_image')
-        receipt_file = request.FILES.get('receipt_file')
         if receipt_image:
             tx_data['receipt_image'] = receipt_image
         if receipt_file:
@@ -711,14 +762,20 @@ def admin_add_course_payment(request):
 
         tx = Transaction.objects.create(**tx_data)
 
-        # Admin o'zi yaratgani uchun avtomatik tasdiqlash
-        try:
-            confirm_service(tx.id, user)
+        # Naqd pul bo'lsa yoki Direktor o'zi kiritgan bo'lsa avtomatik tasdiqlash
+        # Agar admin tomonidan plastik/online kiritilgan bo'lsa, tasdiqlash FAQAT DIREKTOR uchun kutiladi!
+        if payment_method == 'cash' or user.is_director:
+            try:
+                confirm_service(tx.id, user)
+                messages.success(request,
+                    f"✅ {student.get_full_name()} uchun {amount_decimal:,.0f} UZS kurs to'lovi qabul qilindi. "
+                    f"Admin kassasiga tushdi.")
+            except Exception as e:
+                messages.error(request, str(e))
+        else:
             messages.success(request,
-                f"✅ {student.get_full_name()} uchun {amount_decimal:,.0f} UZS kurs to'lovi qabul qilindi. "
-                f"Admin kassasiga tushdi.")
-        except Exception as e:
-            messages.error(request, str(e))
+                f"✅ {student.get_full_name()} uchun {amount_decimal:,.0f} UZS to'lov qabul qilindi va chek yuklandi. "
+                f"Direktor tasdiqlashi kutilmoqda.")
 
         log_user_action(user, 'CREATE', 'Transaction', tx.id,
                         f"Kurs to'lovi: {student.get_full_name()} - {amount_decimal:,.0f}", request=request)
@@ -726,6 +783,7 @@ def admin_add_course_payment(request):
 
     context = {
         'students': students,
+        'groups': groups,
         'categories': categories,
         'admin_account': admin_account,
     }
@@ -791,7 +849,7 @@ def cash_submission_detail(request, pk):
         'income_transactions': income_transactions,
         'expense_transactions': expense_transactions,
         'payment_method_stats': payment_method_stats,
-        'can_approve_reject': check_permission(user, 'finance', 'edit'),
+        'can_approve_reject': user.is_director,
     }
     return render(request, 'finance/admin_cash/submission_detail.html', context)
 

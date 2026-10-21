@@ -44,29 +44,29 @@ class UserForm(AvatarCompressionMixin, forms.ModelForm):
 class StudentForm(AvatarCompressionMixin, forms.ModelForm):
     """O'quvchi qo'shish formasi - ota-ona va manzil majburiy"""
     
-    # Parol
+    # Parol (ixtiyoriy, kiritilmasa telefon raqamidan olinadi)
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-input', 'placeholder': '********'}),
-        required=True, 
+        widget=forms.PasswordInput(attrs={'class': 'form-input', 'placeholder': "Bo'sh qoldirilsa: telefon oxirgi 6 raqami"}),
+        required=False, 
         label="Parol"
     )
     
-    # MANZIL MA'LUMOTLARI (profile_data ichida saqlanadi)
+    # MANZIL MA'LUMOTLARI (ixtiyoriy, profile_data ichida saqlanadi)
     region = forms.CharField(
         max_length=100, 
-        required=True,
+        required=False,
         label="Viloyat",
         widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': "Masalan: Toshkent shahri"})
     )
     district = forms.CharField(
         max_length=100, 
-        required=True,
+        required=False,
         label="Tuman/Shahar",
         widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': "Masalan: Chilonzor tumani"})
     )
     address = forms.CharField(
         max_length=255, 
-        required=True,
+        required=False,
         label="Ko'cha, uy",
         widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': "Masalan: Bunyodkor ko'chasi, 15-uy"})
     )
@@ -122,10 +122,24 @@ class StudentForm(AvatarCompressionMixin, forms.ModelForm):
             'avatar': 'Rasm',
         }
 
+    def clean_phone(self):
+        import re
+        phone = self.cleaned_data.get('phone', '')
+        cleaned = re.sub(r'[\s\-\(\)\+]', '', phone)
+        if not cleaned:
+            raise forms.ValidationError("Telefon raqami kiritilishi shart!")
+        if len(cleaned) == 9:
+            cleaned = '998' + cleaned
+        return cleaned
+
     def save(self, commit=True, organization=None):
         user = super().save(commit=False)
         user.role = 'student'
-        user.set_password(self.cleaned_data['password'])
+        pwd = self.cleaned_data.get('password')
+        if not pwd:
+            phone_val = self.cleaned_data.get('phone', '123456')
+            pwd = phone_val[-6:] if len(phone_val) >= 6 else phone_val
+        user.set_password(pwd)
         
         # Manzil ma'lumotlarini profile_data ga saqlash
         user.profile_data = {
@@ -140,6 +154,7 @@ class StudentForm(AvatarCompressionMixin, forms.ModelForm):
         if commit:
             user.save()
         return user
+
 
 
 # ============================================

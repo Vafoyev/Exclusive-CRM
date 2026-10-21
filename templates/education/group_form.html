@@ -1,134 +1,372 @@
 {% extends 'base.html' %}
 {% block title %}{{ title|default:"Yangi Guruh" }}{% endblock %}
-{% block content %}
-<div class="max-w-2xl mx-auto">
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <i class="ph ph-users-three text-[#64748B]"></i>
-            {{ title|default:"Yangi Guruh" }}
-        </h2>
 
+{% block content %}
+<div class="max-w-3xl mx-auto py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                <a href="{% url 'group_list' %}" class="hover:text-indigo-600 transition">Guruhlar</a>
+                <span>/</span>
+                <span class="text-slate-700 dark:text-slate-300">{{ title|default:"Yangi Guruh" }}</span>
+            </div>
+            <h1 class="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
+                    <i class="ph ph-users-three text-xl"></i>
+                </div>
+                {{ title|default:"Yangi Guruh" }}
+            </h1>
+        </div>
+        <a href="{% url 'group_list' %}" class="px-4 py-2 text-sm font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5">
+            <i class="ph ph-arrow-left"></i> Guruhlarga qaytish
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800">
         {% if form.errors %}
-        <div
-            class="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm border border-red-200">
-            <div class="flex items-center gap-2 font-semibold mb-2">
-                <i class="ph ph-warning-circle"></i> Xatolik
+        <div class="bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 p-4 rounded-xl mb-6 text-sm border border-rose-200 dark:border-rose-900/60">
+            <div class="flex items-center gap-2 font-bold mb-1.5">
+                <i class="ph ph-warning-circle text-lg"></i> Iltimos, xatoliklarni to'g'rilang:
             </div>
             {{ form.non_field_errors }}
             {% for field in form %}
-            {% if field.errors %}
-            <p><b>{{ field.label }}:</b> {{ field.errors|striptags }}</p>
-            {% endif %}
+                {% if field.errors %}
+                <p class="mt-1"><b>{{ field.label }}:</b> {{ field.errors|striptags }}</p>
+                {% endif %}
             {% endfor %}
         </div>
         {% endif %}
 
-        <form method="post" class="space-y-5">
+        <form method="post" id="groupForm" class="space-y-6">
             {% csrf_token %}
 
-            <!-- Nomi va Holat -->
-            <div class="grid grid-cols-2 gap-4">
+            <!-- 1. Guruh Nomi va Holati -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Guruh nomi</label>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+                        Guruh nomi <span class="text-rose-500">*</span>
+                    </label>
                     {{ form.name }}
+                    <p class="text-xs text-slate-500 mt-1">Masalan: IELTS-A, Python-24, Elementary-3</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Holati</label>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5 flex items-center justify-between">
+                        <span>Guruh holati <span class="text-rose-500">*</span></span>
+                        {% if is_create %}
+                        <span class="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">
+                            Yangi guruh
+                        </span>
+                        {% endif %}
+                    </label>
                     {{ form.status }}
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        {% if is_create %}
+                        ℹ️ Yangi ochilgan guruh uchun <b>Qabul ochiq</b> yoki to'g'ridan-to'g'ri <b>Faol</b> tanlanadi.
+                        {% else %}
+                        Kurs yakunlangach <b>Kurs yakunlangan</b>, tarqalib ketsa <b>Yopilgan</b> ga o'tkaziladi.
+                        {% endif %}
+                    </p>
                 </div>
             </div>
 
-            <!-- Kurs va O'qituvchi -->
-            <div class="grid grid-cols-2 gap-4">
+            <!-- 2. Kurs va O'qituvchi -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Kurs</label>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+                        Kurs yo'nalishi <span class="text-rose-500">*</span>
+                    </label>
                     {{ form.course }}
+                    <div id="courseDurationInfo" class="hidden text-xs text-indigo-600 dark:text-indigo-400 font-semibold mt-1.5 flex items-center gap-1">
+                        <i class="ph ph-clock"></i> Kurs davomiyligi: <span id="courseDurationText">0</span> oy
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">O'qituvchi</label>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+                        O'qituvchi (Ustoz)
+                    </label>
                     {{ form.teacher }}
+                    <p class="text-xs text-slate-500 mt-1">Guruhga mas'ul bo'lgan o'qituvchini biriktiring</p>
                 </div>
             </div>
 
-            <!-- Xona va Vaqt -->
-            <div class="grid grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Xona</label>
-                    {{ form.room }}
+            <!-- 3. Xona va Dars Vaqtlari -->
+            <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 space-y-4">
+                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="ph ph-door text-base text-indigo-500"></i> Xona va Vaqt taqvimi
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Boshlash
-                        vaqti</label>
-                    {{ form.start_time }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Tugash vaqti</label>
-                    {{ form.end_time }}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+                            Dars xonasi
+                        </label>
+                        {{ form.room }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+                            Boshlash vaqti <span class="text-rose-500">*</span>
+                        </label>
+                        {{ form.start_time }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+                            Tugash vaqti <span class="text-rose-500">*</span>
+                        </label>
+                        {{ form.end_time }}
+                    </div>
                 </div>
             </div>
 
-            <!-- Dars kunlari - CHECKBOXES -->
+            <!-- 4. Dars kunlari & Tezkor Presetlar -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Dars kunlari</label>
-                <div class="flex flex-wrap gap-3">
-                    <label
-                        class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg cursor-pointer hover:bg-[#4338CA]/5 transition">
-                        <input type="checkbox" name="day_1" {% if form.day_1.value %}checked{% endif %}
-                            class="w-4 h-4 text-[#64748B] rounded">
-                        <span class="text-sm font-medium text-slate-700">Dushanba</span>
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-200">
+                        Dars kunlari <span class="text-rose-500">*</span>
                     </label>
-                    <label
-                        class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg cursor-pointer hover:bg-[#4338CA]/5 transition">
-                        <input type="checkbox" name="day_2" {% if form.day_2.value %}checked{% endif %}
-                            class="w-4 h-4 text-[#64748B] rounded">
-                        <span class="text-sm font-medium text-slate-700">Seshanba</span>
+                    <!-- Tezkor presetlar -->
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="setSchedulePreset('odd')"
+                            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition">
+                            Toq kunlar (Du-Cho-Ju)
+                        </button>
+                        <button type="button" onclick="setSchedulePreset('even')"
+                            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-600 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition">
+                            Juft kunlar (Se-Pa-Sha)
+                        </button>
+                        <button type="button" onclick="setSchedulePreset('daily')"
+                            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
+                            Har kuni
+                        </button>
+                        <button type="button" onclick="setSchedulePreset('clear')"
+                            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/60 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 transition" title="Tozalash">
+                            <i class="ph ph-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5">
+                    <!-- Dushanba -->
+                    <label class="day-checkbox-label flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition select-none">
+                        <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">Dushanba</span>
+                        <input type="checkbox" name="day_1" id="day_1" {% if form.day_1.value %}checked{% endif %}
+                            class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
                     </label>
-                    <label
-                        class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg cursor-pointer hover:bg-[#4338CA]/5 transition">
-                        <input type="checkbox" name="day_3" {% if form.day_3.value %}checked{% endif %}
-                            class="w-4 h-4 text-[#64748B] rounded">
-                        <span class="text-sm font-medium text-slate-700">Chorshanba</span>
+
+                    <!-- Seshanba -->
+                    <label class="day-checkbox-label flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition select-none">
+                        <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">Seshanba</span>
+                        <input type="checkbox" name="day_2" id="day_2" {% if form.day_2.value %}checked{% endif %}
+                            class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
                     </label>
-                    <label
-                        class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg cursor-pointer hover:bg-[#4338CA]/5 transition">
-                        <input type="checkbox" name="day_4" {% if form.day_4.value %}checked{% endif %}
-                            class="w-4 h-4 text-[#64748B] rounded">
-                        <span class="text-sm font-medium text-slate-700">Payshanba</span>
+
+                    <!-- Chorshanba -->
+                    <label class="day-checkbox-label flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition select-none">
+                        <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">Chorshanba</span>
+                        <input type="checkbox" name="day_3" id="day_3" {% if form.day_3.value %}checked{% endif %}
+                            class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
                     </label>
-                    <label
-                        class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg cursor-pointer hover:bg-[#4338CA]/5 transition">
-                        <input type="checkbox" name="day_5" {% if form.day_5.value %}checked{% endif %}
-                            class="w-4 h-4 text-[#64748B] rounded">
-                        <span class="text-sm font-medium text-slate-700">Juma</span>
+
+                    <!-- Payshanba -->
+                    <label class="day-checkbox-label flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition select-none">
+                        <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">Payshanba</span>
+                        <input type="checkbox" name="day_4" id="day_4" {% if form.day_4.value %}checked{% endif %}
+                            class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
                     </label>
-                    <label
-                        class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg cursor-pointer hover:bg-[#4338CA]/5 transition">
-                        <input type="checkbox" name="day_6" {% if form.day_6.value %}checked{% endif %}
-                            class="w-4 h-4 text-[#64748B] rounded">
-                        <span class="text-sm font-medium text-slate-700">Shanba</span>
+
+                    <!-- Juma -->
+                    <label class="day-checkbox-label flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition select-none">
+                        <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">Juma</span>
+                        <input type="checkbox" name="day_5" id="day_5" {% if form.day_5.value %}checked{% endif %}
+                            class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                    </label>
+
+                    <!-- Shanba -->
+                    <label class="day-checkbox-label flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition select-none">
+                        <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">Shanba</span>
+                        <input type="checkbox" name="day_6" id="day_6" {% if form.day_6.value %}checked{% endif %}
+                            class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                    </label>
+
+                    <!-- Yakshanba -->
+                    <label class="day-checkbox-label flex items-center justify-between p-3 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 cursor-pointer hover:border-amber-400 transition select-none">
+                        <span class="text-sm font-semibold text-amber-900 dark:text-amber-200">Yakshanba</span>
+                        <input type="checkbox" name="day_7" id="day_7" {% if form.day_7.value %}checked{% endif %}
+                            class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500">
                     </label>
                 </div>
-                <p class="text-xs text-slate-500 mt-2">Dars o'tiladigan kunlarni tanlang</p>
+                <p class="text-xs text-slate-500 mt-2">Dars o'tiladigan kunlarni belgilang (kamida 1 kun tanlanishi shart)</p>
             </div>
 
-            <!-- Boshlanish Sanasi -->
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Boshlanish sanasi</label>
-                {{ form.start_date }}
+            <!-- 5. Boshlanish va Tugash Sanalari -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+                        Boshlanish sanasi
+                    </label>
+                    {{ form.start_date }}
+                    <p class="text-xs text-slate-500 mt-1">Guruh darslari boshlanadigan sana</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5 flex items-center justify-between">
+                        <span>Tugash sanasi</span>
+                        <button type="button" id="autoCalcEndDateBtn" class="hidden text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+                            Kurs bo'yicha hisoblash
+                        </button>
+                    </label>
+                    {{ form.end_date }}
+                    <p class="text-xs text-slate-500 mt-1">Guruh darslari yakunlanadigan rejadagi sana</p>
+                </div>
             </div>
 
-            <!-- Tugmalar -->
-            <div class="flex gap-3 pt-4">
+            <!-- Amallar tugmalari -->
+            <div class="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button type="submit"
-                    class="flex-1 px-6 py-3 bg-gradient-to-r from-[#818CF8] to-purple-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-indigo-500/30 transition-all flex items-center justify-center gap-2">
-                    <i class="ph ph-check-circle"></i> Saqlash
+                    class="w-full sm:w-auto sm:flex-1 px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="ph ph-check-circle text-lg"></i>
+                    <span>Saqlash</span>
                 </button>
                 <a href="{% url 'group_list' %}"
-                    class="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition flex items-center gap-2">
-                    <i class="ph ph-x"></i> Bekor
+                    class="w-full sm:w-auto px-6 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center justify-center gap-2">
+                    <i class="ph ph-x text-lg"></i>
+                    <span>Bekor qilish</span>
                 </a>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    // Kurslarning oylik davomiyligi
+    const courseDurations = {{ course_durations_json|default:"{}"|safe }};
+
+    // Dars kunlarini tezkor tanlash (Presets)
+    function setSchedulePreset(type) {
+        const days = {
+            1: document.getElementById('day_1'),
+            2: document.getElementById('day_2'),
+            3: document.getElementById('day_3'),
+            4: document.getElementById('day_4'),
+            5: document.getElementById('day_5'),
+            6: document.getElementById('day_6'),
+            7: document.getElementById('day_7')
+        };
+
+        // Barchasini tozalash
+        for (let i = 1; i <= 7; i++) {
+            if (days[i]) days[i].checked = false;
+        }
+
+        if (type === 'odd') {
+            // Toq kunlar: Du (1), Cho (3), Ju (5)
+            if (days[1]) days[1].checked = true;
+            if (days[3]) days[3].checked = true;
+            if (days[5]) days[5].checked = true;
+        } else if (type === 'even') {
+            // Juft kunlar: Se (2), Pa (4), Sha (6)
+            if (days[2]) days[2].checked = true;
+            if (days[4]) days[4].checked = true;
+            if (days[6]) days[6].checked = true;
+        } else if (type === 'daily') {
+            // Har kuni (Du - Sha)
+            for (let i = 1; i <= 6; i++) {
+                if (days[i]) days[i].checked = true;
+            }
+        }
+        updateCheckboxStyles();
+    }
+
+    function updateCheckboxStyles() {
+        document.querySelectorAll('.day-checkbox-label').forEach(label => {
+            const input = label.querySelector('input[type="checkbox"]');
+            if (input && input.checked) {
+                label.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50/70', 'dark:bg-indigo-950/40', 'border-indigo-400');
+            } else {
+                label.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/70', 'dark:bg-indigo-950/40', 'border-indigo-400');
+            }
+        });
+    }
+
+    // Kurs tanlanganda uning davomiyligini ko'rsatish va tugash sanasini hisoblash
+    const courseSelect = document.getElementById('id_course');
+    const startDateInput = document.getElementById('id_start_date');
+    const endDateInput = document.getElementById('id_end_date');
+    const durationInfo = document.getElementById('courseDurationInfo');
+    const durationText = document.getElementById('courseDurationText');
+    const autoCalcBtn = document.getElementById('autoCalcEndDateBtn');
+
+    function calculateEndDate() {
+        if (!courseSelect || !startDateInput || !endDateInput) return;
+        const selectedCourseId = courseSelect.value;
+        const startDateVal = startDateInput.value;
+        const durationMonths = courseDurations[selectedCourseId];
+
+        if (durationMonths) {
+            durationInfo.classList.remove('hidden');
+            durationText.textContent = durationMonths;
+            autoCalcBtn.classList.remove('hidden');
+        } else {
+            durationInfo.classList.add('hidden');
+            autoCalcBtn.classList.add('hidden');
+        }
+
+        if (startDateVal && durationMonths) {
+            const startDate = new Date(startDateVal);
+            if (!isNaN(startDate.getTime())) {
+                const endDate = new Date(startDate);
+                endDate.setMonth(endDate.getMonth() + parseInt(durationMonths, 10));
+                
+                // YYYY-MM-DD format
+                const yyyy = endDate.getFullYear();
+                const mm = String(endDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(endDate.getDate()).padStart(2, '0');
+                const calculatedDateStr = `${yyyy}-${mm}-${dd}`;
+                
+                // Agar endDate bo'sh bo'lsa yoki auto-calc so'ralsa
+                if (!endDateInput.value) {
+                    endDateInput.value = calculatedDateStr;
+                }
+            }
+        }
+    }
+
+    function forceCalculateEndDate() {
+        if (!courseSelect || !startDateInput || !endDateInput) return;
+        const selectedCourseId = courseSelect.value;
+        const startDateVal = startDateInput.value;
+        const durationMonths = courseDurations[selectedCourseId];
+
+        if (startDateVal && durationMonths) {
+            const startDate = new Date(startDateVal);
+            if (!isNaN(startDate.getTime())) {
+                const endDate = new Date(startDate);
+                endDate.setMonth(endDate.getMonth() + parseInt(durationMonths, 10));
+                const yyyy = endDate.getFullYear();
+                const mm = String(endDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(endDate.getDate()).padStart(2, '0');
+                endDateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Checkboxlarni dastlabki holatini bo'yash
+        updateCheckboxStyles();
+        document.querySelectorAll('.day-checkbox-label input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', updateCheckboxStyles);
+        });
+
+        // Kurs va sana o'zgarishi
+        if (courseSelect) {
+            courseSelect.addEventListener('change', calculateEndDate);
+        }
+        if (startDateInput) {
+            startDateInput.addEventListener('change', calculateEndDate);
+        }
+        if (autoCalcBtn) {
+            autoCalcBtn.addEventListener('click', forceCalculateEndDate);
+        }
+
+        calculateEndDate();
+    });
+</script>
 {% endblock %}

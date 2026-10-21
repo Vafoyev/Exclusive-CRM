@@ -6,11 +6,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Count, Avg
-from datetime import timedelta
+from datetime import timedelta, datetime as dt
 from asgiref.sync import sync_to_async
 
 from .models import Lesson, Attendance
-from apps.education.models import Group, GroupStudent
+from apps.education.models import Group, GroupStudent, Room
 from apps.users.models import User
 from apps.core.audit import log_user_action
 from apps.core.permissions import permission_required, check_permission
@@ -100,6 +100,32 @@ def lesson_list(request):
     group_filter = request.GET.get('group', '')
     status_filter = request.GET.get('status', '')
 
+    try:
+        current_date = dt.strptime(date_filter, '%Y-%m-%d').date() if date_filter else today
+    except (ValueError, TypeError):
+        current_date = today
+
+    # Shu kuni darsi bor bo'lgan aktiv guruhlar uchun Lesson larni avtomatik tayyorlash
+    day_num = current_date.weekday() + 1  # 1=Dush ... 7=Yak
+    auto_groups = Group.objects.filter(is_deleted=False, status='active')
+    if org and user.role != 'super_admin':
+        auto_groups = auto_groups.filter(organization=org)
+
+    for g in auto_groups:
+        if g.schedule_days and day_num in g.schedule_days:
+            Lesson.objects.get_or_create(
+                group=g,
+                date=current_date,
+                defaults={
+                    'organization': g.organization,
+                    'teacher': g.teacher,
+                    'room': g.room,
+                    'start_time': g.start_time or timezone.now().time(),
+                    'end_time': g.end_time or (timezone.now() + timedelta(hours=2)).time(),
+                    'status': 'scheduled',
+                }
+            )
+
     # Super admin barcha darslarni ko'radi
     if user.role == 'super_admin' or not org:
         lessons = Lesson.objects.filter(is_deleted=False)
@@ -110,8 +136,7 @@ def lesson_list(request):
     if user.role == 'teacher':
         lessons = lessons.filter(teacher=user)
 
-    if date_filter:
-        lessons = lessons.filter(date=date_filter)
+    lessons = lessons.filter(date=current_date)
     if group_filter:
         lessons = lessons.filter(group_id=group_filter)
     if status_filter:
@@ -120,6 +145,7 @@ def lesson_list(request):
     lessons = lessons.select_related('group', 'teacher', 'room').annotate(
         attendance_count=Count('attendances', distinct=True),
         present_count=Count('attendances', filter=Q(attendances__status='present'), distinct=True),
+        enrolled_count=Count('group__students', filter=Q(group__students__status='active'), distinct=True),
     ).order_by('start_time')
 
     # Davomat olinganligini tekshirish
@@ -538,9 +564,13 @@ def take_attendance(request, pk):
                     xp_points=xp,
                 )
         
+        lesson.status = 'finished'
+        lesson.finished_at = timezone.now()
+        lesson.save(update_fields=['status', 'finished_at'])
+
         log_user_action(request.user, 'UPDATE', 'Attendance', lesson.id, 
                        f"Davomat - {lesson.group.name}", request=request)
-        messages.success(request, "Davomat saqlandi!")
+        messages.success(request, f"{lesson.group.name} guruhi uchun davomat saqlandi!")
         return redirect('operations:lesson_list')
 
     # O'quvchilar ro'yxatini tayyorlash
@@ -563,15 +593,139 @@ def take_attendance(request, pk):
     return render(request, 'operations/take_attendance.html', context)
 
 
+@login_required
+@permission_required('operations', 'create')
+def group_take_attendance(request, group_id):
+    """Guruh uchun to'g'ridan-to'g'ri davomat sahifasini ochish."""
+    org = request.user.organization
+    user = request.user
+
+    qs = Group.objects.filter(is_deleted=False)
+    if org and user.role != 'super_admin':
+        qs = qs.filter(organization=org)
+    group = get_object_or_404(qs, pk=group_id)
+
+    date_str = request.GET.get('date')
+    if date_str:
+        try:
+            lesson_date = dt.strptime(date_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            lesson_date = timezone.now().date()
+    else:
+        lesson_date = timezone.now().date()
+
+    lesson, _ = Lesson.objects.get_or_create(
+        group=group,
+        date=lesson_date,
+        defaults={
+            'organization': group.organization,
+            'teacher': group.teacher,
+            'room': group.room,
+            'start_time': group.start_time or timezone.now().time(),
+            'end_time': group.end_time or (timezone.now() + timedelta(hours=2)).time(),
+            'status': 'scheduled',
+        }
+    )
+    return redirect('operations:take_attendance', pk=lesson.pk)
+
+
 # ===========================================
-# SCHEDULE (JADVAL)
+# SCHEDULE (HAFTALIK JADVAL)
 # ===========================================
 
 @login_required
 @permission_required('operations', 'view')
 def schedule_view(request):
-    """Haftalik jadval - lesson_list ga redirect"""
-    return redirect('operations:lesson_list')
+    """Haftalik to'liq dars jadvali."""
+    org = request.user.organization
+    user = request.user
+    today = timezone.now().date()
+
+    try:
+        week_offset = int(request.GET.get('week', 0))
+    except (ValueError, TypeError):
+        week_offset = 0
+
+    start_of_week = today - timedelta(days=today.weekday()) + timedelta(weeks=week_offset)
+    end_of_week = start_of_week + timedelta(days=6)
+
+    # Filterlar
+    room_filter = request.GET.get('room', '')
+    teacher_filter = request.GET.get('teacher', '')
+
+    # Guruhlar
+    if user.role == 'super_admin' or not org:
+        schedule_groups = Group.objects.filter(is_deleted=False, status__in=['active', 'pending'])
+        rooms = Room.objects.filter(is_deleted=False)
+        teachers = User.objects.filter(role='teacher', is_deleted=False)
+    else:
+        schedule_groups = Group.objects.filter(organization=org, is_deleted=False, status__in=['active', 'pending'])
+        rooms = Room.objects.filter(organization=org, is_deleted=False)
+        teachers = User.objects.filter(organization=org, role='teacher', is_deleted=False)
+
+    if user.role == 'teacher':
+        schedule_groups = schedule_groups.filter(teacher=user)
+    elif user.role == 'student':
+        my_groups = GroupStudent.objects.filter(student=user, status='active').values_list('group_id', flat=True)
+        schedule_groups = schedule_groups.filter(id__in=my_groups)
+
+    if room_filter:
+        schedule_groups = schedule_groups.filter(room_id=room_filter)
+    if teacher_filter:
+        schedule_groups = schedule_groups.filter(teacher_id=teacher_filter)
+
+    schedule_groups = schedule_groups.select_related('teacher', 'room', 'course').annotate(
+        active_student_count=Count('students', filter=Q(students__status='active'), distinct=True)
+    )
+
+    day_names = ['', 'Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba', 'Yakshanba']
+    week_days = []
+    total_weekly_lessons = 0
+
+    for i in range(7):
+        day_number = i + 1
+        day_date = start_of_week + timedelta(days=i)
+        day_groups = []
+
+        for group in schedule_groups:
+            if group.schedule_days and day_number in group.schedule_days:
+                total_weekly_lessons += 1
+                day_groups.append({
+                    'group': group,
+                    'name': group.name,
+                    'course_name': group.course.name if group.course else '',
+                    'start_time': group.start_time,
+                    'end_time': group.end_time,
+                    'room': group.room,
+                    'teacher': group.teacher,
+                    'students_count': group.active_student_count,
+                    'date_str': str(day_date),
+                })
+
+        day_groups.sort(key=lambda x: x['start_time'] if x['start_time'] else timezone.now().time())
+
+        week_days.append({
+            'day_number': day_number,
+            'day_name': day_names[day_number],
+            'date': day_date,
+            'is_today': day_date == today,
+            'groups': day_groups,
+            'count': len(day_groups),
+        })
+
+    context = {
+        'week_days': week_days,
+        'start_of_week': start_of_week,
+        'end_of_week': end_of_week,
+        'week_offset': week_offset,
+        'today': today,
+        'rooms': rooms,
+        'teachers': teachers,
+        'room_filter': room_filter,
+        'teacher_filter': teacher_filter,
+        'total_weekly_lessons': total_weekly_lessons,
+    }
+    return render(request, 'operations/schedule.html', context)
 
 
 # ===========================================

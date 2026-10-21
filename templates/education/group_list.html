@@ -28,9 +28,11 @@
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="text-lg font-bold text-slate-800">{{ group.name }}</h3>
                     <span class="px-2.5 py-1 text-xs rounded-full font-bold
-                        {% if group.status == 'active' %}bg-green-100 text-green-700
-                        {% elif group.status == 'forming' %}bg-yellow-100 text-yellow-700
-                        {% else %}bg-slate-100 text-slate-700{% endif %}">
+                        {% if group.status == 'active' %}bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400
+                        {% elif group.status == 'pending' %}bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400
+                        {% elif group.status == 'finished' %}bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400
+                        {% elif group.status == 'cancelled' %}bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400
+                        {% else %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">
                         {{ group.get_status_display }}
                     </span>
                 </div>
@@ -65,9 +67,12 @@
                     <i class="ph ph-eye"></i> Ko'rish
                 </a>
                 {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' %}
-                <button onclick="openAddStudentModal({{ group.id }}, '{{ group.name }}')"
-                    class="flex-1 py-2 text-center text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:shadow-lg hover:shadow-green-500/30 transition flex items-center justify-center gap-1">
-                    <i class="ph ph-user-plus"></i> O'quvchi
+                <button type="button"
+                    data-group-id="{{ group.id }}"
+                    data-group-name="{{ group.name|escapejs }}"
+                    onclick="openAddStudentModal(this.dataset.groupId, this.dataset.groupName)"
+                    class="flex-1 py-2 text-center text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg hover:from-emerald-600 hover:to-green-700 shadow-md shadow-emerald-500/20 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="ph-bold ph-user-plus"></i> O'quvchi
                 </button>
                 <a href="{% url 'group_edit' group.id %}"
                     class="px-3 py-2 text-slate-500 hover:text-[#64748B] bg-white rounded-lg hover:bg-slate-100 transition">
@@ -102,49 +107,68 @@
 </div>
 
 <!-- O'quvchi Qo'shish Modal -->
-<div id="addStudentModal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeAddStudentModal()"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div
-            class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+<div id="addStudentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeAddStudentModal()"></div>
+    <div class="relative w-full max-w-lg z-10 animate-fadeIn">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
             <!-- Modal Header -->
-            <div
-                class="p-5 border-b border-slate-100 bg-gradient-to-r from-green-500 to-emerald-600">
+            <div class="p-5 border-b border-slate-100 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-lg font-bold text-white">O'quvchi qo'shish</h3>
-                        <p id="modalGroupName" class="text-green-100 text-sm"></p>
+                        <h3 class="text-lg font-black flex items-center gap-2">
+                            <i class="ph-bold ph-user-plus"></i> O'quvchi qo'shish
+                        </h3>
+                        <p id="modalGroupName" class="text-emerald-100 text-xs mt-0.5 font-medium"></p>
                     </div>
-                    <button onclick="closeAddStudentModal()" class="text-white/70 hover:text-white text-2xl">
-                        <i class="ph ph-x"></i>
+                    <button type="button" onclick="closeAddStudentModal()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition">
+                        <i class="ph-bold ph-x text-lg"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Search Input -->
-            <div class="p-5">
+            <!-- Search Input & Quick Actions -->
+            <div class="p-4 bg-slate-50 border-b border-slate-100 space-y-2">
                 <div class="relative">
-                    <input type="text" id="studentSearch" placeholder="Ism yoki telefon bo'yicha qidiring..."
-                        class="w-full px-4 py-3 pl-11 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <div id="searchSpinner" class="absolute right-4 top-1/2 -translate-y-1/2 hidden">
-                        <i class="ph ph-spinner animate-spin text-green-500"></i>
+                    <input type="text" id="studentSearch" placeholder="Ism, familiya yoki telefon bo'yicha qidirish..."
+                        autocomplete="off"
+                        class="w-full px-4 py-2.5 pl-10 pr-10 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none shadow-sm">
+                    <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <div id="searchSpinner" class="absolute right-3.5 top-1/2 -translate-y-1/2 hidden">
+                        <i class="ph ph-spinner animate-spin text-emerald-600"></i>
                     </div>
                 </div>
-            </div>
 
-            <!-- Search Results -->
-            <div id="searchResults" class="max-h-64 overflow-y-auto border-t border-slate-100">
-                <div class="p-5 text-center text-slate-400 text-sm">
-                    <i class="ph ph-magnifying-glass text-2xl mb-2"></i>
-                    <p>Qidirish uchun kamida 2 ta belgi kiriting</p>
+                <div class="flex items-center justify-between px-1 text-xs">
+                    <span class="text-slate-500 font-medium">Mavjud o'quvchilar ro'yxati</span>
+                    <a href="{% url 'users:student_create' %}?next={% url 'group_list' %}"
+                        class="text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1 hover:underline">
+                        <i class="ph-bold ph-plus-circle"></i> Yangi o'quvchi ochish
+                    </a>
                 </div>
             </div>
 
-            <!-- Hidden Form -->
+            <!-- Search Results / Students List -->
+            <div id="searchResults" class="max-h-80 overflow-y-auto divide-y divide-slate-100 p-2">
+                <div class="p-6 text-center text-slate-400 text-sm">
+                    <i class="ph ph-spinner animate-spin text-2xl text-emerald-600 mb-2"></i>
+                    <p>O'quvchilar yuklanmoqda...</p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 px-4">
+                <span>Bir vaqtda darsi to'qnash bo'lgan o'quvchini tizim avtomatik ogohlantiradi</span>
+                <button type="button" onclick="closeAddStudentModal()" 
+                    class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-semibold transition">
+                    Yopish
+                </button>
+            </div>
+
+            <!-- Hidden Form for submission -->
             <form id="addStudentForm" method="POST" class="hidden">
                 {% csrf_token %}
                 <input type="hidden" name="student_id" id="selectedStudentId">
+                <input type="hidden" name="next" value="{% url 'group_list' %}">
             </form>
         </div>
     </div>
@@ -156,97 +180,129 @@
 
     function openAddStudentModal(groupId, groupName) {
         currentGroupId = groupId;
-        document.getElementById('modalGroupName').textContent = groupName + ' guruhiga';
-        document.getElementById('addStudentModal').classList.remove('hidden');
-        document.getElementById('studentSearch').value = '';
-        document.getElementById('searchResults').innerHTML = `
-        <div class="p-5 text-center text-slate-400 text-sm">
-            <i class="ph ph-magnifying-glass text-2xl mb-2"></i>
-            <p>Qidirish uchun kamida 2 ta belgi kiriting</p>
-        </div>
-    `;
-        setTimeout(() => document.getElementById('studentSearch').focus(), 100);
+        const modal = document.getElementById('addStudentModal');
+        const nameEl = document.getElementById('modalGroupName');
+        const searchInput = document.getElementById('studentSearch');
+
+        if (nameEl) nameEl.textContent = (groupName || 'Guruh') + ' ga a\'zo qilish';
+        if (modal) modal.classList.remove('hidden');
+        if (searchInput) {
+            searchInput.value = '';
+            setTimeout(() => searchInput.focus(), 100);
+        }
+
+        // Guruhga qo'shish mumkin bo'lgan o'quvchilarni darhol yuklash
+        fetchStudents('');
     }
 
     function closeAddStudentModal() {
-        document.getElementById('addStudentModal').classList.add('hidden');
+        const modal = document.getElementById('addStudentModal');
+        if (modal) modal.classList.add('hidden');
         currentGroupId = null;
     }
 
-    document.getElementById('studentSearch').addEventListener('input', function (e) {
-        const query = e.target.value.trim();
+    function fetchStudents(query) {
+        if (!currentGroupId) return;
 
-        if (searchTimeout) clearTimeout(searchTimeout);
+        const spinner = document.getElementById('searchSpinner');
+        const container = document.getElementById('searchResults');
+        if (spinner) spinner.classList.remove('hidden');
 
-        if (query.length < 2) {
-            document.getElementById('searchResults').innerHTML = `
-            <div class="p-5 text-center text-slate-400 text-sm">
-                <i class="ph ph-magnifying-glass text-2xl mb-2"></i>
-                <p>Qidirish uchun kamida 2 ta belgi kiriting</p>
-            </div>
-        `;
-            return;
-        }
+        const url = `/api/search-students/?group_id=${currentGroupId}&q=${encodeURIComponent(query || '')}`;
 
-        document.getElementById('searchSpinner').classList.remove('hidden');
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (spinner) spinner.classList.add('hidden');
 
-        searchTimeout = setTimeout(() => {
-            fetch(`/api/search-students/?q=${encodeURIComponent(query)}&group_id=${currentGroupId}`)
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('searchSpinner').classList.add('hidden');
-
-                    if (data.results.length === 0) {
-                        document.getElementById('searchResults').innerHTML = `
-                        <div class="p-5 text-center text-slate-400 text-sm">
-                            <i class="ph ph-user-circle-minus text-2xl mb-2"></i>
-                            <p>Hech kim topilmadi</p>
+                if (!data.results || data.results.length === 0) {
+                    container.innerHTML = `
+                        <div class="p-8 text-center text-slate-400 text-sm space-y-2">
+                            <i class="ph ph-user-circle-minus text-3xl text-slate-300"></i>
+                            <p class="font-semibold text-slate-600">Mos o'quvchi topilmadi</p>
+                            <p class="text-xs text-slate-400">Barcha o'quvchilar allaqachon ushbu guruhda yoki qidiruv bo'yicha ma'lumot yo'q.</p>
+                            <div class="pt-2">
+                                <a href="{% url 'users:student_create' %}?next={% url 'group_list' %}"
+                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition">
+                                    <i class="ph-bold ph-plus"></i> Yangi o'quvchi yaratish
+                                </a>
+                            </div>
                         </div>
                     `;
-                        return;
-                    }
+                    return;
+                }
 
-                    let html = '';
-                    data.results.forEach(student => {
-                        html += `
-                        <div class="p-4 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 flex items-center justify-between"
-                             onclick="selectStudent(${student.id}, '${student.name}')">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white font-bold">
-                                    ${student.name.charAt(0)}
+                let html = '';
+                data.results.forEach(student => {
+                    const initial = (student.name || '?')[0].toUpperCase();
+                    html += `
+                        <div class="p-3 hover:bg-emerald-50/50 rounded-xl transition flex items-center justify-between gap-3 group">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
+                                    ${initial}
                                 </div>
-                                <div>
-                                    <p class="font-semibold text-slate-800">${student.name}</p>
-                                    <p class="text-xs text-slate-500">${student.phone}</p>
+                                <div class="min-w-0">
+                                    <p class="font-bold text-slate-800 text-sm truncate">${escapeHtml(student.name)}</p>
+                                    <p class="text-xs text-slate-500 font-mono">${escapeHtml(student.phone || '-')}</p>
                                 </div>
                             </div>
-                            <i class="ph ph-plus-circle text-2xl text-green-500"></i>
-                        </div>
-                    `;
-                    });
-
-                    document.getElementById('searchResults').innerHTML = html;
-                })
-                .catch(function(error) {
-                    console.error('Qidiruv xatolik:', error);
-                    document.getElementById('searchSpinner').classList.add('hidden');
-                    document.getElementById('searchResults').innerHTML = `
-                        <div class="p-5 text-center text-rose-400 text-sm">
-                            <i class="ph ph-warning-circle text-2xl mb-2"></i>
-                            <p>Xatolik yuz berdi. Qaytadan urinib ko'ring.</p>
+                            <button type="button" onclick="selectStudent(${student.id}, '${escapeHtml(student.name)}')"
+                                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 shadow-sm shadow-emerald-500/25">
+                                <i class="ph-bold ph-plus"></i>
+                                <span>Qo'shish</span>
+                            </button>
                         </div>
                     `;
                 });
-        }, 300);
+
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                console.error('Students fetch error:', err);
+                if (spinner) spinner.classList.add('hidden');
+                container.innerHTML = `
+                    <div class="p-6 text-center text-rose-500 text-xs">
+                        <i class="ph ph-warning-circle text-2xl mb-1"></i>
+                        <p>O'quvchilarni yuklashda xatolik yuz berdi. Qaytadan urinib ko'ring.</p>
+                    </div>
+                `;
+            });
+    }
+
+    document.getElementById('studentSearch')?.addEventListener('input', function (e) {
+        const query = e.target.value.trim();
+        if (searchTimeout) clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            fetchStudents(query);
+        }, 200);
     });
 
     function selectStudent(studentId, studentName) {
-        if (confirm(`"${studentName}" ni guruhga qo'shishni tasdiqlaysizmi?`)) {
-            closeAddStudentModal();
-            document.getElementById('selectedStudentId').value = studentId;
-            document.getElementById('addStudentForm').action = `/edu/groups/${currentGroupId}/add-student/`;
-            document.getElementById('addStudentForm').submit();
-        }
+        if (!currentGroupId || !studentId) return;
+
+        const form = document.getElementById('addStudentForm');
+        const idInput = document.getElementById('selectedStudentId');
+
+        idInput.value = studentId;
+        // To'g'ri URL manzili: /groups/<pk>/add-student/
+        form.action = `/groups/${currentGroupId}/add-student/`;
+
+        // Loading holatini ko'rsatish
+        const container = document.getElementById('searchResults');
+        container.innerHTML = `
+            <div class="p-8 text-center text-slate-600 text-sm space-y-2">
+                <i class="ph ph-spinner animate-spin text-3xl text-emerald-600"></i>
+                <p class="font-bold">${studentName} guruhga qo'shilmoqda...</p>
+            </div>
+        `;
+
+        form.submit();
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return String(text).replace(/[&<>"']/g, m => map[m]);
     }
 
     // ESC tugmasi

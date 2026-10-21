@@ -138,6 +138,15 @@ class StudentPaymentForm(forms.ModelForm):
         self.fields['description'].required = False
         self.fields['payment_method'].initial = 'cash'
 
+    def clean(self):
+        cleaned_data = super().clean()
+        method = cleaned_data.get('payment_method')
+        receipt_image = cleaned_data.get('receipt_image')
+        receipt_file = cleaned_data.get('receipt_file')
+        if method in ['card', 'terminal', 'online', 'transfer'] and not receipt_image and not receipt_file:
+            self.add_error('receipt_image', "Plastik karta yoki online to'lov uchun chek rasmini yuklash majburiy!")
+        return cleaned_data
+
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
         if not amount or amount <= 0:
@@ -146,15 +155,17 @@ class StudentPaymentForm(forms.ModelForm):
 
 
 class AdminCashTransactionForm(forms.ModelForm):
-    """Admin kassa kirim-chiqim formasi (kategoriya, summa, to'lov usuli, izoh)."""
+    """Admin kassa kirim-chiqim formasi (kategoriya, summa, to'lov usuli, izoh, chek)."""
     class Meta:
         model = Transaction
-        fields = ['category', 'amount', 'payment_method', 'description']
+        fields = ['category', 'amount', 'payment_method', 'description', 'receipt_image', 'receipt_file']
         widgets = {
             'category': forms.Select(attrs={'class': INPUT_CLASSES}),
             'amount': forms.NumberInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Summa', 'min': '0'}),
-            'payment_method': forms.Select(attrs={'class': INPUT_CLASSES}),
+            'payment_method': forms.Select(attrs={'class': INPUT_CLASSES, 'id': 'paymentMethodSelect', 'onchange': 'toggleReceiptSection(this)'}),
             'description': forms.Textarea(attrs={'class': INPUT_CLASSES, 'rows': 3, 'placeholder': 'Izoh...'}),
+            'receipt_image': forms.FileInput(attrs={'class': INPUT_CLASSES, 'id': 'receiptImageInput', 'accept': 'image/*'}),
+            'receipt_file': forms.FileInput(attrs={'class': INPUT_CLASSES, 'accept': '.pdf'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -166,6 +177,8 @@ class AdminCashTransactionForm(forms.ModelForm):
         self.fields['payment_method'].required = False
         self.fields['payment_method'].initial = 'cash'
         self.fields['description'].required = False
+        self.fields['receipt_image'].required = False
+        self.fields['receipt_file'].required = False
 
         if organization and transaction_type:
             self.fields['category'].queryset = TransactionCategory.objects.filter(
@@ -190,3 +203,12 @@ class AdminCashTransactionForm(forms.ModelForm):
 
     def clean_payment_method(self):
         return self.cleaned_data.get('payment_method') or 'cash'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        method = cleaned_data.get('payment_method')
+        receipt_image = cleaned_data.get('receipt_image')
+        receipt_file = cleaned_data.get('receipt_file')
+        if method in ['card', 'terminal', 'online', 'transfer'] and not receipt_image and not receipt_file:
+            self.add_error('receipt_image', "Plastik karta yoki online to'lov uchun chek rasmini yuklash majburiy!")
+        return cleaned_data

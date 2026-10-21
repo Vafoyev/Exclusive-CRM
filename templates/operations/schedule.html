@@ -6,106 +6,177 @@
 {% block content %}
 <div class="space-y-6">
 
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+    <!-- Header & Navigation -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-slate-800">Haftalik Jadval</h1>
-            <p class="text-slate-500">
-                {{ start_of_week|date:"d M" }} - {{ end_of_week|date:"d M, Y" }}
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-calendar text-[#4F46E5]"></i> Haftalik Dars Jadvali
+            </h1>
+            <p class="text-slate-500 mt-0.5">
+                {{ start_of_week|date:"d M" }} - {{ end_of_week|date:"d M, Y" }} oralig'idagi darslar
             </p>
         </div>
-        <div class="flex gap-2">
-            <a href="?week={{ week_offset|add:'-1' }}"
-                class="px-4 py-2 bg-white rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition">
-                <i class="ph ph-caret-left"></i> Oldingi
-            </a>
-            {% if week_offset != 0 %}
-            <a href="?week=0"
-                class="px-4 py-2 bg-[#94A3B8]/10 text-[#64748B] rounded-xl font-medium hover:bg-[#4338CA]/10 transition">
-                Bu hafta
-            </a>
-            {% else %}
-            <span class="px-4 py-2 bg-[#94A3B8]/10 text-[#64748B] rounded-xl font-medium">
-                Bu hafta
-            </span>
-            {% endif %}
-            <a href="?week={{ week_offset|add:'1' }}"
-                class="px-4 py-2 bg-white rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition">
-                Keyingi <i class="ph ph-caret-right"></i>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <!-- Hafta navigatsiyasi -->
+            <div class="inline-flex rounded-xl bg-white border border-slate-200 p-1 shadow-sm">
+                <a href="?week={{ week_offset|add:'-1' }}{% if room_filter %}&room={{ room_filter }}{% endif %}{% if teacher_filter %}&teacher={{ teacher_filter }}{% endif %}"
+                    class="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition text-sm flex items-center gap-1">
+                    <i class="ph ph-caret-left"></i> Oldingi
+                </a>
+                <a href="?week=0{% if room_filter %}&room={{ room_filter }}{% endif %}{% if teacher_filter %}&teacher={{ teacher_filter }}{% endif %}"
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold transition {% if week_offset == 0 %}bg-[#4F46E5] text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                    Joriy hafta
+                </a>
+                <a href="?week={{ week_offset|add:'1' }}{% if room_filter %}&room={{ room_filter }}{% endif %}{% if teacher_filter %}&teacher={{ teacher_filter }}{% endif %}"
+                    class="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition text-sm flex items-center gap-1">
+                    Keyingi <i class="ph ph-caret-right"></i>
+                </a>
+            </div>
+
+            <!-- Bugungi darslarga o'tish -->
+            <a href="{% url 'operations:lesson_list' %}"
+                class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-green-700 transition flex items-center gap-2 text-sm shadow-sm">
+                <i class="ph ph-check-circle"></i> Bugungi Davomat
             </a>
         </div>
     </div>
 
-    <!-- Jadval -->
-    <div class="glass-panel rounded-2xl overflow-hidden">
-        <!-- Kunlar headeri -->
-        <div
-            class="grid grid-cols-7 bg-slate-50 text-center text-sm font-semibold text-slate-600">
+    <!-- Filterlar paneli -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+        <form method="GET" class="flex flex-wrap gap-4 items-end">
+            <input type="hidden" name="week" value="{{ week_offset }}">
+
+            <!-- Xona filtri -->
+            <div class="min-w-[180px] flex-1">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Xona bo'yicha</label>
+                <select name="room" onchange="this.form.submit()"
+                    class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30">
+                    <option value="">Barcha xonalar</option>
+                    {% for r in rooms %}
+                    <option value="{{ r.id }}" {% if room_filter == r.id|stringformat:"s" %}selected{% endif %}>{{ r.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- O'qituvchi filtri -->
+            <div class="min-w-[180px] flex-1">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">O'qituvchi bo'yicha</label>
+                <select name="teacher" onchange="this.form.submit()"
+                    class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/30">
+                    <option value="">Barcha o'qituvchilar</option>
+                    {% for t in teachers %}
+                    <option value="{{ t.id }}" {% if teacher_filter == t.id|stringformat:"s" %}selected{% endif %}>{{ t.first_name }} {{ t.last_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if room_filter or teacher_filter %}
+            <div>
+                <a href="?week={{ week_offset }}"
+                    class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-medium transition inline-flex items-center gap-1">
+                    <i class="ph ph-x"></i> Tozalash
+                </a>
+            </div>
+            {% endif %}
+
+            <div class="text-xs text-slate-400 ml-auto pb-2">
+                Haftada jami: <span class="font-bold text-slate-700">{{ total_weekly_lessons }} ta</span> dars
+            </div>
+        </form>
+    </div>
+
+    <!-- 7 Kunlik Haftalik Jadval Grid -->
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <!-- Kunlar sarlavhalari -->
+        <div class="grid grid-cols-7 bg-slate-50 border-b border-slate-200 text-center">
             {% for day in week_days %}
-            <div
-                class="py-3 border-r border-slate-200 last:border-r-0 {% if day.is_today %}bg-[#94A3B8]/10 text-[#64748B]{% endif %}">
-                <div class="font-bold">{{ day.day_name }}</div>
-                <div class="text-xs {% if day.is_today %}text-[#64748B]{% else %}text-slate-400{% endif %}">
-                    {{ day.date|date:"d M" }}
+            <div class="py-3 px-2 border-r border-slate-200 last:border-r-0 {% if day.is_today %}bg-[#4F46E5]/10{% endif %}">
+                <div class="font-bold text-xs uppercase tracking-wider {% if day.is_today %}text-[#4F46E5]{% else %}text-slate-600{% endif %}">
+                    {{ day.day_name }}
+                </div>
+                <div class="mt-1 flex items-center justify-center">
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full {% if day.is_today %}bg-[#4F46E5] text-white{% else %}text-slate-400{% endif %}">
+                        {{ day.date|date:"d M" }}
+                    </span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-1 font-mono">
+                    {{ day.count }} ta dars
                 </div>
             </div>
             {% endfor %}
         </div>
 
-        <!-- Darslar grid -->
-        <div class="grid grid-cols-7 min-h-[400px]">
+        <!-- Darslar ustunlari -->
+        <div class="grid grid-cols-7 min-h-[460px] divide-x divide-slate-100">
             {% for day in week_days %}
-            <div class="border-r border-b border-slate-200 p-2 space-y-2 last:border-r-0 overflow-y-auto max-h-[600px]
-                {% if day.is_today %}bg-[#4F46E5]/10{% endif %}">
-
+            <div class="p-2 space-y-2.5 overflow-y-auto max-h-[650px] {% if day.is_today %}bg-[#4F46E5]/[0.02]{% endif %}" style="scrollbar-width: none;">
                 {% for item in day.groups %}
-                <div
-                    class="p-3 rounded-lg bg-white border-l-4 shadow-sm hover:shadow-md transition cursor-pointer
-                    {% cycle 'border-[#94A3B8]/20' 'border-purple-500' 'border-[#94A3B8]/20' 'border-green-500' 'border-orange-500' %}">
-                    <p class="font-bold text-sm mb-1
-                    {% cycle 'text-[#0F172A]' 'text-purple-700' 'text-[#0F172A]' 'text-green-700' 'text-orange-700' %}">
-                        {{ item.name }}
-                    </p>
-                    <div class="mt-1 flex items-center gap-1 text-xs text-slate-600">
-                        <i class="ph ph-clock"></i>
-                        {% if item.start_time %}
-                        <span class="font-medium">{{ item.start_time|time:"H:i" }}</span>
-                        {% if item.end_time %}
-                        <span>-</span>
-                        <span class="font-medium">{{ item.end_time|time:"H:i" }}</span>
+                <div class="p-3 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-[#4F46E5]/40 transition-all flex flex-col justify-between group">
+                    <div>
+                        <!-- Guruh nomi & Kursi -->
+                        <div class="flex items-start justify-between gap-1">
+                            <a href="{% url 'group_detail' item.group.pk %}"
+                                class="font-bold text-slate-800 text-xs hover:text-[#4F46E5] transition line-clamp-1">
+                                {{ item.name }}
+                            </a>
+                        </div>
+                        {% if item.course_name %}
+                        <p class="text-[10px] text-slate-400 truncate mt-0.5">{{ item.course_name }}</p>
                         {% endif %}
-                        {% else %}
-                        <span class="text-slate-400">Vaqt belgilanmagan</span>
-                        {% endif %}
+
+                        <!-- Vaqt -->
+                        <div class="mt-2 flex items-center gap-1.5 text-xs text-slate-700 font-semibold bg-slate-50 px-2 py-1 rounded-lg">
+                            <i class="ph ph-clock text-[#4F46E5]"></i>
+                            {% if item.start_time %}
+                            <span>{{ item.start_time|time:"H:i" }}</span>
+                            {% if item.end_time %}
+                            <span class="text-slate-400">-</span>
+                            <span>{{ item.end_time|time:"H:i" }}</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-slate-400 text-[11px]">Vaqt yo'q</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Xona & O'qituvchi -->
+                        <div class="mt-2 space-y-1 text-[11px] text-slate-500">
+                            {% if item.room %}
+                            <div class="flex items-center gap-1 truncate">
+                                <i class="ph ph-door text-slate-400"></i>
+                                <span class="truncate">{{ item.room.name }}</span>
+                            </div>
+                            {% endif %}
+                            {% if item.teacher %}
+                            <div class="flex items-center gap-1 truncate">
+                                <i class="ph ph-user text-slate-400"></i>
+                                <span class="truncate">{{ item.teacher.first_name }} {{ item.teacher.last_name|default:"" }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="flex items-center gap-1 text-[10px] text-slate-400">
+                                <i class="ph ph-users"></i>
+                                <span>{{ item.students_count|default:0 }} ta o'quvchi</span>
+                            </div>
+                        </div>
                     </div>
-                    {% if item.room %}
-                    <div class="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                        <i class="ph ph-door"></i>
-                        <span>{{ item.room.name }}</span>
+
+                    <!-- Davomat olish tezkor tugmasi -->
+                    <div class="mt-3 pt-2 border-t border-slate-100">
+                        <a href="{% url 'operations:group_take_attendance' item.group.pk %}?date={{ item.date_str }}"
+                            class="w-full py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-[11px] font-semibold transition flex items-center justify-center gap-1">
+                            <i class="ph ph-check-circle"></i> Davomat
+                        </a>
                     </div>
-                    {% endif %}
-                    {% if item.teacher %}
-                    <div class="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                        <i class="ph ph-user"></i>
-                        <span>{{ item.teacher.first_name }} {{ item.teacher.last_name }}</span>
-                    </div>
-                    {% endif %}
                 </div>
                 {% empty %}
-                <p class="text-xs text-slate-400 text-center py-4">Dars yo'q</p>
+                <div class="flex flex-col items-center justify-center text-slate-300 py-10">
+                    <i class="ph ph-sun text-2xl mb-1 text-slate-200"></i>
+                    <p class="text-xs font-medium text-slate-400">Dars yo'q</p>
+                </div>
                 {% endfor %}
             </div>
             {% endfor %}
         </div>
-    </div>
-
-    <!-- Link to today's lessons -->
-    <div class="flex justify-center">
-        <a href="{% url 'operations:lesson_list' %}"
-            class="px-6 py-3 bg-gradient-to-r from-[#818CF8] to-purple-600 text-white rounded-xl font-medium hover:shadow-lg transition flex items-center gap-2">
-            <i class="ph ph-calendar-check"></i>
-            Bugungi darslarni ko'rish
-        </a>
     </div>
 
 </div>

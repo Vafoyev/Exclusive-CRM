@@ -18,6 +18,10 @@
             <span class="text-xs text-[var(--text-muted)] hidden sm:inline">{% now "d F Y" %}</span>
         </div>
         <div class="flex gap-1.5 sm:gap-2 flex-wrap">
+            <a href="{% url 'core:director_analytics' %}"
+                class="inline-flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-xs font-bold transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/25 min-h-[40px]">
+                <i class="ph-fill ph-chart-line-up"></i> <span>Analitika & Solishtirish</span>
+            </a>
             <div class="flex gap-0.5 bg-[var(--bg-hover)] p-0.5 rounded-lg border border-[var(--border-color)]">
                 <a href="?period=weekly"
                     class="px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium transition {% if period == 'weekly' %}bg-[var(--bg-card)] text-[var(--text-main)] shadow-sm font-bold border border-[var(--border-color)]{% else %}text-[var(--text-second)] hover:text-[var(--text-main)]{% endif %}">Hafta</a>
@@ -408,9 +412,9 @@
                     <i class="ph-fill ph-receipt text-emerald-400"></i> So'nggi Tranzaksiyalar
                 </h3>
                 {% if pending_payments > 0 %}
-                <span class="px-2 py-1 bg-amber-950/60 text-amber-400 border border-amber-800/40 rounded-lg text-[10px] sm:text-xs font-bold flex items-center gap-1">
-                    <i class="ph-fill ph-clock"></i> {{ pending_payments }}
-                </span>
+                <a href="{% url 'finance:transaction_list' %}?status=pending" class="px-2 py-1 bg-amber-950/60 text-amber-400 border border-amber-800/40 rounded-lg text-[10px] sm:text-xs font-bold flex items-center gap-1 hover:bg-amber-900/60 transition" title="Tasdiqlanmagan pullar">
+                    <i class="ph-fill ph-clock"></i> {{ pending_payments_amount|floatformat:0|intcomma }} so'm ({{ pending_payments }})
+                </a>
                 {% endif %}
             </div>
             <div class="space-y-2 overflow-y-auto max-h-[200px] sm:max-h-[280px]" style="scrollbar-width: none;">
@@ -1081,6 +1085,13 @@
         formData.append('account_id', accountId);
 
         const receiptFile = document.getElementById('qpReceiptImage').files[0];
+        if (paymentMethod !== 'cash' && !receiptFile) {
+            errorText.textContent = "Plastik karta yoki online to'lov uchun chek rasmini yuklang.";
+            errorDiv.classList.remove('hidden');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ph-fill ph-check-circle"></i> Tasdiqlash';
+            return;
+        }
         if (receiptFile) {
             formData.append('receipt_image', receiptFile);
         }

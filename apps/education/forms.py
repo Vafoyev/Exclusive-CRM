@@ -3,8 +3,8 @@ from apps.users.models import User
 from .models import Course, Room, Group
 from .services.scheduling import check_schedule_conflict
 
-# Umumiy dizayn klasslari
-INPUT_CLASSES = "w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white"
+# Umumiy dizayn klasslari (Light & Dark mode mosligi bilan)
+INPUT_CLASSES = "w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition text-sm"
 
 
 class CourseForm(forms.ModelForm):
@@ -42,13 +42,14 @@ class GroupForm(forms.ModelForm):
         (7, 'Yak'),
     )
     
-    # Oddiy checkbox maydonlari
+    # Oddiy checkbox maydonlari (Dushanba - Yakshanba)
     day_1 = forms.BooleanField(required=False, label='Dush')
     day_2 = forms.BooleanField(required=False, label='Sesh')
     day_3 = forms.BooleanField(required=False, label='Chor')
     day_4 = forms.BooleanField(required=False, label='Pay')
     day_5 = forms.BooleanField(required=False, label='Juma')
     day_6 = forms.BooleanField(required=False, label='Shan')
+    day_7 = forms.BooleanField(required=False, label='Yak')
 
     def __init__(self, *args, **kwargs):
         self.organization = kwargs.pop('organization', None)
@@ -57,6 +58,16 @@ class GroupForm(forms.ModelForm):
             self.fields['course'].queryset = Course.objects.filter(organization=self.organization, is_deleted=False)
             self.fields['teacher'].queryset = User.objects.filter(organization=self.organization, role='teacher', is_deleted=False)
             self.fields['room'].queryset = Room.objects.filter(organization=self.organization, is_deleted=False)
+
+        # YANGI GURUH YARATISH MANTIQI:
+        # Yangi guruh ochilayotganda faqat 'pending' (Qabul ochiq) va 'active' (Faol) holatlari bo'lishi mumkin!
+        # "Tugatilgan" yoki "Bekor qilingan" statusida yangi guruh ochish mantiqsizlik.
+        if not (self.instance and self.instance.pk):
+            self.fields['status'].choices = [
+                ('pending', "Qabul ochiq (Guruh yig'ilmoqda)"),
+                ('active', "Faol (Darslar boshlangan)"),
+            ]
+            self.fields['status'].initial = 'pending'
         
         # Agar tahrirlash bo'lsa, mavjud kunlarni belgilash
         if self.instance and self.instance.pk and self.instance.schedule_days:
@@ -67,13 +78,14 @@ class GroupForm(forms.ModelForm):
 
     class Meta:
         model = Group
-        fields = ['name', 'course', 'teacher', 'room', 'start_date', 'start_time', 'end_time', 'status']
+        fields = ['name', 'course', 'teacher', 'room', 'start_date', 'end_date', 'start_time', 'end_time', 'status']
         widgets = {
             'name': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'M: IELTS-A'}),
             'course': forms.Select(attrs={'class': INPUT_CLASSES}),
             'teacher': forms.Select(attrs={'class': INPUT_CLASSES}),
             'room': forms.Select(attrs={'class': INPUT_CLASSES}),
             'start_date': forms.DateInput(attrs={'class': INPUT_CLASSES, 'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'class': INPUT_CLASSES, 'type': 'date'}),
             'start_time': forms.TimeInput(attrs={'class': INPUT_CLASSES, 'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'class': INPUT_CLASSES, 'type': 'time'}),
             'status': forms.Select(attrs={'class': INPUT_CLASSES}),
@@ -82,9 +94,9 @@ class GroupForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         
-        # Checkbox qiymatlarini yig'ib, schedule_days listini yaratish
+        # Checkbox qiymatlarini yig'ib, schedule_days listini yaratish (1-dan 7-gacha)
         days = []
-        for i in range(1, 7):
+        for i in range(1, 8):
             if cleaned_data.get(f'day_{i}'):
                 days.append(i)
         
@@ -121,9 +133,9 @@ class GroupForm(forms.ModelForm):
     
     def save(self, commit=True):
         instance = super().save(commit=False)
-        # Checkbox qiymatlarini schedule_days ga o'tkazish
+        # Checkbox qiymatlarini schedule_days ga o'tkazish (1 dan 7 gacha)
         days = []
-        for i in range(1, 7):
+        for i in range(1, 8):
             if self.cleaned_data.get(f'day_{i}'):
                 days.append(i)
         instance.schedule_days = days

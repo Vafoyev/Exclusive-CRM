@@ -48,10 +48,10 @@ class Group(TenantAwareModel):
     Haqiqiy o'quv guruhi.
     """
     STATUS_CHOICES = (
-        ('pending', 'Yig\'ilmoqda'),
-        ('active', 'Dars ketmoqda'),
-        ('finished', 'Tugatilgan'),
-        ('cancelled', 'Bekor qilingan'),
+        ('pending', "Qabul ochiq (Yig'ilmoqda)"),
+        ('active', "Faol (Darslar boshlangan)"),
+        ('finished', "Kurs yakunlangan (Bitirgan)"),
+        ('cancelled', "Yopilgan (Bekor qilingan)"),
     )
 
     name = models.CharField(max_length=100, verbose_name="Guruh nomi")  # M: IELTS-A

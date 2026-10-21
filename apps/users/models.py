@@ -88,6 +88,11 @@ class User(AbstractUser, TenantAwareModel):
             return self.avatar.url
         return static('img/default-avatar.svg')
 
+    @property
+    def is_director(self):
+        """Faqat Direktor (owner) yoki Super Admin"""
+        return bool(self.is_authenticated and (self.role in ['super_admin', 'owner'] or self.is_superuser))
+
     def has_module_permission(self, module: str, action: str = 'view') -> bool:
         """
         Foydalanuvchi berilgan modulga ruxsati borligini tekshirish.

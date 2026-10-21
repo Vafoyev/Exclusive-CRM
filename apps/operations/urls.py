@@ -15,6 +15,7 @@ urlpatterns = [
     path('lessons/<int:pk>/start/', views.start_lesson, name='start_lesson'),
     path('lessons/<int:pk>/finish/', views.finish_lesson, name='finish_lesson'),
     path('lessons/<int:pk>/attendance/', views.take_attendance, name='take_attendance'),
+    path('groups/<int:group_id>/attendance/', views.group_take_attendance, name='group_take_attendance'),
     
     # Schedule
     path('schedule/', views.schedule_view, name='schedule'),

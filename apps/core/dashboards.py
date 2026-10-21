@@ -374,10 +374,30 @@ def super_admin_dashboard(request):
     recent_transactions = Transaction.objects.filter(status='confirmed').order_by('-created_at')[:5]
     
     # ====== KUTILAYOTGAN TO'LOVLAR (Tasdiqlanmagan) ======
-    pending_payments = Transaction.objects.filter(
+    from apps.finance.models import CashSubmission
+    pending_payments_qs = Transaction.objects.filter(
         status='pending',
         transaction_type='income'
-    ).count()
+    )
+    pending_payments_stats = pending_payments_qs.aggregate(
+        count=Count('id'),
+        total_amount=Sum('amount')
+    )
+    pending_payments = pending_payments_stats['count'] or 0
+    pending_payments_amount = pending_payments_stats['total_amount'] or 0
+
+    pending_submissions_qs = CashSubmission.objects.filter(
+        status='pending',
+        is_deleted=False
+    )
+    pending_submissions_stats = pending_submissions_qs.aggregate(
+        count=Count('id'),
+        total_amount=Sum('net_amount')
+    )
+    pending_submissions_count = pending_submissions_stats['count'] or 0
+    pending_submissions_amount = pending_submissions_stats['total_amount'] or 0
+
+    total_unconfirmed_amount = pending_payments_amount + pending_submissions_amount
     
     # ====== TASDIQLANMAGAN CHEKLAR ======
     pending_receipts_qs = Transaction.objects.filter(
@@ -479,6 +499,10 @@ def super_admin_dashboard(request):
         
         # Bildirishnomalar
         'pending_payments': pending_payments,
+        'pending_payments_amount': pending_payments_amount,
+        'pending_submissions_count': pending_submissions_count,
+        'pending_submissions_amount': pending_submissions_amount,
+        'total_unconfirmed_amount': total_unconfirmed_amount,
         'pending_receipts': pending_receipts,
         'pending_receipts_sum': pending_receipts_sum,
         'pending_receipts_list': pending_receipts_list,
@@ -570,11 +594,32 @@ def admin_dashboard(request):
     accounts = Account.objects.filter(organization=org, is_deleted=False)
     
     # ====== KUTILAYOTGAN TO'LOVLAR (Tasdiqlanmagan) ======
-    pending_payments = Transaction.objects.filter(
+    from apps.finance.models import CashSubmission
+    pending_payments_qs = Transaction.objects.filter(
         organization=org,
         status='pending',
         transaction_type='income'
-    ).count()
+    )
+    pending_payments_stats = pending_payments_qs.aggregate(
+        count=Count('id'),
+        total_amount=Sum('amount')
+    )
+    pending_payments = pending_payments_stats['count'] or 0
+    pending_payments_amount = pending_payments_stats['total_amount'] or 0
+
+    pending_submissions_qs = CashSubmission.objects.filter(
+        organization=org,
+        status='pending',
+        is_deleted=False
+    )
+    pending_submissions_stats = pending_submissions_qs.aggregate(
+        count=Count('id'),
+        total_amount=Sum('net_amount')
+    )
+    pending_submissions_count = pending_submissions_stats['count'] or 0
+    pending_submissions_amount = pending_submissions_stats['total_amount'] or 0
+
+    total_unconfirmed_amount = pending_payments_amount + pending_submissions_amount
     
     # ====== TASDIQLANMAGAN CHEKLAR ======
     pending_receipts_qs = Transaction.objects.filter(
@@ -605,6 +650,10 @@ def admin_dashboard(request):
         'students_for_payment': students_for_payment,
         'accounts': accounts,
         'pending_payments': pending_payments,
+        'pending_payments_amount': pending_payments_amount,
+        'pending_submissions_count': pending_submissions_count,
+        'pending_submissions_amount': pending_submissions_amount,
+        'total_unconfirmed_amount': total_unconfirmed_amount,
         'pending_receipts': pending_receipts,
         'pending_receipts_sum': pending_receipts_sum,
         'pending_receipts_list': pending_receipts_list,

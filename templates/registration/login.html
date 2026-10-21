@@ -1,168 +1,296 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" class="h-full">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kirish | Smart Edu</title>
+    <title>Kirish | EXCLUSIVE AIM O'QUV MARKAZI</title>
 
     <!-- FONTS & ICONS -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
         body {
-            background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F1F5F9 100%);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
         }
 
-        .login-card {
-            background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(79, 70, 229, 0.12);
-            box-shadow: 0 25px 50px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+        /* Exclusive Aim Emerald Gradient */
+        .ea-gradient-bg {
+            background: linear-gradient(145deg, #0D3023 0%, #154734 45%, #1B5E43 100%);
         }
 
-        .input-field {
-            background: #F8FAFC;
-            border: 1.5px solid rgba(79, 70, 229, 0.15);
-            color: #0F172A;
-            transition: all 200ms ease;
+        /* Subtle animated dot grid background */
+        .ea-pattern {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1.5px, transparent 1.5px);
+            background-size: 28px 28px;
         }
 
-        .input-field:focus {
-            border-color: #4F46E5;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-            outline: none;
-            background: white;
-        }
-
-        .input-field::placeholder {
-            color: #94A3B8;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0);
+        /* Globe circular pulse */
+        @keyframes pulse-slow {
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0.35;
             }
-
             50% {
-                transform: translateY(-20px);
+                transform: scale(1.05) rotate(180deg);
+                opacity: 0.55;
             }
         }
 
-        .float-1 {
-            animation: float 6s ease-in-out infinite;
+        .globe-pulse {
+            animation: pulse-slow 20s ease-in-out infinite;
         }
 
-        .float-2 {
-            animation: float 8s ease-in-out infinite 1s;
+        /* Custom inputs */
+        .login-input {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .float-3 {
-            animation: float 7s ease-in-out infinite 2s;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-in {
-            animation: fadeInUp 0.6s ease-out;
+        .login-input:focus {
+            border-color: #154734;
+            box-shadow: 0 0 0 4px rgba(21, 71, 52, 0.12);
         }
     </style>
 </head>
 
-<body class="flex items-center justify-center min-h-screen px-4">
+<body class="h-full bg-white text-slate-800 antialiased selection:bg-emerald-700 selection:text-white">
 
-    <!-- Background Elements -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-20 left-20 w-72 h-72 bg-[#94A3B8]/10 rounded-full blur-3xl float-1"></div>
-        <div class="absolute bottom-20 right-20 w-96 h-96 bg-[#4F46E5]/10 rounded-full blur-3xl float-2"></div>
-        <div
-            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#94A3B8]/5 rounded-full blur-3xl float-3">
-        </div>
-    </div>
+    <div class="min-h-full flex flex-col lg:flex-row">
 
-    <div class="w-full max-w-sm login-card p-8 rounded-3xl relative z-10 animate-in">
+        <!-- ============================================================== -->
+        <!-- CHAP TOMON: TOZA, MINIMALIST VA ANIQ LOGIN FORMASI (50%) -->
+        <!-- ============================================================== -->
+        <div class="flex-1 flex flex-col justify-between px-6 py-8 sm:px-12 lg:px-16 xl:px-24 bg-white relative">
+            
+            <!-- Yuqori Brand Header: Rasmiy Flayer Logotipi -->
+            <div class="flex items-center justify-between">
+                <a href="/" class="flex items-center gap-3 group">
+                    <img src="{% static 'img/exclusive_aim_logo.png' %}" alt="EXCLUSIVE AIM" class="h-9 sm:h-11 object-contain">
+                </a>
 
-        <!-- Logo/Header -->
-        <div class="text-center mb-8">
-            <div
-                class="w-20 h-20 bg-gradient-to-br from-[#4F46E5] to-[#4338CA] rounded-2xl mx-auto flex items-center justify-center text-white text-4xl shadow-xl shadow-[#4F46E5]/25 mb-4">
-                <i class="ph-fill ph-graduation-cap"></i>
-            </div>
-            <h1 class="text-2xl font-bold text-[#0F172A]">Exclusive CRM</h1>
-            <p class="text-[#94A3B8] text-sm mt-1">Tizimga kirish</p>
-        </div>
-
-        <form method="post" class="space-y-5">
-            {% csrf_token %}
-
-            {% if form.errors %}
-            <div class="p-4 bg-rose-50 border border-rose-200 text-rose-600 text-sm rounded-xl flex items-center gap-3">
-                <div class="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="ph-fill ph-warning-circle text-xl"></i>
-                </div>
-                <span>Login yoki parol noto'g'ri!</span>
-            </div>
-            {% endif %}
-
-            <div class="space-y-2">
-                <label class="text-xs font-semibold text-[#94A3B8] uppercase ml-1">Login</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] text-lg">
-                        <i class="ph-fill ph-user"></i>
+                <!-- O'ng burchak tizim faolligi nishoni -->
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Tizim faol
                     </span>
-                    <input type="text" name="username" placeholder="Loginni kiriting" required autocomplete="username"
-                        class="w-full pl-12 pr-4 py-3.5 rounded-xl input-field">
                 </div>
             </div>
 
-            <div class="space-y-2">
-                <label class="text-xs font-semibold text-[#94A3B8] uppercase ml-1">Parol</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] text-lg">
-                        <i class="ph-fill ph-lock-key"></i>
+            <!-- Asosiy Forma Qismi -->
+            <div class="w-full max-w-md mx-auto my-auto py-8">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+                        Tizimga kirish
+                    </h1>
+                    <p class="text-slate-500 text-sm leading-relaxed">
+                        Exclusive Aim boshqaruv paneliga kirish uchun telefon raqam va parolingizni kiriting.
+                    </p>
+                </div>
+
+                {% if form.errors %}
+                <div class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-3">
+                    <i class="ph ph-warning-circle text-xl text-rose-600 flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <p class="font-bold">Kirishda xatolik yuz berdi</p>
+                        <p class="text-xs text-rose-600 mt-0.5">Telefon raqam yoki parol noto'g'ri kiritildi. Iltimos, qayta tekshirib ko'ring.</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="post" class="space-y-5" autocomplete="on">
+                    {% csrf_token %}
+
+                    <!-- Login (Telefon raqam yoki Username) -->
+                    <div>
+                        <label for="id_username" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Login yoki Telefon raqam
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="ph ph-user text-lg"></i>
+                            </span>
+                            <input type="text" name="username" id="id_username" required autofocus autocomplete="username"
+                                placeholder="Masalan: 998901234567"
+                                value="{{ form.username.value|default:'' }}"
+                                class="login-input w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:bg-white focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Parol -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="id_password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                Parol
+                            </label>
+                            <a href="#help" onclick="alert('Parolni tiklash uchun Exclusive Aim ma\'muriyatiga murojaat qiling: +998 78 555 13 78')"
+                                class="text-xs font-semibold text-[#154734] hover:text-emerald-700 transition">
+                                Parolni unutdingizmi?
+                            </a>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="ph ph-lock-key text-lg"></i>
+                            </span>
+                            <input type="password" name="password" id="id_password" required autocomplete="current-password"
+                                placeholder="••••••••"
+                                class="login-input w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium placeholder-slate-400 focus:bg-white focus:outline-none">
+                            <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer">
+                                <i class="ph ph-eye text-lg" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Eslab qolish -->
+                    <div class="flex items-center justify-between pt-1">
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" name="remember_me" class="w-4 h-4 rounded text-[#154734] border-slate-300 focus:ring-[#154734]">
+                            <span class="text-xs font-medium text-slate-600">Meni eslab qolish</span>
+                        </label>
+                        <span class="text-xs text-slate-400 flex items-center gap-1">
+                            <i class="ph ph-shield-check text-emerald-600"></i> Xavfsiz ulanish
+                        </span>
+                    </div>
+
+                    <!-- Kirish Tugmasi (Exclusive Aim Emerald Button) -->
+                    <div class="pt-2">
+                        <button type="submit"
+                            class="w-full py-3.5 px-6 rounded-xl font-bold text-white bg-[#154734] hover:bg-[#1C5C44] active:bg-[#0F3526] shadow-lg shadow-emerald-950/25 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-base cursor-pointer">
+                            <span>Tizimga kirish</span>
+                            <i class="ph ph-arrow-right text-lg"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Aloqa va qo'llab-quvvatlash -->
+                <div class="mt-8 p-4 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed flex items-center justify-between">
+                    <div class="flex items-center gap-2 font-medium">
+                        <i class="ph ph-phone-call text-base text-emerald-700"></i>
+                        <span>Aloqa: <b>+998 78 555 13 78</b></span>
+                    </div>
+                    <a href="https://instagram.com/mahliyo__jasurbekovna" target="_blank" class="text-slate-500 hover:text-emerald-700 font-medium flex items-center gap-1">
+                        <i class="ph ph-instagram-logo text-base"></i> @mahliyo__jasurbekovna
+                    </a>
+                </div>
+            </div>
+
+            <!-- Pastki Footer Qismi -->
+            <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+                <div>
+                    &copy; 2026 EXCLUSIVE AIM O'QUV MARKAZI. Barcha huquqlar himoyalangan.
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-emerald-700 font-semibold flex items-center gap-1">
+                        <i class="ph ph-lock text-sm"></i> 256-bit SSL Himoyalangan
                     </span>
-                    <input type="password" name="password" placeholder="Parolni kiriting" required autocomplete="current-password"
-                        class="w-full pl-12 pr-4 py-3.5 rounded-xl input-field">
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- O'NG TOMON: CLOUDFLARE STYLE YORQIN BRAND / HERO QISMI (50%) -->
+        <!-- ============================================================== -->
+        <div class="hidden lg:flex flex-1 ea-gradient-bg ea-pattern relative overflow-hidden flex-col justify-between p-12 xl:p-16 text-white">
+            
+            <!-- Orqa fondagi Dunyo / Tarmoq animatsiyasi elementlari -->
+            <div class="absolute -right-24 -top-24 w-[600px] h-[600px] rounded-full border border-white/10 globe-pulse pointer-events-none"></div>
+            <div class="absolute -right-12 -top-12 w-[480px] h-[480px] rounded-full border border-white/15 pointer-events-none"></div>
+            <div class="absolute right-12 top-12 w-[340px] h-[340px] rounded-full border border-white/20 pointer-events-none"></div>
+
+            <!-- Yuqori Badge -->
+            <div class="relative z-10 flex items-center justify-between">
+                <span class="px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-bold tracking-wide uppercase flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
+                    EXCLUSIVE AIM &bull; O'quv Markazi
+                </span>
+                <span class="text-xs font-semibold text-emerald-100/90 flex items-center gap-1.5">
+                    <i class="ph ph-map-pin"></i> Boshqaruv platformasi
+                </span>
+            </div>
+
+            <!-- Markaziy Ta'sirli Matn va Ilustratsiya -->
+            <div class="relative z-10 my-auto py-10 max-w-lg">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-400/20 text-emerald-200 text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-400/30">
+                    <i class="ph ph-sparkle"></i> Ingliz tili — yangi imkoniyatlar eshigi!
+                </div>
+                <h2 class="text-4xl xl:text-5xl font-black tracking-tight leading-tight mb-5">
+                    Siz ham muvaffaqiyatga erishasiz!
+                </h2>
+                <p class="text-emerald-100/90 text-base leading-relaxed font-normal mb-8">
+                    1-darsdan inglizcha gapirishingizga kafolat beramiz! Darslar, guruhlar, kassa va davomat — barchasi yagona aqlli tizimda.
+                </p>
+
+                <!-- Flayerdagi Yo'nalishlar Kartochkalari -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/30 flex items-center justify-center text-emerald-200 mb-2.5">
+                            <i class="ph ph-graduation-cap text-xl"></i>
+                        </div>
+                        <p class="text-xs text-emerald-200 uppercase font-bold tracking-wider">IELTS / CEFR</p>
+                        <p class="text-sm font-bold text-white mt-0.5">Xalqaro imtihonlarga intensiv tayyorlov</p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/30 flex items-center justify-center text-emerald-200 mb-2.5">
+                            <i class="ph ph-chat-centered-text text-xl"></i>
+                        </div>
+                        <p class="text-xs text-emerald-200 uppercase font-bold tracking-wider">Grammatika & So'zlashuv</p>
+                        <p class="text-sm font-bold text-white mt-0.5">1-darsdan jonli inglizcha muloqot</p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/30 flex items-center justify-center text-emerald-200 mb-2.5">
+                            <i class="ph ph-receipt text-xl"></i>
+                        </div>
+                        <p class="text-xs text-emerald-200 uppercase font-bold tracking-wider">Shaffof kassa</p>
+                        <p class="text-sm font-bold text-white mt-0.5">Direktor tasdiqlagan to'lov cheklari</p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/30 flex items-center justify-center text-emerald-200 mb-2.5">
+                            <i class="ph ph-users-three text-xl"></i>
+                        </div>
+                        <p class="text-xs text-emerald-200 uppercase font-bold tracking-wider">Oila zanjiri</p>
+                        <p class="text-sm font-bold text-white mt-0.5">O'quvchi va ota-onalar monitoringi</p>
+                    </div>
                 </div>
             </div>
 
-            <button type="submit"
-                class="w-full py-4 bg-gradient-to-r from-[#4F46E5] to-[#4338CA] hover:from-[#4338CA] hover:to-[#3730A3] text-white font-bold rounded-xl shadow-lg shadow-[#4F46E5]/25 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 mt-6">
-                <span>Kirish</span>
-                <i class="ph-fill ph-arrow-right"></i>
-            </button>
-        </form>
+            <!-- Pastki Sifat / Aloqa Kafolati -->
+            <div class="relative z-10 pt-6 border-t border-white/15 flex items-center justify-between text-xs text-emerald-100/80">
+                <div class="flex items-center gap-2">
+                    <i class="ph ph-check-circle-fill text-emerald-400 text-base"></i>
+                    <span>Darslar shaxsan <b>Mahliyo Jasurbekovna</b> tomonidan olib boriladi</span>
+                </div>
+                <div class="font-bold tracking-wide">
+                    Exclusive Suite v4.5
+                </div>
+            </div>
 
-        <div class="mt-8 pt-6 border-t border-[#94A3B8]/15 text-center">
-            <a href="#"
-                class="text-sm text-[#94A3B8] hover:text-[#64748B] transition-colors flex items-center justify-center gap-2">
-                <i class="ph-fill ph-question text-lg"></i>
-                Yordam kerakmi?
-            </a>
         </div>
+
     </div>
 
-    <!-- Version Badge -->
-    <div class="fixed bottom-4 right-4 text-xs text-[#94A3B8]">
-        Smart Edu v4.0
-    </div>
-
+    <!-- Parolni ko'rsatish/yashirish skripti -->
+    <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('id_password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('ph-eye');
+                eyeIcon.classList.add('ph-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('ph-eye-slash');
+                eyeIcon.classList.add('ph-eye');
+            }
+        }
+    </script>
 </body>
 
 </html>

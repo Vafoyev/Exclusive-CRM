@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -8,6 +9,7 @@ from .forms import CourseForm, RoomForm, GroupForm
 from apps.users.models import User
 from apps.core.audit import log_user_action
 from apps.core.permissions import permission_required
+from apps.education.services.scheduling import check_student_schedule_conflict
 
 
 # --- KURSLAR ---
@@ -106,6 +108,9 @@ def group_list(request):
 @permission_required('education', 'create')
 def group_create(request):
     org = request.organization
+    courses = Course.objects.filter(organization=org, is_deleted=False)
+    course_durations = {str(c.id): c.duration_months for c in courses}
+
     if request.method == 'POST':
         form = GroupForm(request.POST, organization=org)
         if form.is_valid():
@@ -120,7 +125,12 @@ def group_create(request):
     else:
         form = GroupForm(organization=org)
 
-    return render(request, 'education/group_form.html', {'form': form, 'title': 'Yangi Guruh'})
+    return render(request, 'education/group_form.html', {
+        'form': form,
+        'title': 'Yangi Guruh',
+        'course_durations_json': json.dumps(course_durations),
+        'is_create': True,
+    })
 
 
 @login_required
@@ -140,7 +150,7 @@ def group_detail(request, pk):
         role='student',
         is_active=True,
         is_deleted=False
-    ).exclude(id__in=enrolled_ids)
+    ).exclude(id__in=enrolled_ids).order_by('first_name', 'last_name')
     
     context = {
         'group': group,
@@ -154,26 +164,41 @@ def group_detail(request, pk):
 @permission_required('education', 'edit')
 def add_student_to_group(request, pk):
     """O'quvchini guruhga qo'shish"""
-    org = request.organization
-    group = get_object_or_404(Group, pk=pk, organization=org, is_deleted=False)
+    org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
+    if org:
+        group = get_object_or_404(Group, pk=pk, organization=org, is_deleted=False)
+    else:
+        group = get_object_or_404(Group, pk=pk, is_deleted=False)
+        org = group.organization
     
+    next_url = request.POST.get('next')
+
     if request.method == 'POST':
         student_id = request.POST.get('student_id')
         if student_id:
-            student = get_object_or_404(User, pk=student_id, organization=org, role='student')
+            if org:
+                student = get_object_or_404(User, pk=student_id, organization=org, role='student')
+            else:
+                student = get_object_or_404(User, pk=student_id, role='student')
             
-            # Tekshirish - allaqachon a'zo emasmi, yoki o'chirilganmi
+            # 1. Vaqt to'qnashuvi tekshiruvi (Bir vaqtda ikkita kursga qatnasha olmaydi)
+            conflict_msg = check_student_schedule_conflict(student, group)
+            if conflict_msg:
+                messages.error(request, conflict_msg)
+                return redirect(next_url) if next_url else redirect('group_detail', pk=pk)
+
+            # 2. Tekshirish - allaqachon a'zo emasmi, yoki o'chirilganmi
             existing = GroupStudent.objects.filter(group=group, student=student).first()
             if existing:
-                if getattr(existing, 'is_deleted', False):
+                if getattr(existing, 'is_deleted', False) or existing.status != 'active':
                     existing.is_deleted = False
                     existing.status = 'active'
                     existing.save()
                     log_user_action(request.user, 'RESTORE', 'GroupStudent', group.id, 
                                    f"{student.first_name} -> {group.name}", request=request)
-                    messages.success(request, f"{student.first_name} guruhga qayta qo'shildi!")
+                    messages.success(request, f"{student.get_full_name()} guruhga qayta qo'shildi!")
                 else:
-                    messages.warning(request, "Bu o'quvchi allaqachon guruhda!")
+                    messages.warning(request, f"{student.get_full_name()} allaqachon ushbu guruhda!")
             else:
                 GroupStudent.objects.create(
                     organization=org,
@@ -183,8 +208,12 @@ def add_student_to_group(request, pk):
                 )
                 log_user_action(request.user, 'CREATE', 'GroupStudent', group.id, 
                                f"{student.first_name} -> {group.name}", request=request)
-                messages.success(request, f"{student.first_name} guruhga qo'shildi!")
+                messages.success(request, f"✅ {student.get_full_name()} '{group.name}' guruhiga qo'shildi!")
+        else:
+            messages.error(request, "Iltimos, guruhga qo'shish uchun o'quvchini tanlang!")
     
+    if next_url:
+        return redirect(next_url)
     return redirect('group_detail', pk=pk)
 
 
@@ -224,7 +253,16 @@ def group_edit(request, pk):
     else:
         form = GroupForm(instance=group, organization=org)
     
-    return render(request, 'education/group_form.html', {'form': form, 'title': 'Guruhni tahrirlash', 'group': group})
+    courses = Course.objects.filter(organization=org, is_deleted=False)
+    course_durations = {str(c.id): c.duration_months for c in courses}
+    
+    return render(request, 'education/group_form.html', {
+        'form': form,
+        'title': 'Guruhni tahrirlash',
+        'group': group,
+        'course_durations_json': json.dumps(course_durations),
+        'is_create': False,
+    })
 
 
 @login_required
@@ -301,35 +339,38 @@ def search_students_api(request):
     """AJAX orqali o'quvchilarni qidirish"""
     from django.http import JsonResponse
     
-    org = request.organization
+    org = getattr(request, 'organization', None) or getattr(request.user, 'organization', None)
     query = request.GET.get('q', '').strip()
     group_id = request.GET.get('group_id')
     
-    if len(query) < 2:
-        return JsonResponse({'results': []})
-    
     students = User.objects.filter(
-        organization=org,
         role='student',
         is_active=True,
         is_deleted=False
-    ).filter(
-        Q(first_name__icontains=query) | 
-        Q(last_name__icontains=query) | 
-        Q(phone__icontains=query)
     )
+    if org:
+        students = students.filter(organization=org)
     
-    # Agar group_id berilgan bo'lsa, guruhda yo'q o'quvchilarni ko'rsatamiz
+    if query:
+        students = students.filter(
+            Q(first_name__icontains=query) | 
+            Q(last_name__icontains=query) | 
+            Q(phone__icontains=query)
+        )
+    
+    # Agar group_id berilgan bo'lsa, ushbu guruhda allaqachon a'zo bo'lganlarni chiqarib tashlaymiz
     if group_id:
-        enrolled_ids = GroupStudent.objects.filter(group_id=group_id).values_list('student_id', flat=True)
+        enrolled_ids = GroupStudent.objects.filter(
+            group_id=group_id, is_deleted=False, status='active'
+        ).values_list('student_id', flat=True)
         students = students.exclude(id__in=enrolled_ids)
     
-    students = students[:10]  # Limit
+    students = students.order_by('first_name', 'last_name')[:25]
     
     results = [{
         'id': s.id,
-        'name': f"{s.first_name} {s.last_name}",
-        'phone': s.phone,
+        'name': f"{s.first_name} {s.last_name}".strip() or s.phone,
+        'phone': s.phone or '',
     } for s in students]
     
     return JsonResponse({'results': results})

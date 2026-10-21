@@ -187,27 +187,21 @@
 
                         <!-- Actions -->
                         <div class="flex items-center gap-2">
-                            {% if lesson.status == 'scheduled' %}
-                            <a href="{% url 'operations:start_lesson' lesson.pk %}"
-                                class="px-3 py-1.5 bg-[#4F46E5] text-white rounded-lg hover:bg-[#4338CA] transition text-sm font-medium flex items-center gap-1">
-                                <i class="ph-fill ph-play"></i> Boshlash
-                            </a>
-                            {% elif lesson.status == 'started' %}
+                            {% if item.attendance_taken %}
                             <a href="{% url 'operations:take_attendance' lesson.pk %}"
-                                class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium flex items-center gap-1">
-                                <i class="ph-fill ph-check-circle"></i> Davomat olish
-                            </a>
-                            {% elif lesson.status == 'finished' and not item.attendance_taken %}
-                            <a href="{% url 'operations:take_attendance' lesson.pk %}"
-                                class="px-3 py-1.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm font-medium flex items-center gap-1">
-                                <i class="ph-fill ph-check-circle"></i> Davomat olish
+                                class="px-3.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition text-xs font-semibold flex items-center gap-1.5">
+                                <i class="ph-fill ph-check-circle text-sm"></i> Davomat olingan ({{ item.present_count }}/{{ item.attendance_count }})
                             </a>
                             {% else %}
-                            <a href="{% url 'operations:lesson_detail' lesson.pk %}"
-                                class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition text-sm font-medium flex items-center gap-1">
-                                <i class="ph ph-eye"></i> Ko'rish
+                            <a href="{% url 'operations:take_attendance' lesson.pk %}"
+                                class="px-3.5 py-1.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg hover:from-emerald-600 hover:to-green-700 transition text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                                <i class="ph-bold ph-check text-sm"></i> Davomat olish
                             </a>
                             {% endif %}
+                            <a href="{% url 'operations:lesson_detail' lesson.pk %}"
+                                class="px-2.5 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition text-xs font-medium flex items-center gap-1" title="Batafsil">
+                                <i class="ph ph-eye"></i>
+                            </a>
                             {% if request.user.role == 'super_admin' or request.user.role == 'owner' or request.user.role == 'admin' %}
                             <a href="{% url 'operations:lesson_edit' lesson.pk %}"
                                 class="px-2 py-1.5 text-slate-400 hover:text-[#64748B] rounded-lg hover:bg-slate-100 transition text-sm">
