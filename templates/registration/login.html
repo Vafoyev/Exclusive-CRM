@@ -511,13 +511,12 @@
             <div class="form-container">
                 <div class="form-heading">
                     <h1>Tizimga kirish</h1>
-                    <p>Exclusive Academy boshqaruv tizimiga kirish uchun login va parolingizni kiriting.</p>
                 </div>
 
                 {% if form.errors %}
                 <div class="error-box">
                     <i class="ph ph-warning-circle" style="font-size: 20px;"></i>
-                    <span>Telefon raqam yoki parol noto'g'ri kiritildi.</span>
+                    <span>Login yoki parol noto'g'ri kiritildi.</span>
                 </div>
                 {% endif %}
 
@@ -526,11 +525,11 @@
 
                     <!-- Login -->
                     <div class="input-group">
-                        <label for="id_username" class="input-label">Login yoki Telefon</label>
+                        <label for="id_username" class="input-label">Login</label>
                         <div class="input-wrap">
                             <i class="ph ph-user input-icon"></i>
                             <input type="text" name="username" id="id_username" required autofocus autocomplete="username"
-                                placeholder="Masalan: 998901234567" value="{{ form.username.value|default:'' }}"
+                                placeholder="Login yoki telefon raqam" value="{{ form.username.value|default:'' }}"
                                 class="form-control">
                         </div>
                     </div>
@@ -541,7 +540,7 @@
                         <div class="input-wrap">
                             <i class="ph ph-lock-key input-icon"></i>
                             <input type="password" name="password" id="id_password" required autocomplete="current-password"
-                                placeholder="••••••••" class="form-control">
+                                placeholder="Parol" class="form-control">
                             <button type="button" onclick="togglePass()" class="toggle-pass" aria-label="Parolni ko'rsatish">
                                 <i class="ph ph-eye" id="eyeIcon"></i>
                             </button>
@@ -552,7 +551,7 @@
                     <div class="form-row">
                         <label class="remember-wrap">
                             <input type="checkbox" name="remember_me">
-                            <span>Meni eslab qolish</span>
+                            <span>Eslab qolish</span>
                         </label>
                         <a href="#help" onclick="alert('Parolni tiklash uchun administratorga murojaat qiling: +998 78 555 13 78')"
                             class="forgot-btn">
@@ -562,7 +561,7 @@
 
                     <!-- Kirish Tugmasi -->
                     <button type="submit" class="btn-login">
-                        <span>Tizimga kirish</span>
+                        <span>Kirish</span>
                         <i class="ph ph-arrow-right" style="font-size: 17px;"></i>
                     </button>
                 </form>
@@ -602,28 +601,28 @@
                     <div id="lottieContainer" style="width: 100%; height: 100%; max-height: 340px; display: flex; align-items: center; justify-content: center;"></div>
                 </div>
 
-                <h2>Boshqaruv va Ta'lim Tizimi</h2>
+                <h2>Exclusive Academy</h2>
                 <p>
-                    Darslar jadvali, kunlik davomat, shaffof kassa va o'qituvchilar oylik hisob-kitoblari — barchasi yagona professional platformada.
+                    Boshqaruv va avtomatlashtirish platformasi
                 </p>
 
                 <!-- Imkoniyatlar teglari -->
                 <div class="feature-tags">
                     <div class="tag-item">
                         <i class="ph ph-users-three"></i>
-                        <span>O'quvchilar & Oila</span>
+                        <span>O'quvchilar</span>
                     </div>
                     <div class="tag-item">
                         <i class="ph ph-coins"></i>
-                        <span>Shaffof Kassa</span>
+                        <span>Kassa</span>
                     </div>
                     <div class="tag-item">
                         <i class="ph ph-chart-line-up"></i>
-                        <span>Foizli Oylik</span>
+                        <span>Oylik</span>
                     </div>
                     <div class="tag-item">
                         <i class="ph ph-calendar-check"></i>
-                        <span>Kunlik Davomat</span>
+                        <span>Davomat</span>
                     </div>
                 </div>
             </div>
